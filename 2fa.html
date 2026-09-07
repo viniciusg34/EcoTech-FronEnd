@@ -44,6 +44,7 @@
       }
       .attempts-note strong { color: var(--danger); }
     </style>
+      <link rel="stylesheet" href="css/eco-animate.css" />
   </head>
   <body>
     <header class="admin-header">
@@ -231,6 +232,7 @@
           cpf: pendente.cpf || "",
           tipo: pendente.tipo || "pessoa",
           perfil: pendente.perfil || "comum",
+          local: !!pendente.local,
           logadoEm: new Date().toISOString(),
         };
         sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
@@ -279,5 +281,7 @@
         atualizarNotaTentativas();
       });
     </script>
+      <script src="js/eco-a11y.js"></script>
+    <script src="js/eco-animate.js"></script>
   </body>
 </html>

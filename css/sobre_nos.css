@@ -1535,6 +1535,9 @@ main { display: block; }
   background: linear-gradient(180deg, rgba(15, 30, 16, 0.45) 0%, rgba(15, 30, 16, 0.75) 100%);
   z-index: 1;
 }
+.container-imagem-topo .hero-leaves {
+  z-index: 2;
+}
 .banner-content {
   position: relative;
   z-index: 2;

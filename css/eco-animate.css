@@ -1,0 +1,165 @@
+/* ══════════════════════════════════════════════════════════
+   eco-animate.css — Folhinhas flutuantes + anéis de progresso
+   Só transform/opacity (leve, sem reflow). Desativa tudo se o
+   usuário preferir menos movimento.
+══════════════════════════════════════════════════════════ */
+
+.hero-leaves {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Variante "ambiente": usada automaticamente em telas sem uma
+   seção de destaque própria (fixa na janela inteira, bem sutil). */
+.hero-leaves--ambiente {
+  position: fixed;
+  overflow: visible;
+  z-index: 2;
+  opacity: 0.55;
+}
+
+.eco-leaf {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  color: rgba(255, 255, 255, 0.4);
+  opacity: 0;
+  animation: eco-leaf-vento 6s linear infinite;
+  will-change: transform, opacity;
+}
+
+/* Começam perto do topo (elas CAEM, não sobem) e cada uma tem um
+   ponto de partida/atraso diferente pra não parecerem sincronizadas. */
+.eco-leaf-0 { left: 6%;  top: -8%; animation-delay: 0s;    animation-duration: 5.5s; }
+.eco-leaf-1 { left: 22%; top: -14%; animation-delay: 0.7s;  animation-duration: 6.5s; color: rgba(189, 234, 189, 0.45); }
+.eco-leaf-2 { left: 48%; top: -6%; animation-delay: 1.4s;  animation-duration: 5s; }
+.eco-leaf-3 { left: 68%; top: -18%; animation-delay: 2.1s;  animation-duration: 7s; color: rgba(189, 234, 189, 0.35); }
+.eco-leaf:nth-child(4n)   { left: 84%; top: -10%; animation-delay: 0.4s; animation-duration: 6s; }
+.eco-leaf:nth-child(4n+1) { left: 36%; top: -16%; animation-delay: 1.8s; animation-duration: 5.8s; }
+
+/* Variante para fundos claros (ex: index.html), onde a folha
+   branca original ficaria invisível. */
+.hero-leaves--escuras .eco-leaf {
+  color: rgba(61, 145, 64, 0.32);
+}
+.hero-leaves--escuras .eco-leaf-1,
+.hero-leaves--escuras .eco-leaf-3 {
+  color: rgba(45, 114, 48, 0.26);
+}
+
+/* A camada ambiente usa um tom neutro que funciona tanto em
+   fundo claro quanto escuro, já que aparece em qualquer tela. */
+.hero-leaves--ambiente .eco-leaf {
+  color: rgba(61, 145, 64, 0.22);
+}
+.hero-leaves--ambiente .eco-leaf-1,
+.hero-leaves--ambiente .eco-leaf-3 {
+  color: rgba(90, 171, 90, 0.18);
+}
+
+/* Queda em diagonal, como se o vento estivesse levando a folha —
+   cai rápido e balança de um lado pro outro enquanto desce. */
+@keyframes eco-leaf-vento {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  8%   { opacity: 1; }
+  30%  { transform: translate(46px, 38vh) rotate(140deg); }
+  60%  { transform: translate(-28px, 72vh) rotate(250deg); }
+  90%  { opacity: 0.5; }
+  100% { transform: translate(60px, 112vh) rotate(400deg); opacity: 0; }
+}
+
+/* ── Anel de progresso SVG ── */
+.eco-ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.18);
+}
+
+.eco-ring-fg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+/* ── Contadores: leve destaque quando terminam de contar ── */
+[data-count-to] {
+  display: inline-block;
+}
+
+/* ══════════════════════════════
+   ÍCONES COM VIDA
+══════════════════════════════ */
+
+/* Logo grande das telas de login/cadastro: balanço contínuo e
+   suave (só aparece nessas telas de entrada, não incomoda em
+   uso prolongado). */
+.eco-logo img {
+  animation: eco-logo-sway 6s ease-in-out infinite;
+  transform-origin: 50% 92%;
+  will-change: transform;
+}
+@keyframes eco-logo-sway {
+  0%, 100% { transform: rotate(-4deg); }
+  50%      { transform: rotate(4deg); }
+}
+
+/* Logo do cabeçalho (aparece em toda navegação): sem animação
+   contínua pra não cansar — só reage ao passar o mouse. */
+.logo img,
+.brand img {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.logo:hover img,
+.brand:hover img {
+  transform: rotate(-8deg) scale(1.08);
+}
+
+/* Ícones de cartões/conteúdo: reagem ao passar o mouse no
+   cartão-pai, dando uma sensação de "vivo" sem nada em loop. */
+.numero-icon,
+.card-icons .icon,
+.icon-mao,
+.doc-icon-file,
+.svc-icon,
+.step-icon {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.numero-item:hover .numero-icon,
+.card:hover .card-icons .icon,
+.svc-card:hover .svc-icon,
+.step-card:hover .step-icon,
+.doc-card:hover .doc-icon-file {
+  transform: scale(1.18) rotate(-6deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eco-logo img { animation: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eco-leaf { animation: none !important; opacity: 0.5; }
+  .eco-ring-fg { transition: none !important; }
+}
+
+/* ══════════════════════════════
+   "KEN BURNS" — zoom lento e contínuo
+   pra fotos grandes de fundo ganharem vida
+   sem pesar (é só transform, GPU-friendly).
+══════════════════════════════ */
+.eco-kenburns {
+  animation: eco-kenburns-zoom 22s ease-in-out infinite alternate;
+  will-change: transform;
+  transform-origin: center;
+}
+@keyframes eco-kenburns-zoom {
+  from { transform: scale(1); }
+  to   { transform: scale(1.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eco-kenburns { animation: none !important; }
+}

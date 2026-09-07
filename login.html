@@ -11,6 +11,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./css/login.css" />
+    <link rel="stylesheet" href="./css/eco-animate.css" />
   </head>
 
   <body>
@@ -39,6 +40,8 @@
       <section class="app">
         <section class="content">
           <section class="hero">
+            <div class="hero-leaves" data-qtd-folhas="6"></div>
+
             <span class="tag">Nossa Essência</span>
 
             <h1>A união de<br />dados, ciência<br />e amor pela<br />terra.</h1>
@@ -49,7 +52,15 @@
             </p>
 
             <div class="stat-card">
-              <strong>85%</strong>
+              <div class="eco-ring-wrap" data-progress-ring="85">
+                <svg viewBox="0 0 80 80" width="74" height="74" aria-hidden="true">
+                  <circle class="eco-ring-bg" cx="40" cy="40" r="32" stroke-width="6"></circle>
+                  <circle class="eco-ring-fg" cx="40" cy="40" r="32" stroke-width="6"></circle>
+                </svg>
+                <span class="eco-ring-label"
+                  ><span data-count-to="85" data-count-suffix="%">0%</span></span
+                >
+              </div>
               <p>de eficiência<br />em nossos<br />projetos</p>
             </div>
 
@@ -102,6 +113,9 @@
             <small style="display: block; margin-top: 20px; text-align: center">
               Ainda não tem uma conta? <a href="cadastro.html">cadastre-se</a>
             </small>
+            <small style="display: block; margin-top: 8px; text-align: center">
+              É uma empresa? <a href="cadastro_empresarial.html">Cadastre sua empresa</a>
+            </small>
           </section>
         </section>
       </section>
@@ -110,6 +124,7 @@
     <div class="toast" id="toast"></div>
 
     <script src="./js/ui-theme.js"></script>
+    <script src="./js/eco-animate.js"></script>
     <script src="./js/ui-toast.js"></script>
     <script src="./js/eco-helpers.js"></script>
     <script src="./js/eco-admin.js"></script>
@@ -231,8 +246,16 @@
         setLoading(true);
 
         try {
-          /* 1) Tenta como empresa (tem cnpj) */
-          const empresa = await autenticarEmpresaAPI(email, password);
+          /* 1) Tenta como empresa (tem cnpj) — se a API estiver fora do
+             ar, trata como "não encontrado" em vez de travar o login
+             inteiro, pra sempre conseguir chegar no fallback local. */
+          let empresa = null;
+          try {
+            empresa = await autenticarEmpresaAPI(email, password);
+          } catch (err) {
+            console.warn("API de empresas indisponível:", err);
+          }
+
           if (empresa && empresa.cnpj) {
             const sessao = {
               id: empresa.id,
@@ -256,8 +279,15 @@
             return;
           }
 
-          /* 2) Tenta como pessoa física (/pessoa) */
-          const usuario = await autenticarPelaAPI(email, password);
+          /* 2) Tenta como pessoa física (/pessoa) — mesma lógica: uma
+             falha de rede aqui não deve impedir o fallback local. */
+          let usuario = null;
+          try {
+            usuario = await autenticarPelaAPI(email, password);
+          } catch (err) {
+            console.warn("API de pessoas indisponível:", err);
+          }
+
           if (usuario) {
             const lembrar = document.getElementById("lembrarMe").checked;
             sessionStorage.setItem(
@@ -283,20 +313,31 @@
             return;
           }
 
-          /* 3) Fallback: conta criada localmente pelo cadastro.html antigo */
+          /* 3) Fallback: conta criada localmente (sem back-end/API disponível) */
           const local = autenticarLocal(email, password);
           if (local) {
-            salvarSessao({
-              id: local.email,
-              name: local.nome,
-              email: local.email,
-              avatar: null,
-              coins: "0.00",
-            });
-            showToast("Entrando...");
-            setTimeout(() => {
-              window.location.href = "coleta.html";
-            }, 1000);
+            const lembrar = document.getElementById("lembrarMe").checked;
+            sessionStorage.setItem(
+              "ecotech_pending_2fa",
+              JSON.stringify({
+                id: local.id,
+                nome: local.name || local.nome,
+                email: local.email,
+                avatar: local.avatar || null,
+                coins: local.coins || 0,
+                cpf: local.cpf || "",
+                nomeMae: local.nomeMae || "",
+                nascimento: local.nascimento || "",
+                cep: local.cep || "",
+                tipo: "pessoa",
+                perfil: local.perfil || "comum",
+                local: true,
+                lembrar,
+                redirectTo: "coleta.html",
+                tentativas: 0,
+              }),
+            );
+            window.location.href = "2fa.html";
             return;
           }
 
@@ -316,5 +357,6 @@
         if (e.key === "Enter") handleLogin();
       });
     </script>
+      <script src="js/eco-a11y.js"></script>
   </body>
 </html>

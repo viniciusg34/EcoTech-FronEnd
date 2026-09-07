@@ -17,6 +17,7 @@
     <link rel="shortcut icon" href="assets/fivecom.png" type="image/x-icon" />
     <link rel="stylesheet" href="css/coleta.css" />
     <link rel="stylesheet" href="css/empresa.css" />
+      <link rel="stylesheet" href="css/eco-animate.css" />
   </head>
   <body>
     <header class="header">
@@ -386,7 +387,7 @@
           <img src="${canvas.toDataURL("image/png")}" alt="QR Code do ecoponto ${p.code}" style="margin:24px 0;" />
           <p style="font-size:20px;font-weight:700;">Código: ${p.code}</p>
           <script>window.onload=()=>window.print();<\/script>
-        </body></html>`);
+  </body></html>`);
           win.document.close();
         });
       }
@@ -401,5 +402,7 @@
       /* ── INICIALIZA ── */
       initEmpresaDashboard();
     </script>
+    <script src="js/eco-a11y.js"></script>
+    <script src="js/eco-animate.js"></script>
   </body>
 </html>

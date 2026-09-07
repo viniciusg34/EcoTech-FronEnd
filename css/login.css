@@ -94,13 +94,26 @@ body {
   overflow: hidden;
   padding: 58px 46px;
   color: white;
+  background: var(--ink);
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   background: url("../assets/floresta.jpg") center/cover no-repeat;
+  animation: eco-kenburns-zoom 22s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero::after { animation: none; }
 }
 
 .hero::before {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 1;
   background: linear-gradient(
     180deg,
     rgba(5, 35, 14, 0.35) 0%,
@@ -164,16 +177,24 @@ body {
   transform: translateY(-3px);
 }
 
-.stat-card strong {
+.eco-ring-wrap {
+  position: relative;
   width: 74px;
   height: 74px;
-  border-radius: 50%;
-  border: 6px solid var(--sage-400);
+  flex-shrink: 0;
   display: grid;
   place-items: center;
-  font-size: 23px;
+  color: var(--sage-400);
+}
+
+.eco-ring-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  font-weight: 800;
   color: white;
-  flex-shrink: 0;
 }
 
 .stat-card p {

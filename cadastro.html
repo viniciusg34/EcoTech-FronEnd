@@ -10,6 +10,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./css/cadastro.css" />
+    <link rel="stylesheet" href="./css/eco-animate.css" />
   </head>
   <body>
     <a href="index.html" class="btn-back" aria-label="Voltar para o início">
@@ -36,7 +37,8 @@
     <main class="page">
       <section class="app">
         <div class="side-photo">
-          <img src="./assets/sua-foto-lateral.jpg" alt="" />
+          <img src="./assets/sua-foto-lateral.jpg" alt="" class="eco-kenburns" />
+          <div class="hero-leaves" data-qtd-folhas="5"></div>
           <div class="side-photo-text">
             Bem-vindo a<br />uma vida mais<br />sustentável.
           </div>
@@ -312,6 +314,7 @@
     <div class="toast" id="toast"></div>
 
     <script src="js/ui-theme.js"></script>
+    <script src="js/eco-animate.js"></script>
     <script src="js/ui-toast.js"></script>
     <script src="js/eco-helpers.js"></script>
     <script>
@@ -454,6 +457,137 @@
       }
 
       /* ══════════════════════════════════════════════
+         VALIDAÇÃO EM TEMPO REAL (por campo, ao sair dele)
+         Camada de UX que dá feedback imediato — a validação
+         "de verdade" que decide se avança de aba ou envia o
+         formulário continua sendo validarAbaPessoal/Endereco
+         acima, essa aqui só ajuda a pessoa a perceber o erro
+         mais cedo, sem esperar até apertar "Próximo".
+      ══════════════════════════════════════════════ */
+      function marcarCampo(input, valido, mensagem, mostrarIcone = true) {
+        const box = input.closest(".input-box");
+        if (!box) return;
+        box.classList.remove("campo-valido", "campo-invalido");
+
+        let msg = box.parentElement.querySelector(
+          `.field-msg[data-for="${input.id}"]`,
+        );
+        if (!msg) {
+          msg = document.createElement("small");
+          msg.className = "field-msg";
+          msg.dataset.for = input.id;
+          box.insertAdjacentElement("afterend", msg);
+        }
+
+        let check = box.querySelector(".field-check");
+
+        if (input.value.trim() === "") {
+          msg.textContent = "";
+          if (check) check.textContent = "";
+          return;
+        }
+
+        box.classList.add(valido ? "campo-valido" : "campo-invalido");
+        msg.textContent = valido ? "" : mensagem || "";
+
+        if (mostrarIcone) {
+          if (!check) {
+            check = document.createElement("span");
+            check.className = "field-check";
+            box.appendChild(check);
+          }
+          check.textContent = valido ? "✓" : "✕";
+        }
+      }
+
+      const validadoresPorCampo = {
+        email: (v) => ({
+          ok: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanText(v).toLowerCase()),
+          msg: "Formato de e-mail inválido.",
+        }),
+        cpf: (v) => ({ ok: validarCPF(v), msg: "CPF inválido." }),
+        nome: (v) => {
+          const n = cleanText(v);
+          return {
+            ok: n.length >= 15 && n.length <= 80,
+            msg: "Deve ter entre 15 e 80 caracteres.",
+          };
+        },
+        nomeMae: (v) => ({
+          ok: cleanText(v).length >= 3,
+          msg: "Nome muito curto.",
+        }),
+        nascimento: (v) => ({
+          ok: !!v && calcularIdade(v) >= 13,
+          msg: "É preciso ter 13 anos ou mais.",
+        }),
+        telefoneCelular: (v) => ({
+          ok: telefoneValido(v, 9),
+          msg: "Formato esperado: (XX) XXXXX-XXXX",
+        }),
+        telefoneFixo: (v) => ({
+          ok: telefoneValido(v, 8),
+          msg: "Formato esperado: (XX) XXXX-XXXX",
+        }),
+        login: (v) => ({
+          ok: validarLoginField(v),
+          msg: "Precisa ter exatamente 6 letras.",
+        }),
+        senha: (v) => ({
+          ok: senhaSegura(v),
+          msg: "Use 8+ caracteres com maiúscula, minúscula e número.",
+        }),
+        confirmarSenha: (v) => ({
+          ok: v === document.getElementById("senha").value && v !== "",
+          msg: "As senhas não coincidem.",
+        }),
+        cep: (v) => ({
+          ok: v.replace(/[^\d]/g, "").length === 8,
+          msg: "CEP incompleto.",
+        }),
+        numero: (v) => ({ ok: cleanText(v).length > 0, msg: "" }),
+        bairro: (v) => ({ ok: cleanText(v).length > 1, msg: "" }),
+        cidade: (v) => ({ ok: cleanText(v).length > 1, msg: "" }),
+        uf: (v) => ({
+          ok: /^[A-Za-zÀ-ÿ]{2}$/.test(cleanText(v)),
+          msg: "Use a sigla com 2 letras (ex: RJ).",
+        }),
+      };
+
+      const CAMPOS_SEM_ICONE = new Set(["senha", "confirmarSenha"]);
+
+      Object.keys(validadoresPorCampo).forEach((id) => {
+        const input = document.getElementById(id);
+        if (!input) return;
+        const semIcone = CAMPOS_SEM_ICONE.has(id);
+        input.addEventListener("blur", () => {
+          const resultado = validadoresPorCampo[id](input.value);
+          marcarCampo(input, resultado.ok, resultado.msg, !semIcone);
+        });
+        // Se o campo já estava marcado como inválido e a pessoa
+        // volta a digitar, re-checa a cada tecla (feedback mais
+        // ágil pra corrigir), mas só depois da primeira tentativa.
+        input.addEventListener("input", () => {
+          const box = input.closest(".input-box");
+          if (box && box.classList.contains("campo-invalido")) {
+            const resultado = validadoresPorCampo[id](input.value);
+            marcarCampo(input, resultado.ok, resultado.msg, !semIcone);
+          }
+        });
+      });
+
+      /* A confirmação de senha depende do valor de "senha", então
+         reavalia ela também quando "senha" muda (caso já tenha
+         sido preenchida antes). */
+      document.getElementById("senha").addEventListener("input", () => {
+        const confirmar = document.getElementById("confirmarSenha");
+        if (confirmar.value.trim() !== "") {
+          const resultado = validadoresPorCampo.confirmarSenha(confirmar.value);
+          marcarCampo(confirmar, resultado.ok, resultado.msg, false);
+        }
+      });
+
+      /* ══════════════════════════════════════════════
          ENVIO DO CADASTRO
       ══════════════════════════════════════════════ */
       document
@@ -493,6 +627,35 @@
           btn.textContent = "Cadastrando...";
           btn.disabled = true;
 
+          const novoUsuario = {
+            nome,
+            name: nome,
+            email,
+            cpf,
+            nomeMae,
+            nascimento,
+            sexo,
+            telefoneCelular,
+            telefoneFixo,
+            cep,
+            endereco: `${logradouro}, ${numero} - ${bairro}, ${cidade}/${uf}`,
+            login,
+            perfil: "comum",
+            senha,
+            coins: 0,
+            avatar: "",
+            reciclado: [],
+          };
+
+          // E-mail já usado numa conta local? Verifica antes de mais nada,
+          // independente da API estar disponível ou não.
+          if (buscarUsuarioLocalPorEmail(email)) {
+            showToast("Este e-mail já está cadastrado.");
+            btn.textContent = "Cadastrar";
+            btn.disabled = false;
+            return;
+          }
+
           try {
             const checkRes = await fetch(MOCK_API);
             if (!checkRes.ok) throw new Error("Falha ao verificar e-mail.");
@@ -506,26 +669,6 @@
               btn.disabled = false;
               return;
             }
-
-            const novoUsuario = {
-              nome,
-              name: nome,
-              email,
-              cpf,
-              nomeMae,
-              nascimento,
-              sexo,
-              telefoneCelular,
-              telefoneFixo,
-              cep,
-              endereco: `${logradouro}, ${numero} - ${bairro}, ${cidade}/${uf}`,
-              login,
-              perfil: "comum",
-              senha,
-              coins: 0,
-              avatar: "",
-              reciclado: [],
-            };
 
             const postRes = await fetch(MOCK_API, {
               method: "POST",
@@ -557,12 +700,36 @@
               window.location.href = "index.html";
             }, 2000);
           } catch (err) {
-            console.error(err);
-            showToast("⚠️ Erro ao conectar com o servidor. Tente novamente.");
-            btn.textContent = "Cadastrar";
-            btn.disabled = false;
+            // Sem back-end disponível: salva o cadastro localmente no
+            // navegador mesmo assim, pra pessoa conseguir usar o site
+            // normalmente (o banco de dados de verdade é outra parte
+            // do projeto e pode não estar no ar ainda).
+            console.warn("API indisponível, salvando cadastro localmente:", err);
+
+            const usuarioLocal = criarUsuarioLocal(novoUsuario);
+            const SESSION_KEY = "ecotech_session";
+            const sessao = {
+              id: usuarioLocal.id,
+              tipo: "pessoa",
+              nome: usuarioLocal.name,
+              email: usuarioLocal.email,
+              coins: 0,
+              local: true,
+              logadoEm: new Date().toISOString(),
+            };
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
+            localStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
+
+            showToast(
+              "✅ Cadastro salvo neste navegador! Bem-vindo(a) à EcoTech 🌿",
+              true,
+            );
+            setTimeout(() => {
+              window.location.href = "index.html";
+            }, 2000);
           }
         });
     </script>
+      <script src="js/eco-a11y.js"></script>
   </body>
 </html>
