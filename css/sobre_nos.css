@@ -8,9 +8,9 @@
 
 :root {
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --cream: #faf9f6;
-  --cream2: #f3f0ea;
-  --white: #ffffff;
+  --cream: #ece8e0;
+  --cream2: #e2ddd2;
+  --white: #f6f5f1;
   --sage-50: #eef5ee;
   --sage-100: #d6ebd6;
   --sage-200: #acd4ac;
@@ -1643,17 +1643,29 @@ main { display: block; }
 .card {
   display: block;
   text-align: left;
-  background: var(--white);
-  border: 1.5px solid var(--sage-100);
+  background: var(--sage-500);
+  border: 1.5px solid var(--sage-600);
   border-radius: var(--br-lg);
   padding: 22px 20px;
   cursor: pointer;
   font-family: inherit;
-  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.25s;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.25s, background 0.3s;
 }
-.card:hover { transform: translateY(-4px); box-shadow: var(--sh-md); border-color: var(--sage-200); }
-.card h2 { font-family: "Lora", serif; font-size: 1.15rem; color: var(--ink); margin-bottom: 8px; }
-.card p { font-size: 0.88rem; color: var(--ink-3); line-height: 1.5; }
+.card:hover { transform: translateY(-4px); box-shadow: var(--sh-md); border-color: var(--sage-700); }
+.card h2 { font-family: "Lora", serif; font-size: 1.15rem; color: #fff; margin-bottom: 8px; }
+.card p { font-size: 0.88rem; color: rgba(255, 255, 255, 0.85); line-height: 1.5; }
+
+/* Tema escuro: os cards viram brancos de propósito (fixo — nunca
+   var(--white), que no escuro também fica escura). Texto também
+   fixo escuro, pra nunca cair naquele bug de texto claro sobre
+   fundo claro. */
+[data-theme="dark"] .card {
+  background: #f6f5f1;
+  border-color: #e2ddd2;
+}
+[data-theme="dark"] .card:hover { border-color: var(--sage-400); }
+[data-theme="dark"] .card h2 { color: #16241a; }
+[data-theme="dark"] .card p { color: #48584a; }
 
 @media (max-width: 900px) {
   .cards { grid-template-columns: 1fr; }
@@ -1672,15 +1684,20 @@ main { display: block; }
   margin: 0 auto;
 }
 .numero-item {
-  background: var(--white);
+  background: var(--sage-500);
   border-radius: var(--br-lg);
   padding: 28px 20px;
   text-align: center;
   box-shadow: var(--sh-sm);
+  transition: background 0.3s;
 }
 .numero-icon { font-size: 1.8rem; margin-bottom: 10px; }
-.numero-item h3 { font-family: "Lora", serif; font-size: 1.5rem; color: var(--sage-600); margin-bottom: 6px; }
-.numero-item p { font-size: 0.85rem; color: var(--ink-3); }
+.numero-item h3 { font-family: "Lora", serif; font-size: 1.5rem; color: #fff; margin-bottom: 6px; }
+.numero-item p { font-size: 0.85rem; color: rgba(255, 255, 255, 0.85); }
+
+[data-theme="dark"] .numero-item { background: #f6f5f1; }
+[data-theme="dark"] .numero-item h3 { color: #2d7230; }
+[data-theme="dark"] .numero-item p { color: #48584a; }
 
 @media (max-width: 700px) {
   .numeros-grid { grid-template-columns: 1fr; }

@@ -128,22 +128,22 @@
           <div class="impact-grid">
             <div class="impact-cell">
               <div class="impact-icon">🌳</div>
-              <div class="impact-value" id="impact-trees">12</div>
+              <div class="impact-value" id="impact-trees">0</div>
               <div class="impact-label">árvores salvas</div>
             </div>
             <div class="impact-cell">
               <div class="impact-icon">💧</div>
-              <div class="impact-value" id="impact-water">470L</div>
+              <div class="impact-value" id="impact-water">0L</div>
               <div class="impact-label">água preservada</div>
             </div>
             <div class="impact-cell">
               <div class="impact-icon">⚡</div>
-              <div class="impact-value" id="impact-energy">83kWh</div>
+              <div class="impact-value" id="impact-energy">0kWh</div>
               <div class="impact-label">energia economizada</div>
             </div>
             <div class="impact-cell">
               <div class="impact-icon">🌿</div>
-              <div class="impact-value" id="impact-co2">94kg</div>
+              <div class="impact-value" id="impact-co2">0kg</div>
               <div class="impact-label">CO₂ evitado</div>
             </div>
           </div>
@@ -595,6 +595,7 @@
             renderHistory(perfil.historico);
             renderProgressoNivel(perfil.pontos);
             renderMiniChart(perfil.historico);
+            renderImpacto(perfil.pontos);
 
             const savedPhoto = localStorage.getItem(AVATAR_KEY) || perfil.avatar;
             renderAvatar(perfil.nome, savedPhoto || null);
@@ -645,6 +646,7 @@
         renderHistory(perfil.historico);
         renderProgressoNivel(perfil.pontos);
         renderMiniChart(perfil.historico);
+        renderImpacto(perfil.pontos);
 
         // Avatar Local (sobrescreve o da API se o usuário tiver alterado na máquina)
         const savedPhoto = localStorage.getItem(AVATAR_KEY) || perfil.avatar;
@@ -700,6 +702,31 @@
         requestAnimationFrame(() => {
           barraEl.style.width = Math.max(2, Math.min(100, progresso)) + "%";
         });
+      }
+
+      /* ══════════════════════════════════════
+         IMPACTO AMBIENTAL PESSOAL (calculado)
+         Antes esses 4 números eram fixos no HTML
+         (sempre "12 árvores", "470L" etc, pra
+         qualquer conta). Agora saem da pontuação
+         real da pessoa — um perfil novo começa
+         zerado e vai crescendo com o uso.
+      ══════════════════════════════════════ */
+      function renderImpacto(pontos) {
+        const p = Math.max(0, Math.floor(pontos) || 0);
+        const arvores = Math.floor(p / 40);
+        const agua = Math.round(p * 1.5);
+        const energia = Math.round(p * 0.25);
+        const co2 = Math.round(p * 0.3);
+
+        const trees = $("impact-trees");
+        const water = $("impact-water");
+        const energy = $("impact-energy");
+        const co2El = $("impact-co2");
+        if (trees) trees.textContent = arvores.toLocaleString("pt-BR");
+        if (water) water.textContent = agua.toLocaleString("pt-BR") + "L";
+        if (energy) energy.textContent = energia.toLocaleString("pt-BR") + "kWh";
+        if (co2El) co2El.textContent = co2.toLocaleString("pt-BR") + "kg";
       }
 
       /* ══════════════════════════════════════

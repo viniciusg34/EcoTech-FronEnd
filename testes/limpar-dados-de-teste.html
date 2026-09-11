@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="../assets/fivecom.png" type="image/x-icon" />
+    <title>Ferramenta de Testes — EcoTech</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/admin-shared.css" />
+    <style>
+      .chave-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 16px;
+        border: 1.5px solid var(--sage-100);
+        border-radius: var(--br-sm);
+        margin-bottom: 10px;
+        background: var(--cream);
+      }
+      .chave-item.vazia { opacity: 0.5; }
+      .chave-nome { font-weight: 700; font-size: 0.85rem; color: var(--ink-2); }
+      .chave-valor {
+        font-size: 0.72rem;
+        color: var(--ink-3);
+        max-width: 380px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-family: monospace;
+      }
+      .chave-tag {
+        font-size: 0.68rem;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 99px;
+        background: var(--sage-100);
+        color: var(--sage-700);
+        flex-shrink: 0;
+      }
+      .chave-tag.presente { background: var(--sun-light); color: #93650a; }
+      .aviso-box {
+        background: var(--sun-light);
+        border: 1.5px solid var(--sage-100);
+        border-radius: var(--br-md);
+        padding: 14px 18px;
+        font-size: 0.85rem;
+        color: var(--ink-2);
+        margin-bottom: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="admin-main" style="max-width: 700px;">
+      <a href="../index.html" class="btn-back-pill" style="margin-bottom: 20px;">← Voltar ao site</a>
+
+      <h1 class="admin-title">🧪 Ferramenta de Testes — EcoTech</h1>
+      <p class="admin-subtitle">
+        Essa página não faz parte do site em si — é uma ferramenta pra você
+        (desenvolvedor) inspecionar e limpar dados de contas de teste salvos
+        no navegador, sem precisar abrir o DevTools toda vez.
+      </p>
+
+      <div class="aviso-box">
+        ⚠️ O EcoTech guarda a conta logada e os cadastros locais direto no
+        navegador (localStorage), pra funcionar mesmo sem um back-end de
+        verdade no ar. Isso significa que, uma vez que você cadastra ou
+        loga com uma conta de teste, ela <strong>continua salva</strong>
+        até você sair (botão "deslogar!" no perfil) ou limpar por aqui.
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 14px; font-size: 1rem;">Dados salvos agora neste navegador</h3>
+        <div id="lista-chaves"></div>
+
+        <button
+          type="button"
+          id="btn-limpar-tudo"
+          class="btn btn-danger btn-block"
+          style="margin-top: 10px;"
+        >
+          🗑️ Limpar todos os dados de teste
+        </button>
+      </div>
+
+      <div class="card" style="margin-top: 20px;">
+        <h3 style="margin-bottom: 10px; font-size: 1rem;">O que cada chave guarda</h3>
+        <ul style="padding-left: 20px; font-size: 0.85rem; color: var(--ink-2); line-height: 1.9;">
+          <li><strong>ecotech_session</strong> — quem está logado agora (nome, e-mail, pontos...)</li>
+          <li><strong>ecotech_local_users</strong> — as contas cadastradas offline (sem API)</li>
+          <li><strong>ecotech_master_users</strong> — a conta administradora de teste (MASTER)</li>
+          <li><strong>ecotech_auth_logs</strong> — o histórico de logins pra tela de Log</li>
+          <li><strong>ecotech_avatar</strong> — a foto de perfil escolhida</li>
+          <li><strong>eco_notif</strong> — preferência de notificações</li>
+          <li><strong>eco-theme</strong> — tema claro/escuro escolhido</li>
+          <li><strong>ecotech_alto_contraste / ecotech_escala_fonte</strong> — preferências de acessibilidade</li>
+          <li><strong>ecotech_user_id</strong> — atalho do id da conta logada</li>
+        </ul>
+      </div>
+    </main>
+
+    <div class="modal-overlay" id="modal-confirmar">
+      <div class="modal-box">
+        <h3>Limpar tudo?</h3>
+        <p>
+          Isso vai desconectar qualquer conta logada e apagar todos os
+          cadastros de teste salvos neste navegador. Não afeta nenhum
+          arquivo do projeto.
+        </p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" id="btn-cancelar-limpar">Cancelar</button>
+          <button class="btn btn-danger" id="btn-confirmar-limpar">Limpar tudo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="../js/ui-theme.js"></script>
+    <script src="../js/ui-toast.js"></script>
+    <script>
+      initTheme();
+
+      const CHAVES = [
+        "ecotech_session",
+        "ecotech_local_users",
+        "ecotech_master_users",
+        "ecotech_auth_logs",
+        "ecotech_avatar",
+        "eco_notif",
+        "eco-theme",
+        "ecotech_alto_contraste",
+        "ecotech_escala_fonte",
+        "ecotech_user_id",
+      ];
+
+      function renderLista() {
+        const container = document.getElementById("lista-chaves");
+        container.innerHTML = CHAVES.map((chave) => {
+          const valor = localStorage.getItem(chave);
+          const vazio = valor === null;
+          const preview = vazio
+            ? "(vazio)"
+            : valor.length > 60
+              ? valor.slice(0, 60) + "..."
+              : valor;
+          return `
+            <div class="chave-item ${vazio ? "vazia" : ""}">
+              <div>
+                <div class="chave-nome">${chave}</div>
+                <div class="chave-valor">${preview}</div>
+              </div>
+              <span class="chave-tag ${vazio ? "" : "presente"}">${vazio ? "vazio" : "salvo"}</span>
+            </div>`;
+        }).join("");
+      }
+      renderLista();
+
+      document.getElementById("btn-limpar-tudo").addEventListener("click", () => {
+        document.getElementById("modal-confirmar").classList.add("show");
+      });
+      document.getElementById("btn-cancelar-limpar").addEventListener("click", () => {
+        document.getElementById("modal-confirmar").classList.remove("show");
+      });
+      document.getElementById("btn-confirmar-limpar").addEventListener("click", () => {
+        CHAVES.forEach((chave) => {
+          localStorage.removeItem(chave);
+          sessionStorage.removeItem(chave);
+        });
+        sessionStorage.removeItem("ecotech_pending_2fa");
+        document.getElementById("modal-confirmar").classList.remove("show");
+        renderLista();
+        showToast("✅ Dados de teste limpos! Pode cadastrar/testar do zero.");
+      });
+    </script>
+  </body>
+</html>

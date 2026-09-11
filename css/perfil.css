@@ -1,8 +1,8 @@
 :root {
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --cream: #faf9f6;
-  --cream2: #f3f0ea;
-  --white: #ffffff;
+  --cream: #ece8e0;
+  --cream2: #e2ddd2;
+  --white: #f6f5f1;
   --sage-50: #eef5ee;
   --sage-100: #d6ebd6;
   --sage-200: #acd4ac;
@@ -355,8 +355,8 @@ body {
   margin-bottom: 4px;
 }
 .impact-cell {
-  background: var(--mint);
-  border: 1px solid var(--mint-border);
+  background: var(--sage-500);
+  border: 1px solid var(--sage-600);
   border-radius: var(--br-sm);
   padding: 16px 12px;
   text-align: center;
@@ -371,14 +371,18 @@ body {
 .impact-value {
   font-size: 20px;
   font-weight: 700;
-  color: var(--sage-500);
+  color: #fff;
   line-height: 1.2;
 }
 .impact-label {
   font-size: 11px;
-  color: var(--ink-3);
+  color: rgba(255, 255, 255, 0.82);
   margin-top: 3px;
 }
+
+[data-theme="dark"] .impact-cell { background: #f6f5f1; border-color: #e2ddd2; }
+[data-theme="dark"] .impact-value { color: #2d7230; }
+[data-theme="dark"] .impact-label { color: #48584a; }
 
 /* ── Progresso até o próximo nível ── */
 .nivel-progresso {

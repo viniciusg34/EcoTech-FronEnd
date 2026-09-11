@@ -29,12 +29,13 @@
     --nav-border: rgba(67, 160, 71, 0.18);
     --nav-link: #2d4430;
     --text-color: #0f1f10;
-    --bg-color: #eef6ef;
+    --bg-color: #ece8e0;
     
-    --panel-card-bg: #ffffff;
-    --input-border: #cccccc;
+    --panel-card-bg: #f6f5f1;
+    --input-bg-tint: #eef5ee;
+    --input-border: #a8cda9;
     --input-focus-border: #43a047;
-    --input-placeholder: #757575;
+    --input-placeholder: #5d7a5f;
     --brand-green-primary: #2e7d32;
     --brand-green-hover: #1b5e20;
     --organic-shape-color: rgba(67, 160, 71, 0.12);
@@ -48,9 +49,10 @@
     --bg-color: #0a0f0a;
     
     --panel-card-bg: #121a13;
-    --input-border: #334435;
+    --input-bg-tint: #1a251b;
+    --input-border: #3f5a41;
     --input-focus-border: #66bb6a;
-    --input-placeholder: #667768;
+    --input-placeholder: #8fa891;
     --brand-green-primary: #43a047;
     --brand-green-hover: #66bb6a;
     --organic-shape-color: rgba(67, 160, 71, 0.06);
@@ -269,8 +271,8 @@
     padding: 13px 18px;
     font-family: inherit;
     font-size: 0.88rem;
-    background-color: transparent;
-    border: 1px solid var(--input-border);
+    background-color: var(--input-bg-tint);
+    border: 1.5px solid var(--input-border);
     border-radius: 12px;
     color: var(--text-color);
     outline: none;

@@ -9,9 +9,9 @@
 
 :root {
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --cream: #faf9f6;
-  --cream2: #f3f0ea;
-  --white: #ffffff;
+  --cream: #ece8e0;
+  --cream2: #e2ddd2;
+  --white: #f6f5f1;
   --sage-50: #eef5ee;
   --sage-100: #d6ebd6;
   --sage-200: #acd4ac;
@@ -164,15 +164,15 @@ a { color: inherit; }
   width: 100%;
   padding: 12px 14px;
   border-radius: var(--br-sm);
-  border: 1.5px solid var(--sage-100);
-  background: var(--cream);
+  border: 1.5px solid var(--sage-200);
+  background: var(--sage-50);
   color: var(--ink);
   font-size: 0.95rem;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.2s;
 }
-.field input:focus, .field select:focus { border-color: var(--sage-400); }
+.field input:focus, .field select:focus { border-color: var(--sage-400); background: var(--white); }
 .field small.hint { display: block; margin-top: 6px; color: var(--ink-3); font-size: 0.76rem; }
 
 .btn {
