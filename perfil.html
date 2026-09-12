@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/perfil.css" />
     <link rel="stylesheet" href="css/eco-arte-fundo.css" />
     <link rel="stylesheet" href="css/eco-animate.css" />
+    <link rel="stylesheet" href="css/eco-interacoes.css" />
   </head>
   <body>
     <!-- Botão Dark Mode -->
@@ -57,7 +58,7 @@
         </div>
 
         <!-- ── CONFIGURAÇÕES DA CONTA ── -->
-        <div class="section-card">
+        <div class="section-card reveal">
           <h3>Configurações da Conta</h3>
           <div
             class="menu-row"
@@ -90,7 +91,7 @@
         </div>
 
         <!-- ── HISTÓRICO DE COLETAS (NOVO) ── -->
-        <div class="section-card">
+        <div class="section-card reveal">
           <h3>Histórico de Atividades</h3>
           <div id="historico-container" class="historico-container">
             <div style="text-align: center; padding: 15px; color: #888">
@@ -100,7 +101,7 @@
         </div>
 
         <!-- ── ECOTECH ── -->
-        <div class="section-card">
+        <div class="section-card reveal">
           <h3>EcoTech</h3>
           <div
             class="menu-row"
@@ -124,7 +125,7 @@
         </div>
 
         <!-- ── IMPACTO AMBIENTAL PESSOAL ── -->
-        <div class="section-card">
+        <div class="section-card reveal">
           <h3>Impacto Ambiental Pessoal</h3>
           <div class="impact-grid">
             <div class="impact-cell">
@@ -165,12 +166,12 @@
         </div>
 
         <!-- ── ATIVIDADE RECENTE (gráfico) ── -->
-        <div class="section-card">
+        <div class="section-card reveal">
           <h3>Atividade Recente</h3>
           <div class="mini-chart" id="mini-chart"></div>
         </div>
 
-        <div class="section-card">
+        <div class="section-card reveal">
           <h3>Opções conta</h3>
           <div
             class="menu-row"
@@ -595,6 +596,7 @@
 
             renderHistory(perfil.historico);
             renderProgressoNivel(perfil.pontos);
+            verificarSubidaDeNivel(perfil.pontos, sessaoAtual);
             renderMiniChart(perfil.historico);
             renderImpacto(perfil.pontos);
 
@@ -646,6 +648,7 @@
         // Renderiza o Histórico a partir dos dados do MOCK
         renderHistory(perfil.historico);
         renderProgressoNivel(perfil.pontos);
+        verificarSubidaDeNivel(perfil.pontos, sessaoAtual);
         renderMiniChart(perfil.historico);
         renderImpacto(perfil.pontos);
 
@@ -673,6 +676,28 @@
           if (atual >= n.min) nivel = n;
         }
         return nivel.nome;
+      }
+
+      /* ── Celebra quando a pessoa sobe de nível (compara com o
+         último nível visto, guardado no localStorage por conta) ── */
+      function verificarSubidaDeNivel(pontos, sessaoAtual) {
+        try {
+          const idConta = (sessaoAtual && sessaoAtual.id) || "anon";
+          const chave = `ecotech_nivel_visto_${idConta}`;
+          const atual = Math.floor(pontos) || 0;
+          let indiceAtual = 0;
+          for (let i = 0; i < NIVEIS_ECO.length; i++) {
+            if (atual >= NIVEIS_ECO[i].min) indiceAtual = i;
+          }
+          const indiceAnterior = parseInt(localStorage.getItem(chave), 10);
+          const jaTinhaRegistro = !Number.isNaN(indiceAnterior);
+          if (jaTinhaRegistro && indiceAtual > indiceAnterior) {
+            if (typeof window.ecoConfete === "function") window.ecoConfete();
+          }
+          localStorage.setItem(chave, String(indiceAtual));
+        } catch (_) {
+          /* localStorage indisponível — só não celebra, sem quebrar a página */
+        }
       }
 
       function renderProgressoNivel(pontos) {
@@ -1110,6 +1135,7 @@
       });
     </script>
       <script src="js/eco-animate.js"></script>
+      <script src="js/eco-interacoes.js"></script>
       <script src="js/eco-arte-fundo.js"></script>
       <script src="js/eco-a11y.js"></script>
   </body>

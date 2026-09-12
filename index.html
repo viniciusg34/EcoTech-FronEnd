@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="css/index.css" />
     <link rel="stylesheet" href="css/eco-arte-fundo.css" />
     <link rel="stylesheet" href="css/eco-animate.css" />
+    <link rel="stylesheet" href="css/eco-interacoes.css" />
     <title>ECOTECH</title>
   </head>
   <body>
@@ -511,6 +512,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/eco-session.js"></script>
     <script src="js/eco-animate.js"></script>
+    <script src="js/eco-interacoes.js"></script>
     <script src="js/eco-arte-fundo.js"></script>
     
     <script>
@@ -676,20 +678,9 @@
           }),
         );
 
-        /* ── REVEAL ON SCROLL ── */
-        const revealObs = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((e, i) => {
-              if (!e.isIntersecting) return;
-              setTimeout(() => e.target.classList.add("visible"), i * 80);
-              revealObs.unobserve(e.target);
-            });
-          },
-          { threshold: 0.12 },
-        );
-        document
-          .querySelectorAll(".reveal")
-          .forEach((el) => revealObs.observe(el));
+        /* ── REVEAL ON SCROLL ──
+           (agora é genérico, cuidado do js/eco-interacoes.js —
+           funciona sozinho em qualquer elemento .reveal) ── */
 
         /* ── FAQ ── */
         document.querySelectorAll(".faq-q").forEach((q) => {

@@ -1488,18 +1488,9 @@ footer p {
 
 /* ══════════════════════════════
    REVEAL ANIMATION
+   (movido pra css/eco-interacoes.css — é usado em várias
+   páginas agora, não só nesta)
 ══════════════════════════════ */
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity 0.7s var(--ease),
-    transform 0.7s var(--ease);
-}
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
 
 /* ══════════════════════════════
    RESPONSIVE

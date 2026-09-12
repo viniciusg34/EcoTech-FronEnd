@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="css/empresa.css" />
       <link rel="stylesheet" href="css/eco-arte-fundo.css" />
       <link rel="stylesheet" href="css/eco-animate.css" />
+      <link rel="stylesheet" href="css/eco-interacoes.css" />
   </head>
   <body>
     <header class="header">
@@ -68,14 +69,14 @@
 
       <!-- STATS -->
       <div class="dash-stats-grid">
-        <div class="dash-stat-card">
+        <div class="dash-stat-card reveal">
           <div class="dash-stat-top">
             <div class="dash-stat-icon">📍</div>
           </div>
           <div class="dash-stat-number" id="statPoints">0</div>
           <div class="dash-stat-label">Ecopontos cadastrados</div>
         </div>
-        <div class="dash-stat-card">
+        <div class="dash-stat-card reveal">
           <div class="dash-stat-top">
             <div class="dash-stat-icon">♻️</div>
           </div>
@@ -85,14 +86,14 @@
             ↑ 0% vs mês anterior
           </div>
         </div>
-        <div class="dash-stat-card">
+        <div class="dash-stat-card reveal">
           <div class="dash-stat-top">
             <div class="dash-stat-icon">✅</div>
           </div>
           <div class="dash-stat-number" id="statValidations">0</div>
           <div class="dash-stat-label">Validações este mês</div>
         </div>
-        <div class="dash-stat-card">
+        <div class="dash-stat-card reveal">
           <div class="dash-stat-top">
             <div class="dash-stat-icon">⚙️</div>
           </div>
@@ -111,7 +112,7 @@
           </p>
         </div>
         <div class="dash-grid">
-          <div class="dash-chart-card">
+          <div class="dash-chart-card reveal">
             <div class="dash-chart-head">
               <h3>Kg coletados por mês</h3>
               <span id="chartTotalLabel">Total: 0 kg</span>
@@ -119,7 +120,7 @@
             <div class="dash-chart-bars" id="chartBars"></div>
           </div>
 
-          <div class="dash-breakdown-card">
+          <div class="dash-breakdown-card reveal">
             <h3>📦 Coleta por material</h3>
             <div id="breakdownList"></div>
           </div>
@@ -405,6 +406,7 @@
     </script>
     <script src="js/eco-a11y.js"></script>
     <script src="js/eco-animate.js"></script>
+    <script src="js/eco-interacoes.js"></script>
     <script src="js/eco-arte-fundo.js"></script>
   </body>
 </html>

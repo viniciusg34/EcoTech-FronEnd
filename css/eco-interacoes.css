@@ -1,0 +1,157 @@
+/* ══════════════════════════════════════════════════════════
+   eco-interacoes.css — Micro-interações genéricas do site.
+
+   Cada seção abaixo resolve UM efeito só, sem depender das
+   outras seções. Pra mudar ou remover um efeito, mexa só na
+   seção dele — nada aqui foi unificado de propósito.
+══════════════════════════════════════════════════════════ */
+
+/* ── 1) SCROLL SUAVE ── */
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ── 2) RIPPLE AO CLICAR EM BOTÕES ── */
+.eco-ripple-host {
+  position: relative;
+  overflow: hidden;
+}
+.eco-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.3;
+  transform: scale(0);
+  pointer-events: none;
+  animation: ecoRippleAnim 0.6s ease-out forwards;
+}
+@keyframes ecoRippleAnim {
+  to {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eco-ripple {
+    display: none;
+  }
+}
+
+/* ── 3) TILT 3D NOS CARDS ── */
+.eco-tilt {
+  transition: transform 0.15s ease-out;
+  will-change: transform;
+}
+@media (hover: none) {
+  .eco-tilt {
+    transform: none !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eco-tilt {
+    transition: none;
+    transform: none !important;
+  }
+}
+
+/* ── 4) TRANSIÇÃO SUAVE ENTRE TEMA CLARO/ESCURO ──
+   Ligada só por ~350ms no clique do botão de tema (ver
+   eco-interacoes.js) — não fica ativa o tempo todo. */
+html.eco-trocando-tema,
+html.eco-trocando-tema *,
+html.eco-trocando-tema *::before,
+html.eco-trocando-tema *::after {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    fill 0.3s ease,
+    stroke 0.3s ease !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.eco-trocando-tema,
+  html.eco-trocando-tema * {
+    transition: none !important;
+  }
+}
+
+/* ── 5) BARRA DE PROGRESSO DE LEITURA ── */
+.eco-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: var(--sage-400, #5aab5a);
+  z-index: 10000;
+  pointer-events: none;
+  /* força uma camada de composição própria — sem isso, headers
+     com "backdrop-filter: blur(...)" (usado em várias páginas)
+     acabam pintando por cima dessa barra fina mesmo com z-index
+     maior. É um comportamento conhecido do Chromium. */
+  will-change: transform;
+  transform: translateZ(0);
+}
+[data-theme="dark"] .eco-progress-bar {
+  background: var(--sage-600, #82d182);
+}
+@media print {
+  .eco-progress-bar {
+    display: none;
+  }
+}
+
+/* ── 6) REVEAL AO ROLAR (compartilhado entre páginas) ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s var(--ease, cubic-bezier(0.22, 1, 0.36, 1)),
+    transform 0.7s var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── 7) CONFETE / CELEBRAÇÃO ── */
+.eco-confete-palco {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 10001;
+}
+.eco-confete-pedaco {
+  position: absolute;
+  top: -12px;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  opacity: 0.9;
+  animation: ecoConfeteCair 1.6s cubic-bezier(0.35, 0, 0.65, 1) forwards;
+}
+@keyframes ecoConfeteCair {
+  to {
+    top: 100%;
+    transform: translateX(var(--eco-confete-x, 0)) rotate(var(--eco-confete-rot, 360deg));
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eco-confete-pedaco {
+    display: none;
+  }
+}

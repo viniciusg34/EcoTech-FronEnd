@@ -11,6 +11,7 @@
     />
     <link rel="stylesheet" href="css/cadastro_empresarial.css" />
     <link rel="stylesheet" href="css/eco-animate.css" />
+    <link rel="stylesheet" href="css/eco-interacoes.css" />
     <title>Cadastro Empresarial — EcoTech</title>
     <script src="/js/auth.js"></script>
     <script>
@@ -328,6 +329,7 @@
             const empresaCriada = await res.json();
             console.log("Empresa cadastrada:", empresaCriada);
 
+            if (typeof window.ecoConfete === "function") window.ecoConfete();
             showToast(
               "✅ Cadastro realizado com sucesso! Bem-vinda à EcoTech 🌿",
               true,
@@ -343,5 +345,6 @@
     </script>
       <script src="js/eco-a11y.js"></script>
     <script src="js/eco-animate.js"></script>
+    <script src="js/eco-interacoes.js"></script>
   </body>
 </html>
