@@ -1,0 +1,84 @@
+/* ══════════════════════════════════════════════════════════
+   eco-arte-fundo.css — Arte grande de fundo, temática por
+   página (skyline verde no início, árvore de raízes no sobre
+   nós, ciclo de coleta, etc). Fica atrás de tudo, bem sutil,
+   só pra dar identidade visual — nunca compete com o conteúdo.
+══════════════════════════════════════════════════════════ */
+
+.eco-bg-arte {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+
+.eco-bg-arte svg {
+  position: absolute;
+  inset: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1600px;
+  height: 100%;
+  color: var(--sage-400, #5aab5a);
+}
+
+[data-theme="dark"] .eco-bg-arte {
+  opacity: 0.4;
+}
+
+/* Envolve seções específicas de cada página que recebem uma arte
+   de fundo temática (ver eco-arte-fundo.js) — precisa de
+   position:relative pra arte absoluta ficar contida ali dentro. */
+.secao-arte-fundo {
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 70px;
+}
+
+/* Variante pra seções que devem ocupar a tela toda (tipo um
+   capítulo de página inteira), diferente de componentes menores
+   como o cabeçalho do perfil ou de uma seção de mapa. */
+.secao-arte-fundo--tela-cheia {
+  min-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 60px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eco-bg-arte { opacity: 0.35; }
+  [data-theme="dark"] .eco-bg-arte { opacity: 0.14; }
+}
+
+@media (max-width: 640px) {
+  .eco-bg-arte { opacity: 0.3; }
+  [data-theme="dark"] .eco-bg-arte { opacity: 0.12; }
+}
+
+/* Telas administrativas (consulta de usuários, logs, modelo de BD):
+   a arte de fundo (circuito-folha) precisa ficar bem mais discreta
+   que nas páginas institucionais, e o conteúdo (título, cards,
+   tabelas) precisa sempre ficar por cima dela, sem exceção — essas
+   telas não podem ficar poluídas nem correr risco de algo sumir. */
+.admin-main.secao-arte-fundo .eco-bg-arte {
+  opacity: 0.3;
+}
+
+[data-theme="dark"] .admin-main.secao-arte-fundo .eco-bg-arte {
+  opacity: 0.2;
+}
+
+.admin-main.secao-arte-fundo > *:not(.eco-bg-arte) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 640px) {
+  .admin-main.secao-arte-fundo .eco-bg-arte { opacity: 0.18; }
+  [data-theme="dark"] .admin-main.secao-arte-fundo .eco-bg-arte { opacity: 0.1; }
+}

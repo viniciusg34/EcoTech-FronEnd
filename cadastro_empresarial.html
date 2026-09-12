@@ -10,6 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
     />
     <link rel="stylesheet" href="css/cadastro_empresarial.css" />
+    <link rel="stylesheet" href="css/eco-animate.css" />
     <title>Cadastro Empresarial — EcoTech</title>
     <script src="/js/auth.js"></script>
     <script>
@@ -25,10 +26,16 @@
     </script>
   </head>
   <body>
+    <a href="index.html" class="btn-back-float" aria-label="Voltar para o início">←</a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Alternar tema">
+      <span id="theme-icon">☀️</span>
+    </button>
+
     <main class="main-split-container">
       <div class="split-card">
         <div class="side-panel-visual">
           <div class="organic-shape"></div>
+          <div class="hero-leaves" data-qtd-folhas="5"></div>
           <div class="visual-content">
             <span class="top-tag">Cadastro Empresarial</span>
             <h1>Cadastre sua empresa e faça parte da mudança.</h1>
@@ -36,7 +43,7 @@
           <img
             src="assets/predio-sustentavel.jpg"
             alt="Fachada corporativa sustentável EcoTech"
-            class="building-img"
+            class="building-img eco-kenburns"
           />
         </div>
 
@@ -167,6 +174,19 @@
         localStorage.setItem(THEME_KEY, theme);
       }
       applyTheme(htmlEl.getAttribute("data-theme") || "light");
+
+      const btnTema = document.getElementById("theme-toggle");
+      const iconeTema = document.getElementById("theme-icon");
+      if (btnTema && iconeTema) {
+        iconeTema.textContent =
+          htmlEl.getAttribute("data-theme") === "dark" ? "🌙" : "☀️";
+        btnTema.addEventListener("click", () => {
+          const novoTema =
+            htmlEl.getAttribute("data-theme") === "dark" ? "light" : "dark";
+          applyTheme(novoTema);
+          iconeTema.textContent = novoTema === "dark" ? "🌙" : "☀️";
+        });
+      }
 
       /* 2. MÁSCARA CNPJ */
       const cnpjInput = document.getElementById("cnpj");
@@ -321,5 +341,7 @@
           }
         });
     </script>
+      <script src="js/eco-a11y.js"></script>
+    <script src="js/eco-animate.js"></script>
   </body>
 </html>

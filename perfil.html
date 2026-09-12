@@ -3,8 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="./assets/fivecom.png" type="image/x-icon" />
     <title>Perfil — EcoTech</title>
     <link rel="stylesheet" href="css/perfil.css" />
+    <link rel="stylesheet" href="css/eco-arte-fundo.css" />
+    <link rel="stylesheet" href="css/eco-animate.css" />
   </head>
   <body>
     <!-- Botão Dark Mode -->
@@ -20,7 +23,7 @@
     <main>
       <div class="profile-page">
         <!-- ── HEADER DO PERFIL ── -->
-        <div class="profile-header">
+        <div class="profile-header secao-arte-fundo" data-arte-fundo="arvore-crescendo">
           <div
             class="avatar-wrapper"
             id="avatar-wrapper"
@@ -74,6 +77,16 @@
             <div class="menu-row-left"><span>🔔</span>Notificações</div>
             <span class="menu-arrow">›</span>
           </div>
+          <div
+            class="menu-row"
+            id="btn-alterar-senha"
+            role="button"
+            tabindex="0"
+            onclick="window.location.href='alterar_senha.html'"
+          >
+            <div class="menu-row-left"><span>🔒</span>Alterar Senha</div>
+            <span class="menu-arrow">›</span>
+          </div>
         </div>
 
         <!-- ── HISTÓRICO DE COLETAS (NOVO) ── -->
@@ -116,25 +129,45 @@
           <div class="impact-grid">
             <div class="impact-cell">
               <div class="impact-icon">🌳</div>
-              <div class="impact-value" id="impact-trees">12</div>
+              <div class="impact-value" id="impact-trees">0</div>
               <div class="impact-label">árvores salvas</div>
             </div>
             <div class="impact-cell">
               <div class="impact-icon">💧</div>
-              <div class="impact-value" id="impact-water">470L</div>
+              <div class="impact-value" id="impact-water">0L</div>
               <div class="impact-label">água preservada</div>
             </div>
             <div class="impact-cell">
               <div class="impact-icon">⚡</div>
-              <div class="impact-value" id="impact-energy">83kWh</div>
+              <div class="impact-value" id="impact-energy">0kWh</div>
               <div class="impact-label">energia economizada</div>
             </div>
             <div class="impact-cell">
               <div class="impact-icon">🌿</div>
-              <div class="impact-value" id="impact-co2">94kg</div>
+              <div class="impact-value" id="impact-co2">0kg</div>
               <div class="impact-label">CO₂ evitado</div>
             </div>
           </div>
+
+          <div class="nivel-progresso">
+            <div class="nivel-progresso-topo">
+              <span class="nivel-progresso-atual" id="nivel-progresso-texto"
+                >0 pts</span
+              >
+              <span class="nivel-progresso-meta" id="nivel-progresso-meta"
+                >próximo nível: 500 pts</span
+              >
+            </div>
+            <div class="nivel-progresso-trilha">
+              <div class="nivel-progresso-barra" id="nivel-progresso-barra"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ATIVIDADE RECENTE (gráfico) ── -->
+        <div class="section-card">
+          <h3>Atividade Recente</h3>
+          <div class="mini-chart" id="mini-chart"></div>
         </div>
 
         <div class="section-card">
@@ -356,6 +389,8 @@
       aria-live="polite"
     ></div>
 
+    <script src="js/eco-helpers.js"></script>
+    <script src="js/eco-admin.js"></script>
     <script>
       "use strict";
 
@@ -536,6 +571,40 @@
           avatar: null,
         };
 
+        const sessaoAtual = getSession();
+
+        /* Conta local (sem back-end/API): lê direto do localStorage. */
+        if (sessaoAtual && sessaoAtual.local) {
+          const usuarioLocal = buscarUsuarioLocalPorId(sessaoAtual.id);
+          if (usuarioLocal) {
+            apiUserId = null; // sinaliza "não tem API" — salvarPerfil() usa o local
+            perfil.nome = usuarioLocal.name || usuarioLocal.nome || perfil.nome;
+            perfil.email = usuarioLocal.email || perfil.email;
+            perfil.pontos = parseFloat(usuarioLocal.coins) || 0;
+            perfil.avatar = usuarioLocal.avatar || null;
+            if (Array.isArray(usuarioLocal.reciclado)) {
+              perfil.historico = usuarioLocal.reciclado;
+            }
+
+            $("profile-name-display").textContent = perfil.nome;
+            $("profile-email-display").textContent = perfil.email;
+            $("profile-level-badge").textContent = `🌿 ${nomeNivelAtual(perfil.pontos)}`;
+            $("header-coins").textContent = Math.floor(perfil.pontos).toLocaleString("pt-BR");
+            $("input-nome").value = perfil.nome;
+            $("input-email").value = perfil.email;
+
+            renderHistory(perfil.historico);
+            renderProgressoNivel(perfil.pontos);
+            renderMiniChart(perfil.historico);
+            renderImpacto(perfil.pontos);
+
+            const savedPhoto = localStorage.getItem(AVATAR_KEY) || perfil.avatar;
+            renderAvatar(perfil.nome, savedPhoto || null);
+
+            return perfil;
+          }
+        }
+
         try {
           const res = await fetch(MOCK_API);
           if (res.ok) {
@@ -565,8 +634,7 @@
         // Atualiza o DOM
         $("profile-name-display").textContent = perfil.nome;
         $("profile-email-display").textContent = perfil.email;
-        $("profile-level-badge").textContent =
-          `🌿 ${perfil.pontos > 500 ? "Reciclador Prata" : perfil.nivel}`;
+        $("profile-level-badge").textContent = `🌿 ${nomeNivelAtual(perfil.pontos)}`;
         $("header-coins").textContent = Math.floor(
           perfil.pontos,
         ).toLocaleString("pt-BR");
@@ -577,12 +645,129 @@
 
         // Renderiza o Histórico a partir dos dados do MOCK
         renderHistory(perfil.historico);
+        renderProgressoNivel(perfil.pontos);
+        renderMiniChart(perfil.historico);
+        renderImpacto(perfil.pontos);
 
         // Avatar Local (sobrescreve o da API se o usuário tiver alterado na máquina)
         const savedPhoto = localStorage.getItem(AVATAR_KEY) || perfil.avatar;
         renderAvatar(perfil.nome, savedPhoto || null);
 
         return perfil;
+      }
+
+      /* ══════════════════════════════════════
+         PROGRESSO ATÉ O PRÓXIMO NÍVEL
+      ══════════════════════════════════════ */
+      const NIVEIS_ECO = [
+        { nome: "Iniciante Verde", min: 0 },
+        { nome: "Reciclador Prata", min: 500 },
+        { nome: "Guardião Verde", min: 1500 },
+        { nome: "Mestre Eco", min: 3000 },
+      ];
+
+      function nomeNivelAtual(pontos) {
+        const atual = Math.floor(pontos) || 0;
+        let nivel = NIVEIS_ECO[0];
+        for (const n of NIVEIS_ECO) {
+          if (atual >= n.min) nivel = n;
+        }
+        return nivel.nome;
+      }
+
+      function renderProgressoNivel(pontos) {
+        const atual = Math.floor(pontos) || 0;
+        let indiceAtual = 0;
+        for (let i = 0; i < NIVEIS_ECO.length; i++) {
+          if (atual >= NIVEIS_ECO[i].min) indiceAtual = i;
+        }
+        const nivelAtual = NIVEIS_ECO[indiceAtual];
+        const proximoNivel = NIVEIS_ECO[indiceAtual + 1];
+
+        const textoEl = $("nivel-progresso-texto");
+        const metaEl = $("nivel-progresso-meta");
+        const barraEl = $("nivel-progresso-barra");
+        if (!textoEl || !metaEl || !barraEl) return;
+
+        textoEl.textContent = `${atual.toLocaleString("pt-BR")} pts`;
+
+        if (!proximoNivel) {
+          metaEl.textContent = "nível máximo alcançado 🏆";
+          barraEl.style.width = "100%";
+          return;
+        }
+
+        metaEl.textContent = `próximo: ${proximoNivel.nome} (${proximoNivel.min} pts)`;
+        const faixa = proximoNivel.min - nivelAtual.min;
+        const progresso = ((atual - nivelAtual.min) / faixa) * 100;
+        requestAnimationFrame(() => {
+          barraEl.style.width = Math.max(2, Math.min(100, progresso)) + "%";
+        });
+      }
+
+      /* ══════════════════════════════════════
+         IMPACTO AMBIENTAL PESSOAL (calculado)
+         Antes esses 4 números eram fixos no HTML
+         (sempre "12 árvores", "470L" etc, pra
+         qualquer conta). Agora saem da pontuação
+         real da pessoa — um perfil novo começa
+         zerado e vai crescendo com o uso.
+      ══════════════════════════════════════ */
+      function renderImpacto(pontos) {
+        const p = Math.max(0, Math.floor(pontos) || 0);
+        const arvores = Math.floor(p / 40);
+        const agua = Math.round(p * 1.5);
+        const energia = Math.round(p * 0.25);
+        const co2 = Math.round(p * 0.3);
+
+        const trees = $("impact-trees");
+        const water = $("impact-water");
+        const energy = $("impact-energy");
+        const co2El = $("impact-co2");
+        if (trees) trees.textContent = arvores.toLocaleString("pt-BR");
+        if (water) water.textContent = agua.toLocaleString("pt-BR") + "L";
+        if (energy) energy.textContent = energia.toLocaleString("pt-BR") + "kWh";
+        if (co2El) co2El.textContent = co2.toLocaleString("pt-BR") + "kg";
+      }
+
+      /* ══════════════════════════════════════
+         MINI-GRÁFICO DE ATIVIDADE RECENTE
+      ══════════════════════════════════════ */
+      function renderMiniChart(historico) {
+        const container = $("mini-chart");
+        if (!container) return;
+
+        if (!historico || historico.length === 0) {
+          container.innerHTML = `<div class="mini-chart-vazio">Sem coletas registradas ainda — comece a reciclar pra ver seu gráfico aqui!</div>`;
+          return;
+        }
+
+        const recentes = historico.slice(-6);
+        const maiorValor = Math.max(...recentes.map((i) => i.pts || 0), 1);
+
+        container.innerHTML = recentes
+          .map((item) => {
+            const pts = item.pts || 0;
+            const alturaPct = Math.max(6, (pts / maiorValor) * 100);
+            const rotulo = (item.time || "").toString().slice(0, 5) || "—";
+            return `
+              <div class="mini-chart-col">
+                <span class="mini-chart-pts">${pts}</span>
+                <div class="mini-chart-bar-wrap">
+                  <div class="mini-chart-bar" data-altura="${alturaPct}"></div>
+                </div>
+                <span class="mini-chart-label">${rotulo}</span>
+              </div>`;
+          })
+          .join("");
+
+        // Anima as barras crescendo (precisa de um frame extra pra
+        // o navegador reconhecer o estado inicial 0% antes de animar).
+        requestAnimationFrame(() => {
+          container.querySelectorAll(".mini-chart-bar").forEach((bar) => {
+            bar.style.height = bar.dataset.altura + "%";
+          });
+        });
       }
 
       loadProfile().then((p) => {
@@ -798,6 +983,23 @@
             console.error(error);
             showToast("⚠️ Erro de rede. Alterações feitas apenas localmente.");
           }
+        } else {
+          // Conta local (sem back-end): salva a edição direto no
+          // "banco de dados" do navegador, senão a mudança se perderia
+          // ao recarregar a página.
+          const sessaoAtual = getSession();
+          if (sessaoAtual && sessaoAtual.local) {
+            atualizarUsuarioLocal(sessaoAtual.id, {
+              name: novoNome,
+              email: novoEmail,
+            });
+            sessaoAtual.nome = novoNome;
+            sessaoAtual.email = novoEmail;
+            const inLocalStorage = !!localStorage.getItem(SESSION_KEY);
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessaoAtual));
+            if (inLocalStorage)
+              localStorage.setItem(SESSION_KEY, JSON.stringify(sessaoAtual));
+          }
         }
 
         btnSalvar.textContent = textoOriginal;
@@ -838,6 +1040,11 @@
             await fetch(`${MOCK_API}/${apiUserId}`, { method: "DELETE" });
           } catch (error) {
             console.warn("Erro ao deletar na nuvem", error);
+          }
+        } else {
+          const sessaoAtual = getSession();
+          if (sessaoAtual && sessaoAtual.local) {
+            removerUsuarioLocal(sessaoAtual.id);
           }
         }
 
@@ -902,5 +1109,8 @@
         }, 1500);
       });
     </script>
+      <script src="js/eco-animate.js"></script>
+      <script src="js/eco-arte-fundo.js"></script>
+      <script src="js/eco-a11y.js"></script>
   </body>
 </html>

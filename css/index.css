@@ -8,9 +8,9 @@
 
 :root {
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --cream: #faf9f6;
-  --cream2: #f3f0ea;
-  --white: #ffffff;
+  --cream: #ece8e0;
+  --cream2: #e2ddd2;
+  --white: #f6f5f1;
   --sage-50: #eef5ee;
   --sage-100: #d6ebd6;
   --sage-200: #acd4ac;
@@ -570,13 +570,16 @@ body {
   gap: 6px;
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--ink-2);
-  background: var(--white);
-  border: 1.5px solid var(--sage-100);
+  color: #fff;
+  background: var(--sage-500);
+  border: 1.5px solid var(--sage-600);
   border-radius: var(--br-pill);
   padding: 6px 14px;
   box-shadow: var(--sh-xs);
+  transition: background 0.3s;
 }
+
+[data-theme="dark"] .badge { background: #f6f5f1; border-color: #e2ddd2; color: #16241a; }
 .badge-icon {
   font-size: 14px;
 }
@@ -609,6 +612,20 @@ body {
   height: auto;
   display: block;
 }
+
+/* Os elementos decorativos do SVG (linhas, bolinhas, base) usam
+   um tom bem claro por padrão, pensado pro fundo verde do card
+   no tema claro. No tema escuro o card vira branco (ver regra do
+   .hero-card-visual acima) — sem isso, esses elementos quase
+   desaparecem por ficarem claros demais sobre um fundo também
+   claro. */
+[data-theme="dark"] .hero-card-visual svg .ilustra-clara {
+  fill: #cfe0d0;
+}
+[data-theme="dark"] .hero-card-visual svg .ilustra-media {
+  fill: #a8c4a9;
+}
+
 .mini-stats {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -616,24 +633,29 @@ body {
   margin-top: 20px;
 }
 .mini-stat {
-  background: var(--sage-50);
+  background: var(--sage-500);
   border-radius: var(--br-sm);
   padding: 12px 10px;
   text-align: center;
-  border: 1px solid var(--mint-border);
+  border: 1px solid var(--sage-600);
+  transition: background 0.3s;
 }
 .mini-stat-num {
   font-weight: 800;
   font-size: 1.2rem;
-  color: var(--sage-500);
+  color: #fff;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 .mini-stat-lbl {
   font-size: 0.68rem;
-  color: var(--ink-3);
+  color: rgba(255, 255, 255, 0.82);
   margin-top: 3px;
 }
+
+[data-theme="dark"] .mini-stat { background: #f6f5f1; border-color: #e2ddd2; }
+[data-theme="dark"] .mini-stat-num { color: #2d7230; }
+[data-theme="dark"] .mini-stat-lbl { color: #48584a; }
 
 /* ══════════════════════════════
    HOW IT WORKS
@@ -717,13 +739,13 @@ body {
   font-weight: 600;
   font-size: 3.5rem;
   line-height: 1;
-  color: var(--sage-100);
+  color: var(--sage-400);
   letter-spacing: -0.04em;
   margin-bottom: 14px;
   transition: color 0.3s;
 }
 .step-card:hover .step-num {
-  color: var(--sage-200);
+  color: var(--sage-600);
 }
 .step-icon {
   width: 46px;
@@ -745,7 +767,7 @@ body {
 }
 .step-card p {
   font-size: 0.87rem;
-  color: var(--ink-3);
+  color: var(--ink-2);
   line-height: 1.7;
 }
 
@@ -806,12 +828,12 @@ body {
 }
 .stat-label {
   font-size: 0.82rem;
-  color: var(--ink-3);
+  color: var(--ink-2);
   margin-top: 6px;
 }
 .stat-sub {
   font-size: 0.72rem;
-  color: var(--ink-4);
+  color: var(--ink-3);
   margin-top: 3px;
 }
 
@@ -891,7 +913,7 @@ body {
 
 .svc-card p {
   font-size: 0.875rem;
-  color: var(--ink-3);
+  color: var(--ink-2);
   line-height: 1.7;
   flex: 1;
 }
@@ -1619,28 +1641,71 @@ footer p {
 }
 
 /* =========================================
-   FUNDO GLOBAL UNIFICADO
+   FUNDO DAS SEÇÕES DA PÁGINA
+   (cada seção com sua própria regra — antes
+   estava tudo junto numa lista só, e mudar o
+   fundo de uma acabava exigindo mexer nessa
+   lista compartilhada com as outras)
 ========================================= */
 
-html,
-body,
-.hero,
-.hiw-section,
-.stats-section,
-.services-section,
-.map-section,
-.testi-section,
-.faq-section {
-  background: var(--cream);
+html { background: var(--cream); }
+body { background: var(--cream); }
+.hero { background: var(--cream); }
+.hiw-section { background: var(--cream); }
+.stats-section { background: var(--cream); }
+.services-section { background: var(--cream); }
+.map-section { background: var(--cream); }
+.testi-section { background: var(--cream); }
+.faq-section { background: var(--cream); }
+
+/* =========================================
+   FUNDO DOS CARDS
+   (idem — cada card com sua própria regra)
+========================================= */
+
+.step-card { background: var(--cream2); }
+.svc-card { background: var(--cream2); }
+.testi-card { background: var(--cream2); }
+.faq-item { background: var(--cream2); }
+.bottom-sheet { background: var(--cream2); }
+.map-legend { background: var(--cream2); }
+.map-balloon { background: var(--cream2); }
+
+/* .hero-card-visual tem regra própria (não
+   compartilhada) porque é o card de destaque
+   da tela principal: verde sólido no tema
+   claro, branco fixo no tema escuro — igual
+   aos outros cards de destaque do site. */
+.hero-card-visual {
+  background: var(--sage-500);
+  border-color: var(--sage-600);
+}
+[data-theme="dark"] .hero-card-visual {
+  background: #f6f5f1;
+  border-color: #e2ddd2;
 }
 
-.hero-card-visual,
-.step-card,
-.svc-card,
-.testi-card,
-.faq-item,
-.bottom-sheet,
-.map-legend,
-.map-balloon {
-  background: var(--cream2);
+/* Os "mini-stats" (Recicladas/Ecopontos/Eficiência) já são verdes
+   por padrão — dentro do hero-card-visual (que agora também é
+   verde no claro / branco no escuro), precisam da cor OPOSTA da
+   do card-pai em cada tema, senão um se perde dentro do outro. */
+.hero-card-visual .mini-stat {
+  background: var(--white);
+  border-color: var(--sage-200);
+}
+.hero-card-visual .mini-stat-num {
+  color: var(--sage-600);
+}
+.hero-card-visual .mini-stat-lbl {
+  color: var(--ink-3);
+}
+[data-theme="dark"] .hero-card-visual .mini-stat {
+  background: var(--sage-500);
+  border-color: var(--sage-600);
+}
+[data-theme="dark"] .hero-card-visual .mini-stat-num {
+  color: #fff;
+}
+[data-theme="dark"] .hero-card-visual .mini-stat-lbl {
+  color: rgba(255, 255, 255, 0.82);
 }

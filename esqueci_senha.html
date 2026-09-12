@@ -1,55 +1,354 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR" data-theme="light">
   <head>
     <meta charset="UTF-8" />
-    <link rel="stylesheet" href="css/esqueci_senha.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="shortcut icon" href="assets/fivecom.png" type="image/x-icon" />
-    <title>Recuperar Senha</title>
+    <title>Recuperar Senha — EcoTech</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/admin-shared.css" />
+    <link rel="stylesheet" href="./css/eco-animate.css" />
+    <style>
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+      .recuperar-shell {
+        width: 100%;
+        max-width: 460px;
+        padding: 20px;
+      }
+      .recuperar-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: var(--sage-50);
+        border: 1.5px solid var(--sage-100);
+        display: grid;
+        place-items: center;
+        font-size: 26px;
+        margin: 0 auto 16px;
+      }
+      .steps-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 26px;
+      }
+      .steps-indicator span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--sage-100);
+        transition: background 0.3s, transform 0.3s;
+      }
+      .steps-indicator span.ativo {
+        background: var(--sage-500);
+        transform: scale(1.3);
+      }
+      .steps-indicator span.concluido {
+        background: var(--sage-300, var(--sage-400));
+      }
+      .question-box {
+        background: var(--sage-50);
+        border: 1.5px solid var(--sage-100);
+        border-radius: var(--br-md);
+        padding: 16px 18px;
+        margin-bottom: 18px;
+        font-weight: 700;
+        color: var(--ink-2);
+        text-align: center;
+      }
+      .attempts-note {
+        font-size: 0.8rem;
+        color: var(--ink-3);
+        margin-top: 12px;
+        text-align: center;
+      }
+      .attempts-note strong { color: var(--danger); }
+      .painel-etapa { display: none; text-align: center; }
+      .painel-etapa.ativa { display: block; animation: tabFadeIn 0.3s cubic-bezier(0.22,1,0.36,1); }
+      @keyframes tabFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+      .painel-etapa .field { text-align: left; }
+      .sucesso-icone { font-size: 46px; margin-bottom: 6px; }
+    </style>
   </head>
   <body>
-
-    
-    <a href="login.html" class="btn-back" aria-label="Voltar para o início">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 12H5"></path>
-        <path d="M12 19l-7-7 7-7"></path>
-      </svg>
+    <a href="login.html" class="btn-back-pill" style="position:fixed; top:20px; left:20px;" aria-label="Voltar para o login">
+      ← Voltar ao login
     </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Alternar tema" style="position:fixed; top:20px; right:20px;">
+      <span id="theme-icon">☀️</span>
+    </button>
 
-    <div class="container">
+    <main class="recuperar-shell">
       <div class="card">
-        <h1>Esqueci minha senha</h1>
-        <p>Digite seu e-mail para recuperar sua conta</p>
+        <div class="recuperar-icon">🔑</div>
+        <h1 class="admin-title" style="text-align:center; margin-bottom:6px;">Recuperar senha</h1>
+        <p class="admin-subtitle" style="text-align:center; margin-bottom:22px;">
+          Vamos confirmar sua identidade em 3 passos rápidos.
+        </p>
 
-        <form>
-          <input type="email" placeholder="Digite seu e-mail" required />
-          <button type="submit">Recuperar senha</button>
-        </form>
+        <div class="steps-indicator" id="steps-indicator">
+          <span data-step="1"></span>
+          <span data-step="2"></span>
+          <span data-step="3"></span>
+        </div>
+
+        <!-- ═══ ETAPA 1 — E-MAIL ═══ -->
+        <div class="painel-etapa ativa" data-etapa="1">
+          <div class="field">
+            <label for="email-recuperar">Qual o seu e-mail cadastrado?</label>
+            <input id="email-recuperar" type="email" placeholder="seu@email.com" autocomplete="email" required />
+          </div>
+          <button type="button" class="btn btn-primary btn-block" id="btn-buscar-email">
+            Continuar
+          </button>
+        </div>
+
+        <!-- ═══ ETAPA 2 — PERGUNTA DE SEGURANÇA ═══ -->
+        <div class="painel-etapa" data-etapa="2">
+          <div class="question-box" id="pergunta-seguranca">Carregando pergunta...</div>
+          <div class="field">
+            <label for="resposta-seguranca">Sua resposta</label>
+            <input id="resposta-seguranca" type="text" autocomplete="off" required />
+          </div>
+          <button type="button" class="btn btn-primary btn-block" id="btn-confirmar-resposta">
+            Confirmar
+          </button>
+          <p class="attempts-note" id="attempts-note"></p>
+        </div>
+
+        <!-- ═══ ETAPA 3 — NOVA SENHA ═══ -->
+        <div class="painel-etapa" data-etapa="3">
+          <div class="field">
+            <label for="nova-senha">Nova senha</label>
+            <input id="nova-senha" type="password" autocomplete="new-password" required />
+            <small class="hint">Mínimo 8 caracteres, com letra maiúscula, minúscula e número.</small>
+          </div>
+          <div class="field">
+            <label for="confirmar-nova-senha">Confirmar nova senha</label>
+            <input id="confirmar-nova-senha" type="password" autocomplete="new-password" required />
+          </div>
+          <button type="button" class="btn btn-primary btn-block" id="btn-salvar-nova-senha">
+            Salvar nova senha
+          </button>
+        </div>
+
+        <!-- ═══ ETAPA 4 — SUCESSO ═══ -->
+        <div class="painel-etapa" data-etapa="4">
+          <div class="sucesso-icone">✅</div>
+          <h2 style="margin-bottom:8px;">Senha alterada!</h2>
+          <p class="admin-subtitle" style="margin-bottom:22px;">
+            Já pode entrar na sua conta com a nova senha.
+          </p>
+          <a href="login.html" class="btn btn-primary btn-block" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">
+            Ir para o login
+          </a>
+        </div>
       </div>
-    </div>
+    </main>
 
+    <div class="toast" id="toast"></div>
+
+    <script src="./js/ui-theme.js"></script>
+    <script src="./js/ui-toast.js"></script>
+    <script src="./js/eco-helpers.js"></script>
     <script>
-      const formSenha = document.querySelector("form");
+      initTheme();
+      initThemeToggle();
 
-      formSenha.addEventListener("submit", function (event) {
-        event.preventDefault();
+      const API_BASE = "https://6a38cde364a2d8269222d659.mockapi.io";
+      const MAX_TENTATIVAS = 3;
 
-        const emailDigitado = document.querySelector(
-          "input[type='email']",
-        ).value;
-        const emailSalvo = localStorage.getItem("emailUsuario");
+      let contaEncontrada = null; // { origem: 'api'|'local', dados: {...} }
+      let perguntaAtual = null;
+      let tentativas = 0;
 
-        if (emailDigitado === "") {
-          alert("Digite seu e-mail!");
+      function irParaEtapa(numero) {
+        document.querySelectorAll(".painel-etapa").forEach((painel) => {
+          painel.classList.toggle("ativa", painel.dataset.etapa === String(numero));
+        });
+        document.querySelectorAll("#steps-indicator span").forEach((bolinha) => {
+          const passo = parseInt(bolinha.dataset.step, 10);
+          bolinha.classList.toggle("ativo", passo === numero);
+          bolinha.classList.toggle("concluido", passo < numero);
+        });
+      }
+
+      /* ── Etapa 1: localizar a conta pelo e-mail (API, senão local) ── */
+      document.getElementById("btn-buscar-email").addEventListener("click", async () => {
+        const email = cleanText(document.getElementById("email-recuperar").value).toLowerCase();
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showToast("Digite um e-mail válido.");
           return;
         }
 
-        if (emailDigitado === emailSalvo) {
-          alert("E-mail encontrado! Instruções enviadas.");
-        } else {
-          alert("E-mail não encontrado.");
+        const btn = document.getElementById("btn-buscar-email");
+        btn.disabled = true;
+        btn.textContent = "Procurando...";
+
+        let encontrado = null;
+        try {
+          const resp = await fetch(`${API_BASE}/pessoa?email=${encodeURIComponent(email)}`);
+          if (resp.ok) {
+            const lista = await resp.json();
+            encontrado =
+              lista.find((u) => (u.email || "").toLowerCase() === email) || null;
+            if (encontrado) contaEncontrada = { origem: "api", dados: encontrado };
+          }
+        } catch (err) {
+          console.warn("API indisponível, tentando localmente:", err);
+        }
+
+        if (!encontrado) {
+          const local = buscarUsuarioLocalPorEmail(email);
+          if (local) {
+            encontrado = local;
+            contaEncontrada = { origem: "local", dados: local };
+          }
+        }
+
+        btn.disabled = false;
+        btn.textContent = "Continuar";
+
+        if (!encontrado) {
+          showToast("Não encontramos nenhuma conta com esse e-mail.");
+          return;
+        }
+
+        tentativas = 0;
+        sortearPergunta();
+        irParaEtapa(2);
+      });
+
+      /* ── Etapa 2: pergunta de segurança (mesmo esquema do 2FA) ── */
+      function perguntasDisponiveis(dados) {
+        const lista = [];
+        if (dados.nomeMae) {
+          lista.push({
+            texto: "Qual o nome da sua mãe?",
+            verificar: (r) => cleanText(r).toLowerCase() === cleanText(dados.nomeMae).toLowerCase(),
+          });
+        }
+        if (dados.nascimento) {
+          lista.push({
+            texto: "Qual a data do seu nascimento? (dd/mm/aaaa)",
+            verificar: (r) => {
+              const limpo = cleanText(r).replace(/\./g, "/").replace(/-/g, "/");
+              const partes = limpo.split("/");
+              if (partes.length !== 3) return false;
+              let [d, m, a] = partes;
+              if (a.length === 2) a = "20" + a;
+              const normalizado = `${a.padStart(4, "0")}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+              return normalizado === dados.nascimento;
+            },
+          });
+        }
+        if (dados.cep) {
+          lista.push({
+            texto: "Qual o CEP do seu endereço?",
+            verificar: (r) =>
+              cleanText(r).replace(/[^\d]/g, "") === cleanText(dados.cep).replace(/[^\d]/g, ""),
+          });
+        }
+        return lista;
+      }
+
+      function sortearPergunta() {
+        const opcoes = perguntasDisponiveis(contaEncontrada.dados);
+        if (opcoes.length === 0) {
+          document.getElementById("pergunta-seguranca").textContent =
+            "Não há dados suficientes pra confirmar sua identidade. Fale com o suporte.";
+          perguntaAtual = { verificar: () => false };
+          return;
+        }
+        perguntaAtual = opcoes[Math.floor(Math.random() * opcoes.length)];
+        document.getElementById("pergunta-seguranca").textContent = perguntaAtual.texto;
+        document.getElementById("resposta-seguranca").value = "";
+      }
+
+      document.getElementById("btn-confirmar-resposta").addEventListener("click", () => {
+        const resposta = document.getElementById("resposta-seguranca").value;
+        if (!resposta.trim()) {
+          showToast("Preencha a resposta.");
+          return;
+        }
+
+        if (perguntaAtual.verificar(resposta)) {
+          irParaEtapa(3);
+          return;
+        }
+
+        tentativas++;
+        if (tentativas >= MAX_TENTATIVAS) {
+          showToast("3 tentativas sem sucesso. Tente novamente mais tarde.");
+          setTimeout(() => (window.location.href = "login.html"), 1800);
+          return;
+        }
+
+        showToast("Resposta incorreta. Tente novamente.");
+        document.getElementById("attempts-note").innerHTML =
+          `Tentativas restantes: <strong>${MAX_TENTATIVAS - tentativas}</strong>`;
+        sortearPergunta();
+      });
+
+      /* ── Etapa 3: definir nova senha ── */
+      document.getElementById("btn-salvar-nova-senha").addEventListener("click", async () => {
+        const novaSenha = document.getElementById("nova-senha").value;
+        const confirmar = document.getElementById("confirmar-nova-senha").value;
+
+        if (!senhaSegura(novaSenha)) {
+          showToast("A senha não atende aos requisitos mínimos.");
+          return;
+        }
+        if (novaSenha !== confirmar) {
+          showToast("As senhas não coincidem.");
+          return;
+        }
+
+        const btn = document.getElementById("btn-salvar-nova-senha");
+        btn.disabled = true;
+        btn.textContent = "Salvando...";
+
+        try {
+          if (contaEncontrada.origem === "api") {
+            const resp = await fetch(`${API_BASE}/pessoa/${contaEncontrada.dados.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ senha: novaSenha }),
+            });
+            if (!resp.ok) throw new Error("Falha ao atualizar na API.");
+          } else {
+            atualizarUsuarioLocal(contaEncontrada.dados.id, { senha: novaSenha });
+          }
+          irParaEtapa(4);
+        } catch (err) {
+          console.error(err);
+          showToast("⚠️ Erro ao salvar. Tente novamente.");
+          btn.disabled = false;
+          btn.textContent = "Salvar nova senha";
         }
       });
+
+      // Permite continuar apertando Enter nos campos
+      document.getElementById("email-recuperar").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") document.getElementById("btn-buscar-email").click();
+      });
+      document.getElementById("resposta-seguranca").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") document.getElementById("btn-confirmar-resposta").click();
+      });
+      document.getElementById("confirmar-nova-senha").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") document.getElementById("btn-salvar-nova-senha").click();
+      });
     </script>
+    <script src="js/eco-animate.js"></script>
+    <script src="js/eco-a11y.js"></script>
   </body>
 </html>

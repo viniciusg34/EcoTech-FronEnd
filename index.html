@@ -14,6 +14,8 @@
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
     <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/eco-arte-fundo.css" />
+    <link rel="stylesheet" href="css/eco-animate.css" />
     <title>ECOTECH</title>
   </head>
   <body>
@@ -54,9 +56,10 @@
 
     <main>
       <section aria-label="Boas-vindas">
-        <div class="hero">
+        <div class="hero" data-arte-fundo="cidade-verde">
           <div class="blob blob-1"></div>
           <div class="blob blob-2"></div>
+          <div class="hero-leaves" data-qtd-folhas="6"></div>
           <div class="hero-grid">
             <div class="hero-text">
               <h1>
@@ -98,7 +101,7 @@
             <div class="hero-visual">
               <div class="hero-card-visual">
                 <svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg">
-                  <ellipse cx="180" cy="182" rx="100" ry="12" fill="#d6ebd6" />
+                  <ellipse cx="180" cy="182" rx="100" ry="12" class="ilustra-media" fill="#d6ebd6" />
                   <path
                     d="M180 180 Q178 140 175 110"
                     stroke="#5aab5a"
@@ -139,15 +142,15 @@
                   />
                   <circle cx="240" cy="44" r="4" fill="#f5a623" opacity=".7" />
                   <circle cx="118" cy="55" r="3" fill="#5aab5a" opacity=".5" />
-                  <circle cx="260" cy="110" r="6" fill="#d6ebd6" opacity=".8" />
-                  <circle cx="90" cy="130" r="5" fill="#eef5ee" opacity=".9" />
+                  <circle cx="260" cy="110" r="6" class="ilustra-media" fill="#d6ebd6" opacity=".8" />
+                  <circle cx="90" cy="130" r="5" class="ilustra-clara" fill="#eef5ee" opacity=".9" />
                   <rect
                     x="20"
                     y="20"
                     width="70"
                     height="6"
                     rx="3"
-                    fill="#eef5ee"
+                    class="ilustra-clara" fill="#eef5ee"
                   />
                   <rect
                     x="20"
@@ -155,7 +158,7 @@
                     width="50"
                     height="6"
                     rx="3"
-                    fill="#eef5ee"
+                    class="ilustra-clara" fill="#eef5ee"
                   />
                   <rect
                     x="20"
@@ -163,7 +166,7 @@
                     width="60"
                     height="6"
                     rx="3"
-                    fill="#eef5ee"
+                    class="ilustra-clara" fill="#eef5ee"
                   />
                   <rect
                     x="270"
@@ -171,7 +174,7 @@
                     width="60"
                     height="6"
                     rx="3"
-                    fill="#eef5ee"
+                    class="ilustra-clara" fill="#eef5ee"
                   />
                   <rect
                     x="278"
@@ -179,7 +182,7 @@
                     width="45"
                     height="6"
                     rx="3"
-                    fill="#eef5ee"
+                    class="ilustra-clara" fill="#eef5ee"
                   />
                 </svg>
                 <div class="mini-stats">
@@ -507,6 +510,8 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/eco-session.js"></script>
+    <script src="js/eco-animate.js"></script>
+    <script src="js/eco-arte-fundo.js"></script>
     
     <script>
       "use strict";
@@ -1023,5 +1028,6 @@
         });
       }); // fim DOMContentLoaded
     </script>
+      <script src="js/eco-a11y.js"></script>
   </body>
 </html>
