@@ -14,6 +14,7 @@
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
     <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/eco-arte-fundo.css" />
     <link rel="stylesheet" href="css/eco-animate.css" />
     <title>ECOTECH</title>
   </head>
@@ -55,10 +56,10 @@
 
     <main>
       <section aria-label="Boas-vindas">
-        <div class="hero">
+        <div class="hero" data-arte-fundo="cidade-verde">
           <div class="blob blob-1"></div>
           <div class="blob blob-2"></div>
-          <div class="hero-leaves hero-leaves--escuras" data-qtd-folhas="6"></div>
+          <div class="hero-leaves" data-qtd-folhas="6"></div>
           <div class="hero-grid">
             <div class="hero-text">
               <h1>
@@ -510,6 +511,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/eco-session.js"></script>
     <script src="js/eco-animate.js"></script>
+    <script src="js/eco-arte-fundo.js"></script>
     
     <script>
       "use strict";

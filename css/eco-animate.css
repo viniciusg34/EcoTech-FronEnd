@@ -12,63 +12,119 @@
   z-index: 1;
 }
 
-/* Variante "ambiente": usada automaticamente em telas sem uma
-   seção de destaque própria (fixa na janela inteira, bem sutil). */
+/* Variante "ambiente": fica fixa na janela inteira, atrás do
+   conteúdo, em TODAS as páginas (não só onde tem foto grande). */
 .hero-leaves--ambiente {
   position: fixed;
   overflow: visible;
   z-index: 2;
-  opacity: 0.55;
 }
 
 .eco-leaf {
   position: absolute;
-  width: 20px;
-  height: 20px;
-  color: rgba(255, 255, 255, 0.4);
+  width: 34px;
+  height: 34px;
   opacity: 0;
-  animation: eco-leaf-vento 6s linear infinite;
+  animation: eco-leaf-vento 7s linear infinite;
   will-change: transform, opacity;
 }
 
 /* Começam perto do topo (elas CAEM, não sobem) e cada uma tem um
-   ponto de partida/atraso diferente pra não parecerem sincronizadas. */
-.eco-leaf-0 { left: 6%;  top: -8%; animation-delay: 0s;    animation-duration: 5.5s; }
-.eco-leaf-1 { left: 22%; top: -14%; animation-delay: 0.7s;  animation-duration: 6.5s; color: rgba(189, 234, 189, 0.45); }
-.eco-leaf-2 { left: 48%; top: -6%; animation-delay: 1.4s;  animation-duration: 5s; }
-.eco-leaf-3 { left: 68%; top: -18%; animation-delay: 2.1s;  animation-duration: 7s; color: rgba(189, 234, 189, 0.35); }
-.eco-leaf:nth-child(4n)   { left: 84%; top: -10%; animation-delay: 0.4s; animation-duration: 6s; }
-.eco-leaf:nth-child(4n+1) { left: 36%; top: -16%; animation-delay: 1.8s; animation-duration: 5.8s; }
+   ponto de partida/atraso diferente pra não parecerem sincronizadas.
+   A cor de cada uma é definida via JS (style="color:...") de acordo
+   com a estação do ano e o tema atual — por isso não tem mais cor
+   fixa aqui, só posição/tempo. */
+.eco-leaf-0 { left: 6%;  top: -10%; animation-delay: 0s;    animation-duration: 6.5s; }
+.eco-leaf-1 { left: 22%; top: -18%; animation-delay: 0.7s;  animation-duration: 7.5s; }
+.eco-leaf-2 { left: 48%; top: -8%;  animation-delay: 1.4s;  animation-duration: 6s;   }
+.eco-leaf-3 { left: 68%; top: -22%; animation-delay: 2.1s;  animation-duration: 8s;   }
+.eco-leaf:nth-child(4n)   { left: 84%; top: -12%; animation-delay: 0.4s; animation-duration: 6.8s; }
+.eco-leaf:nth-child(4n+1) { left: 36%; top: -20%; animation-delay: 1.8s; animation-duration: 6.6s; }
 
-/* Variante para fundos claros (ex: index.html), onde a folha
-   branca original ficaria invisível. */
-.hero-leaves--escuras .eco-leaf {
-  color: rgba(61, 145, 64, 0.32);
-}
-.hero-leaves--escuras .eco-leaf-1,
-.hero-leaves--escuras .eco-leaf-3 {
-  color: rgba(45, 114, 48, 0.26);
-}
-
-/* A camada ambiente usa um tom neutro que funciona tanto em
-   fundo claro quanto escuro, já que aparece em qualquer tela. */
-.hero-leaves--ambiente .eco-leaf {
-  color: rgba(61, 145, 64, 0.22);
-}
-.hero-leaves--ambiente .eco-leaf-1,
-.hero-leaves--ambiente .eco-leaf-3 {
-  color: rgba(90, 171, 90, 0.18);
-}
-
-/* Queda em diagonal, como se o vento estivesse levando a folha —
+/* Queda em diagonal, como se o vento estivesse levando o elemento —
    cai rápido e balança de um lado pro outro enquanto desce. */
 @keyframes eco-leaf-vento {
   0%   { transform: translate(0, 0) rotate(0deg); opacity: 0; }
   8%   { opacity: 1; }
-  30%  { transform: translate(46px, 38vh) rotate(140deg); }
-  60%  { transform: translate(-28px, 72vh) rotate(250deg); }
-  90%  { opacity: 0.5; }
-  100% { transform: translate(60px, 112vh) rotate(400deg); opacity: 0; }
+  30%  { transform: translate(56px, 38vh) rotate(140deg); }
+  60%  { transform: translate(-34px, 72vh) rotate(250deg); }
+  90%  { opacity: 0.7; }
+  100% { transform: translate(72px, 112vh) rotate(400deg); opacity: 0; }
+}
+
+/* ── Botão + menu de escolha de estação do ano ── */
+#eco-estacao-btn {
+  position: fixed;
+  left: 20px;
+  bottom: 78px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--sage-100, #d6ebd6);
+  background: var(--white, #fff);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+#eco-estacao-btn:hover { transform: scale(1.08); }
+
+#eco-estacao-menu {
+  position: fixed;
+  left: 20px;
+  bottom: 128px;
+  z-index: 9998;
+  background: var(--white, #fff);
+  border: 1.5px solid var(--sage-100, #d6ebd6);
+  border-radius: 16px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+  padding: 8px;
+  min-width: 210px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+}
+#eco-estacao-menu.aberto { display: flex; }
+.eco-estacao-titulo {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink-3, #6b8f6c);
+  padding: 6px 10px 4px;
+}
+#eco-estacao-menu button[data-estacao] {
+  all: unset;
+  display: block;
+  padding: 9px 10px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink, #1a2e1b);
+  cursor: pointer;
+}
+#eco-estacao-menu button[data-estacao]:hover {
+  background: var(--sage-50, #eef5ee);
+}
+#eco-estacao-menu button[data-estacao].ativo {
+  background: var(--sage-100, #d6ebd6);
+  font-weight: 800;
+}
+#eco-estacao-menu button.eco-estacao-auto {
+  margin-top: 4px;
+  border-top: 1px solid var(--sage-100, #d6ebd6);
+  padding-top: 10px;
+  color: var(--ink-3, #6b8f6c);
+  font-size: 0.78rem;
+}
+
+@media (max-width: 480px) {
+  #eco-estacao-btn { left: 14px; bottom: 70px; width: 40px; height: 40px; }
+  #eco-estacao-menu { left: 14px; bottom: 116px; }
 }
 
 /* ── Anel de progresso SVG ── */
