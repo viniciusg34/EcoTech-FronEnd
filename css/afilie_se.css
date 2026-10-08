@@ -12,9 +12,9 @@
 
 :root {
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --cream: #faf9f6;
-  --cream2: #f3f0ea;
-  --white: #ffffff;
+  --cream: #ece8e0;
+  --cream2: #e2ddd2;
+  --white: #f6f5f1;
   --sage-50: #eef5ee;
   --sage-100: #d6ebd6;
   --sage-200: #acd4ac;
@@ -40,10 +40,10 @@
   --br-xl: 40px;
   --br-pill: 99px;
 
-  --bg-main: #f4f7f5;
+  --bg-main: #ece8e0;
   --text-main: #1b4332;
   --text-muted: #6b7280;
-  --card-bg: #ffffff;
+  --card-bg: #f6f5f1;
   --primary-color: #2e7d32;
   --primary-hover: #256628;
   --secondary-bg: #e6f4ea;
@@ -444,26 +444,34 @@ body {
 }
 
 .card-impacto {
-  background: var(--card-bg);
+  background: var(--primary-color);
   padding: 24px 20px;
   border-radius: 16px;
   text-align: center;
   box-shadow: var(--sh-sm);
-  border: 1px solid var(--sage-100);
+  border: 1px solid var(--primary-hover);
+  transition: background 0.3s;
 }
 [data-theme="dark"] .card-impacto {
-  border-color: var(--sage-200);
+  background: #f6f5f1;
+  border-color: #e2ddd2;
 }
 
 .card-impacto h3 {
-  color: var(--primary-color);
+  color: #fff;
   margin-bottom: 10px;
   font-size: 1.5rem;
 }
+[data-theme="dark"] .card-impacto h3 {
+  color: #2d7230;
+}
 
 .card-impacto p {
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.85);
   font-size: 0.95rem;
+}
+[data-theme="dark"] .card-impacto p {
+  color: #48584a;
 }
 
 .beneficios {

@@ -10,6 +10,9 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
     />
     <link rel="stylesheet" href="css/sobre_nos.css" />
+    <link rel="stylesheet" href="css/eco-arte-fundo.css" />
+    <link rel="stylesheet" href="css/eco-animate.css" />
+    <link rel="stylesheet" href="css/eco-interacoes.css" />
     <title>Sobre Nós — EcoTech</title>
   </head>
 
@@ -53,7 +56,8 @@
 
     <main>
       <div class="container-imagem-topo">
-        <img src="assets/banner.svg" alt="EcoTech Banner" class="imagem-topo" />
+        <img src="assets/banner.jpg" alt="EcoTech Banner" class="imagem-topo eco-kenburns" />
+        <div class="hero-leaves" data-qtd-folhas="6"></div>
 
         <div class="banner-content">
           <span class="badge-essencia" id="hero-badge"></span>
@@ -80,6 +84,7 @@
         </div>
       </div>
 
+      <div class="secao-arte-fundo secao-arte-fundo--tela-cheia" data-arte-fundo="arvore-raizes">
       <h1 id="ecotech">Nossos pilares</h1>
 
       <section class="carrossel">
@@ -112,6 +117,7 @@
           </button>
         </div>
       </section>
+      </div>
 
       <section class="section-numeros">
         <div class="numeros-header">
@@ -122,17 +128,17 @@
           </p>
         </div>
         <div class="numeros-grid">
-          <div class="numero-item">
+          <div class="numero-item reveal">
             <div class="numero-icon">🌱</div>
             <h3 id="num-arvores">+0 toneladas</h3>
             <p>de resíduos reciclados</p>
           </div>
-          <div class="numero-item">
+          <div class="numero-item reveal">
             <div class="numero-icon">👥</div>
             <h3 id="num-voluntarios">0</h3>
             <p>Ecopontos instalados e aumentando.</p>
           </div>
-          <div class="numero-item">
+          <div class="numero-item reveal">
             <div class="numero-icon">🏭</div>
             <h3 id="num-parques">0</h3>
             <p>cooperando conosco</p>
@@ -145,7 +151,7 @@
           <h2>Documentos institucionais</h2>
         </div>
         <div class="documentos-grid">
-          <div class="doc-card">
+          <div class="doc-card reveal">
             <div class="doc-info">
               <div class="doc-icon-file">📄</div>
               <div>
@@ -155,7 +161,7 @@
             </div>
             <a href="#" id="doc-link-1" class="btn-download" download>Baixar</a>
           </div>
-          <div class="doc-card">
+          <div class="doc-card reveal">
             <div class="doc-info">
               <div class="doc-icon-file">📄</div>
               <div>
@@ -165,7 +171,7 @@
             </div>
             <a href="#" id="doc-link-2" class="btn-download" download>Baixar</a>
           </div>
-          <div class="doc-card">
+          <div class="doc-card reveal">
             <div class="doc-info">
               <div class="doc-icon-file">📄</div>
               <div>
@@ -179,7 +185,7 @@
       </section>
 
       <section class="section-newsletter">
-        <div class="news-container">
+        <div class="news-container reveal">
           <div class="news-text">
             <h2>Assine nossa newsletter</h2>
             <p>
@@ -276,6 +282,9 @@
     </footer>
 
     <script src="js/eco-session.js"></script>
+    <script src="js/eco-animate.js"></script>
+    <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-arte-fundo.js"></script>
     <script>
       "use strict";
 
@@ -483,5 +492,6 @@
           });
       });
     </script>
+      <script src="js/eco-a11y.js"></script>
   </body>
 </html>

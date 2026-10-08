@@ -1,8 +1,9 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="./assets/fivecom.png" type="image/x-icon" />
     <title>Login — EcoTech</title>
 
     <link
@@ -10,6 +11,17 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./css/login.css" />
+    <link rel="stylesheet" href="./css/eco-animate.css" />
+    <link rel="stylesheet" href="./css/eco-interacoes.css" />
+
+    <!-- Biblioteca oficial do Google (Google Identity Services) —
+         usada exclusivamente pelo botão "Entrar com Google" desta
+         página. "async defer" pra não atrasar o carregamento do
+         resto da tela; se a rede bloquear esse script (ex: sem
+         internet), o botão simplesmente avisa que não conseguiu
+         carregar, sem quebrar o resto do login (ver script no
+         fim do arquivo). -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
 
   <body>
@@ -26,9 +38,20 @@
           <path d="M12 19l-7-7 7-7"></path>
         </svg>
       </a>
+
+      <button
+        class="theme-toggle-float"
+        id="theme-toggle"
+        aria-label="Alternar tema"
+      >
+        <span id="theme-icon">☀️</span>
+      </button>
+
       <section class="app">
         <section class="content">
           <section class="hero">
+            <div class="hero-leaves" data-qtd-folhas="6"></div>
+
             <span class="tag">Nossa Essência</span>
 
             <h1>A união de<br />dados, ciência<br />e amor pela<br />terra.</h1>
@@ -39,7 +62,15 @@
             </p>
 
             <div class="stat-card">
-              <strong>85%</strong>
+              <div class="eco-ring-wrap" data-progress-ring="85">
+                <svg viewBox="0 0 80 80" width="74" height="74" aria-hidden="true">
+                  <circle class="eco-ring-bg" cx="40" cy="40" r="32" stroke-width="6"></circle>
+                  <circle class="eco-ring-fg" cx="40" cy="40" r="32" stroke-width="6"></circle>
+                </svg>
+                <span class="eco-ring-label"
+                  ><span data-count-to="85" data-count-suffix="%">0%</span></span
+                >
+              </div>
               <p>de eficiência<br />em nossos<br />projetos</p>
             </div>
 
@@ -89,8 +120,32 @@
               Entrar
             </button>
 
+            <div class="divisor-ou">ou</div>
+
+            <!-- Botão real do Google, renderizado pela lib oficial,
+                 escondido fora da tela (ver comentário em css/login.css) -->
+            <div id="googleBtnReal" class="google-btn-real-holder"></div>
+
+            <button
+              type="button"
+              class="google-btn"
+              id="btnGoogleLogin"
+              aria-label="Entrar com sua conta Google"
+            >
+              <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
+                <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
+                <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
+                <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
+              </svg>
+              <span id="googleBtnTexto">Entrar com Google</span>
+            </button>
+
             <small style="display: block; margin-top: 20px; text-align: center">
               Ainda não tem uma conta? <a href="cadastro.html">cadastre-se</a>
+            </small>
+            <small style="display: block; margin-top: 8px; text-align: center">
+              É uma empresa? <a href="cadastro_empresarial.html">Cadastre sua empresa</a>
             </small>
           </section>
         </section>
@@ -99,42 +154,27 @@
 
     <div class="toast" id="toast"></div>
 
+    <script src="./js/ui-theme.js"></script>
+    <script src="./js/eco-animate.js"></script>
+    <script src="./js/eco-interacoes.js"></script>
+    <script src="./js/ui-toast.js"></script>
+    <script src="./js/eco-helpers.js"></script>
+    <script src="./js/eco-admin.js"></script>
     <script>
-      "use strict";
+      initTheme();
+      initThemeToggle();
 
       /* ─── Configuração das APIs ─── */
-      const API_BASE = "https://6a38cde364a2d8269222d659.mockapi.io/api/v1";
+      const API_BASE = "https://6a38cde364a2d8269222d659.mockapi.io";
       const API_EMPRESA =
         "https://6a386bef64a2d82692228142.mockapi.io/api/v1/empresa";
       const SESSION_KEY = "ecotech_session";
 
-      /* ─── Helpers de UI ─── */
-      let toastTimer;
-      function showToast(msg) {
-        const toast = document.getElementById("toast");
-        toast.textContent = msg;
-        toast.classList.add("show");
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toast.classList.remove("show"), 3000);
-      }
-
-      function togglePassword() {
-        const pwd = document.getElementById("password");
-        pwd.type = pwd.type === "password" ? "text" : "password";
-      }
-
-      function setLoading(ativo) {
-        const btn = document.getElementById("btnEntrar");
-        btn.disabled = ativo;
-        btn.textContent = ativo ? "Verificando..." : "Entrar";
-      }
-
-      /* ─── Autenticar Pessoa Física (/pessoa) ─── */
+      /* ─── Autentica Pessoa Física (/pessoa) ─── */
       async function autenticarPelaAPI(email, senha) {
         const resp = await fetch(
           `${API_BASE}/pessoa?email=${encodeURIComponent(email)}`,
         );
-        if (resp.status === 404) return null;
         if (!resp.ok) throw new Error("Falha ao contatar servidor de pessoas.");
         const lista = await resp.json();
         return (
@@ -146,11 +186,11 @@
         );
       }
 
+      /* ─── Autentica Empresa (/empresa) ─── */
       async function autenticarEmpresaAPI(email, senha) {
         const resp = await fetch(
           `${API_EMPRESA}?email=${encodeURIComponent(email)}`,
         );
-        if (resp.status === 404) return null;
         if (!resp.ok)
           throw new Error("Falha ao contatar servidor de empresas.");
         const lista = await resp.json();
@@ -180,6 +220,14 @@
         localStorage.setItem("ecotech_user_id", usuario.id);
       }
 
+      /* ─── Estado de carregamento do botão Entrar ─── */
+      function setLoading(ativo) {
+        const btn = document.getElementById("btnEntrar");
+        if (!btn) return;
+        btn.disabled = ativo;
+        btn.textContent = ativo ? "Entrando..." : "Entrar";
+      }
+
       /* ─── Login principal ─── */
       async function handleLogin() {
         const email = document
@@ -192,18 +240,55 @@
           showToast("Preencha todos os campos.");
           return;
         }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-          showToast("E-mail inválido.");
+
+        /* 0) Tenta como usuário MASTER local (perfil administrativo) — usa
+           "login" (ex: MASTER), não necessariamente um e-mail, então essa
+           checagem precisa vir ANTES da validação de formato de e-mail. */
+        const master = autenticarMasterLocal(email, password);
+        if (master) {
+          setLoading(true);
+          const lembrar = document.getElementById("lembrarMe").checked;
+          sessionStorage.setItem(
+            "ecotech_pending_2fa",
+            JSON.stringify({
+              id: master.id,
+              nome: master.nome,
+              email: master.email,
+              cpf: "",
+              nomeMae: master.nomeMae,
+              nascimento: master.nascimento,
+              cep: master.cep,
+              tipo: "pessoa",
+              perfil: "master",
+              lembrar,
+              redirectTo: "perfil.html",
+              tentativas: 0,
+            }),
+          );
+          window.location.href = "2fa.html";
           return;
         }
+
+        // (Removido o bloqueio rígido de "formato de e-mail inválido":
+        // ele impedia mensagens corretas quando o login não era um
+        // e-mail, como no caso do usuário master, gerando confusão
+        // quando a senha estava errada. As tentativas abaixo já lidam
+        // bem com entradas que não são e-mails válidos.)
 
         setLoading(true);
 
         try {
-          /* 1) Empresa — /empresa (tem cnpj) */
-          const empresa = await autenticarEmpresaAPI(email, password);
+          /* 1) Tenta como empresa (tem cnpj) — se a API estiver fora do
+             ar, trata como "não encontrado" em vez de travar o login
+             inteiro, pra sempre conseguir chegar no fallback local. */
+          let empresa = null;
+          try {
+            empresa = await autenticarEmpresaAPI(email, password);
+          } catch (err) {
+            console.warn("API de empresas indisponível:", err);
+          }
+
           if (empresa && empresa.cnpj) {
-            const lembrar = document.getElementById("lembrarMe").checked;
             const sessao = {
               id: empresa.id,
               nome: empresa.nome,
@@ -213,10 +298,12 @@
               tipo: "empresa",
               logadoEm: new Date().toISOString(),
             };
+            const lembrar = document.getElementById("lembrarMe").checked;
             sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
             if (lembrar)
               localStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
             localStorage.setItem("ecotech_user_id", empresa.id);
+
             showToast("Entrando...");
             setTimeout(() => {
               window.location.href = "empresa.html";
@@ -224,14 +311,65 @@
             return;
           }
 
-          /* 2) Pessoa física — /pessoa */
-          const usuario = await autenticarPelaAPI(email, password);
+          /* 2) Tenta como pessoa física (/pessoa) — mesma lógica: uma
+             falha de rede aqui não deve impedir o fallback local. */
+          let usuario = null;
+          try {
+            usuario = await autenticarPelaAPI(email, password);
+          } catch (err) {
+            console.warn("API de pessoas indisponível:", err);
+          }
+
           if (usuario) {
-            salvarSessao(usuario);
-            showToast("Entrando...");
-            setTimeout(() => {
-              window.location.href = "coleta.html";
-            }, 1000);
+            const lembrar = document.getElementById("lembrarMe").checked;
+            sessionStorage.setItem(
+              "ecotech_pending_2fa",
+              JSON.stringify({
+                id: usuario.id,
+                nome: usuario.name || usuario.nome,
+                email: usuario.email,
+                avatar: usuario.avatar || null,
+                coins: usuario.coins || "0.00",
+                cpf: usuario.cpf || "",
+                nomeMae: usuario.nomeMae || "",
+                nascimento: usuario.nascimento || "",
+                cep: usuario.cep || "",
+                tipo: "pessoa",
+                perfil: usuario.perfil || "comum",
+                lembrar,
+                redirectTo: "coleta.html",
+                tentativas: 0,
+              }),
+            );
+            window.location.href = "2fa.html";
+            return;
+          }
+
+          /* 3) Fallback: conta criada localmente (sem back-end/API disponível) */
+          const local = autenticarLocal(email, password);
+          if (local) {
+            const lembrar = document.getElementById("lembrarMe").checked;
+            sessionStorage.setItem(
+              "ecotech_pending_2fa",
+              JSON.stringify({
+                id: local.id,
+                nome: local.name || local.nome,
+                email: local.email,
+                avatar: local.avatar || null,
+                coins: local.coins || 0,
+                cpf: local.cpf || "",
+                nomeMae: local.nomeMae || "",
+                nascimento: local.nascimento || "",
+                cep: local.cep || "",
+                tipo: "pessoa",
+                perfil: local.perfil || "comum",
+                local: true,
+                lembrar,
+                redirectTo: "coleta.html",
+                tentativas: 0,
+              }),
+            );
+            window.location.href = "2fa.html";
             return;
           }
 
@@ -244,14 +382,298 @@
         }
       }
 
-      /* ─── Enter para logar ─── */
-      document.addEventListener("DOMContentLoaded", () => {
-        ["email", "password"].forEach((id) => {
-          document.getElementById(id).addEventListener("keydown", (e) => {
-            if (e.key === "Enter") handleLogin();
-          });
-        });
+      document.getElementById("email").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") handleLogin();
       });
+      document.getElementById("password").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") handleLogin();
+      });
+
+      /* ══════════════════════════════════════════════════════════
+         LOGIN COM GOOGLE — exclusivo desta tela (login.html).
+
+         Pra isso funcionar de verdade em produção, alguém com
+         acesso ao Google Cloud Console precisa gerar um "OAuth
+         Client ID" (tipo "Web application") e colar aqui embaixo.
+         Passo a passo rápido:
+           1. console.cloud.google.com → criar/abrir um projeto
+           2. "APIs e Serviços" → "Credenciais" → "Criar credenciais"
+              → "ID do cliente OAuth" → tipo "Aplicativo da Web"
+           3. Em "Origens JavaScript autorizadas", adicionar o(s)
+              domínio(s) onde o site vai rodar (e http://localhost
+              se for testar localmente)
+           4. Copiar o Client ID gerado (termina em
+              ".apps.googleusercontent.com") e colar abaixo.
+         Isso é literalmente a mesma peça de configuração que a
+         API de login por e-mail (MockAPI) já exige — é "chave de
+         acesso do serviço", então normalmente é o pessoal de
+         back-end/infra que gera e guarda esse valor.
+      ══════════════════════════════════════════════════════════ */
+      const GOOGLE_CLIENT_ID =
+        "SEU_CLIENT_ID_DO_GOOGLE_AQUI.apps.googleusercontent.com";
+
+      function googleConfigurado() {
+        return (
+          typeof GOOGLE_CLIENT_ID === "string" &&
+          !GOOGLE_CLIENT_ID.startsWith("SEU_CLIENT_ID")
+        );
+      }
+
+      /* ── Decodifica o token JWT que o Google devolve (sem
+         precisar de biblioteca extra) — pega nome, e-mail, foto
+         e se o e-mail já é verificado pelo Google. Essa decodificação
+         é só pra LER os dados (não valida a assinatura criptográfica,
+         isso é trabalho de back-end); como quem está assinando o
+         token é o próprio Google, e a gente só usa os dados pra
+         preencher o perfil local/API já existentes, isso é
+         suficiente pro escopo deste projeto. ── */
+      function decodificarTokenGoogle(tokenJWT) {
+        try {
+          const base64Url = tokenJWT.split(".")[1];
+          const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+          const jsonPayload = decodeURIComponent(
+            atob(base64)
+              .split("")
+              .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+              .join(""),
+          );
+          return JSON.parse(jsonPayload);
+        } catch (_) {
+          return null;
+        }
+      }
+
+      /* ── Busca por e-mail na API de pessoas (/pessoa) — igual ao
+         que já existe pro login normal, só que sem checar senha
+         (o Google já confirmou que a pessoa é dona do e-mail). ── */
+      async function buscarPessoaAPIPorEmail(email) {
+        const resp = await fetch(
+          `${API_BASE}/pessoa?email=${encodeURIComponent(email)}`,
+        );
+        if (!resp.ok) throw new Error("Falha ao contatar servidor de pessoas.");
+        const lista = await resp.json();
+        return (
+          lista.find((u) => (u.email || "").toLowerCase() === email.toLowerCase()) ||
+          null
+        );
+      }
+
+      /* ── Estado de carregamento do botão Google (mesma ideia do
+         setLoading() que já existe pro botão "Entrar") ── */
+      function setLoadingGoogle(ativo) {
+        const btn = document.getElementById("btnGoogleLogin");
+        const texto = document.getElementById("googleBtnTexto");
+        if (!btn || !texto) return;
+        btn.disabled = ativo;
+        texto.textContent = ativo ? "Entrando..." : "Entrar com Google";
+      }
+
+      /* ── Finaliza o login (sessão + redirecionamento), igual ao
+         login normal, mas pulando o 2FA de perguntas de segurança:
+         o próprio Google já funcionou como segundo fator (a pessoa
+         precisou estar logada na conta Google dela pra conseguir
+         esse token), então pedir mais uma pergunta de segurança
+         aqui seria redundante. ── */
+      function finalizarLoginGoogle(dadosSessao) {
+        const lembrar = document.getElementById("lembrarMe").checked;
+        const sessao = {
+          id: dadosSessao.id,
+          nome: dadosSessao.nome,
+          email: dadosSessao.email,
+          avatar: dadosSessao.avatar || null,
+          coins: dadosSessao.coins || 0,
+          tipo: "pessoa",
+          loginMethod: "google",
+          logadoEm: new Date().toISOString(),
+        };
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
+        if (lembrar) localStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
+        localStorage.setItem("ecotech_user_id", dadosSessao.id);
+
+        showToast(`✅ Bem-vindo(a), ${sessao.nome.split(" ")[0]}!`, true);
+        setTimeout(() => {
+          window.location.href = "coleta.html";
+        }, 900);
+      }
+
+      /* ── Callback chamado pela biblioteca do Google quando a
+         pessoa termina de confirmar a conta dela (popup do Google) ── */
+      async function handleGoogleCredentialResponse(resposta) {
+        const payload = decodificarTokenGoogle(resposta.credential);
+
+        if (!payload || !payload.email) {
+          showToast("Não foi possível ler os dados da conta Google.");
+          setLoadingGoogle(false);
+          return;
+        }
+
+        // Alguns provedores mandam email_verified como boolean,
+        // outros como string "true" — aceita os dois formatos.
+        const emailVerificado =
+          payload.email_verified === true || payload.email_verified === "true";
+        if (!emailVerificado) {
+          showToast("Esse e-mail do Google ainda não foi verificado.");
+          setLoadingGoogle(false);
+          return;
+        }
+
+        const email = payload.email.toLowerCase();
+        const nomeGoogle = payload.name || email.split("@")[0];
+        const fotoGoogle = payload.picture || "";
+
+        try {
+          /* 1) Já existe uma conta de verdade (API) com esse e-mail?
+             Entra nela — mesma conta que a pessoa já usa com senha. */
+          let pessoaAPI = null;
+          try {
+            pessoaAPI = await buscarPessoaAPIPorEmail(email);
+          } catch (err) {
+            console.warn("API de pessoas indisponível:", err);
+          }
+
+          if (pessoaAPI) {
+            finalizarLoginGoogle({
+              id: pessoaAPI.id,
+              nome: pessoaAPI.name || pessoaAPI.nome || nomeGoogle,
+              email: pessoaAPI.email,
+              avatar: pessoaAPI.avatar || fotoGoogle,
+              coins: pessoaAPI.coins || 0,
+            });
+            return;
+          }
+
+          /* 2) Já existe uma conta LOCAL (localStorage) com esse
+             e-mail? Entra nela (pode ter sido criada tanto pelo
+             cadastro normal quanto por um login Google anterior). */
+          const localExistente = buscarUsuarioLocalPorEmail(email);
+          if (localExistente) {
+            // Se ainda não tinha foto salva, aproveita a do Google.
+            if (!localExistente.avatar && fotoGoogle) {
+              atualizarUsuarioLocal(localExistente.id, { avatar: fotoGoogle });
+            }
+            finalizarLoginGoogle({
+              id: localExistente.id,
+              nome: localExistente.name || localExistente.nome || nomeGoogle,
+              email: localExistente.email,
+              avatar: localExistente.avatar || fotoGoogle,
+              coins: localExistente.coins || 0,
+            });
+            return;
+          }
+
+          /* 3) Primeira vez dessa pessoa no site: cria uma conta
+             local nova (sem back-end disponível), já preenchida
+             com o que o Google nos deu. Sem senha — essa conta só
+             entra pelo botão do Google mesmo. */
+          const novoLocal = criarUsuarioLocal({
+            nome: nomeGoogle,
+            name: nomeGoogle,
+            email,
+            cpf: "",
+            nomeMae: "",
+            nascimento: "",
+            sexo: "",
+            telefoneCelular: "",
+            telefoneFixo: "",
+            cep: "",
+            endereco: "",
+            login: "",
+            senha: null,
+            googleAuth: true,
+            googleId: payload.sub || "",
+            avatar: fotoGoogle,
+          });
+
+          if (typeof window.ecoConfete === "function") window.ecoConfete();
+          finalizarLoginGoogle({
+            id: novoLocal.id,
+            nome: novoLocal.name,
+            email: novoLocal.email,
+            avatar: novoLocal.avatar,
+            coins: 0,
+          });
+        } catch (err) {
+          console.error("Erro no login com Google:", err);
+          showToast("Erro ao entrar com Google. Tente novamente.");
+          setLoadingGoogle(false);
+        }
+      }
+
+      /* ── Inicializa a lib do Google assim que ela carregar (o
+         script é "async defer", então pode terminar de carregar
+         depois do nosso código — por isso o setInterval abaixo
+         fica esperando até o objeto "google" existir). ── */
+      (function iniciarGoogleLogin() {
+        const botaoVisivel = document.getElementById("btnGoogleLogin");
+        const containerReal = document.getElementById("googleBtnReal");
+        if (!botaoVisivel || !containerReal) return;
+
+        let tentativas = 0;
+        const esperaLibGoogle = setInterval(() => {
+          tentativas++;
+          const libPronta =
+            typeof google !== "undefined" &&
+            google.accounts &&
+            google.accounts.id;
+
+          if (libPronta) {
+            clearInterval(esperaLibGoogle);
+
+            if (!googleConfigurado()) {
+              // Deixa o botão visível, mas avisa com clareza (em vez
+              // de deixar a lib do Google estourar um erro genérico
+              // no console quando alguém clicar).
+              botaoVisivel.addEventListener("click", () => {
+                showToast(
+                  "Login com Google ainda não configurado neste projeto (falta o Client ID).",
+                );
+              });
+              return;
+            }
+
+            google.accounts.id.initialize({
+              client_id: GOOGLE_CLIENT_ID,
+              callback: (resposta) => {
+                setLoadingGoogle(true);
+                handleGoogleCredentialResponse(resposta);
+              },
+              auto_select: false,
+            });
+
+            // Renderiza o botão OFICIAL do Google dentro do
+            // container escondido — é nele que o clique real
+            // acontece por baixo dos panos.
+            google.accounts.id.renderButton(containerReal, {
+              type: "standard",
+              theme: "outline",
+              size: "large",
+            });
+
+            // Nosso botão (visível e estilizado) só repassa o
+            // clique pro botão de verdade do Google.
+            botaoVisivel.addEventListener("click", () => {
+              const botaoReal = containerReal.querySelector(
+                'div[role="button"]',
+              );
+              if (botaoReal) {
+                botaoReal.click();
+              } else {
+                showToast("Não foi possível abrir o login do Google agora.");
+              }
+            });
+          } else if (tentativas > 100) {
+            // ~10s tentando (100 x 100ms) — a lib do Google não
+            // carregou (provavelmente sem internet ou bloqueada).
+            clearInterval(esperaLibGoogle);
+            botaoVisivel.addEventListener("click", () => {
+              showToast(
+                "Não foi possível carregar o login do Google agora. Verifique sua conexão.",
+              );
+            });
+          }
+        }, 100);
+      })();
     </script>
+      <script src="js/eco-a11y.js"></script>
   </body>
 </html>

@@ -19,6 +19,9 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/coleta.css" />
+    <link rel="stylesheet" href="css/eco-arte-fundo.css" />
+      <link rel="stylesheet" href="css/eco-animate.css" />
+      <link rel="stylesheet" href="css/eco-interacoes.css" />
   </head>
   <body>
     <header class="header">
@@ -59,7 +62,7 @@
     <main>
       <div class="map-section">
         <div class="map-container">
-          <div class="section-header">
+          <div class="section-header secao-arte-fundo" data-arte-fundo="ciclo-coleta">
             <h2>🗺️ Mapa dos Pontos de Coleta</h2>
             <p>
               Encontre o Ecoponto mais próximo de você na região metropolitana
@@ -328,7 +331,7 @@
           class="info-grid"
           style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))"
         >
-          <div class="info-card" style="text-align: center; padding: 24px">
+          <div class="info-card reveal" style="text-align: center; padding: 24px">
             <strong
               style="
                 color: var(--sage-600);
@@ -341,7 +344,7 @@
               >🔹 12 pontos</span
             >
           </div>
-          <div class="info-card" style="text-align: center; padding: 24px">
+          <div class="info-card reveal" style="text-align: center; padding: 24px">
             <strong
               style="
                 color: var(--sage-600);
@@ -354,7 +357,7 @@
               >🔹 8 pontos</span
             >
           </div>
-          <div class="info-card" style="text-align: center; padding: 24px">
+          <div class="info-card reveal" style="text-align: center; padding: 24px">
             <strong
               style="
                 color: var(--sage-600);
@@ -367,7 +370,7 @@
               >🔹 20 pontos</span
             >
           </div>
-          <div class="info-card" style="text-align: center; padding: 24px">
+          <div class="info-card reveal" style="text-align: center; padding: 24px">
             <strong
               style="
                 color: var(--sage-600);
@@ -380,7 +383,7 @@
               >🔹 6 pontos</span
             >
           </div>
-          <div class="info-card" style="text-align: center; padding: 24px">
+          <div class="info-card reveal" style="text-align: center; padding: 24px">
             <strong
               style="
                 color: var(--sage-600);
@@ -393,7 +396,7 @@
               >🔹 25 pontos</span
             >
           </div>
-          <div class="info-card" style="text-align: center; padding: 24px">
+          <div class="info-card reveal" style="text-align: center; padding: 24px">
             <strong
               style="
                 color: var(--sage-600);
@@ -406,7 +409,7 @@
               >🔹 5 pontos</span
             >
           </div>
-          <div class="info-card" style="text-align: center; padding: 24px">
+          <div class="info-card reveal" style="text-align: center; padding: 24px">
             <strong
               style="
                 color: var(--sage-600);
@@ -431,7 +434,7 @@
           </p>
         </div>
         <div class="info-grid">
-          <div class="info-card">
+          <div class="info-card reveal">
             <div class="info-icon">♻️</div>
             <h3>Plásticos</h3>
             <p>
@@ -444,7 +447,7 @@
               <li>✗ Evite isopor e plásticos metalizados</li>
             </ul>
           </div>
-          <div class="info-card">
+          <div class="info-card reveal">
             <div class="info-icon">📰</div>
             <h3>Papel e Papelão</h3>
             <p>
@@ -458,7 +461,7 @@
               <li>✗ Papéis engordurados ou sujos</li>
             </ul>
           </div>
-          <div class="info-card">
+          <div class="info-card reveal">
             <div class="info-icon">🍾</div>
             <h3>Vidros</h3>
             <p>Garrafas, potes, frascos, copos, embalagens de conservas.</p>
@@ -469,7 +472,7 @@
               <li>✗ Espelhos, vidros temperados</li>
             </ul>
           </div>
-          <div class="info-card">
+          <div class="info-card reveal">
             <div class="info-icon">🔋</div>
             <h3>Eletrônicos e Pilhas</h3>
             <p>Celulares, baterias, carregadores, pilhas, placas-mãe, cabos.</p>
@@ -480,7 +483,7 @@
               <li>⚠️ Produtos tóxicos - descarte especial</li>
             </ul>
           </div>
-          <div class="info-card">
+          <div class="info-card reveal">
             <div class="info-icon">🥫</div>
             <h3>Metais</h3>
             <p>Latinhas, tampas, panelas, fios de cobre, arames, ferragens.</p>
@@ -491,7 +494,7 @@
               <li>✗ Aerossóis e latas de tinta</li>
             </ul>
           </div>
-          <div class="info-card">
+          <div class="info-card reveal">
             <div class="info-icon">🪵</div>
             <h3>Madeira</h3>
             <p>Paletes, móveis quebrados, restos de obra, caixotes.</p>
@@ -502,7 +505,7 @@
               <li>✗ Madeira com cupim ou contaminada</li>
             </ul>
           </div>
-          <div class="info-card">
+          <div class="info-card reveal">
             <div class="info-icon">🛢️</div>
             <h3>Óleo de Cozinha</h3>
             <p>Óleo vegetal usado, gordura de frituras.</p>
@@ -1602,5 +1605,9 @@
         });
       }); // fim DOMContentLoaded
     </script>
+      <script src="js/eco-a11y.js"></script>
+    <script src="js/eco-animate.js"></script>
+    <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-arte-fundo.js"></script>
   </body>
 </html>
