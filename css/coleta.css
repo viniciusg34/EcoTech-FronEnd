@@ -516,8 +516,12 @@ body.map-fullscreen-active { overflow: hidden; }
 .reward-item:hover:not(.disabled) { border-color: var(--sage-400); box-shadow: var(--sh-md); transform: translateY(-4px); }
 .reward-item.disabled { background: var(--sage-50); opacity: 0.6; cursor: not-allowed; }
 
-/* ══ TOAST ══ */
-#toast { position: fixed; bottom: 30px; left: 50%; transform: translate(-50%, 12px); background: var(--sage-500); color: #fff; padding: 14px 28px; border-radius: var(--br-pill); z-index: 3000; opacity: 0; pointer-events: none; font-weight: 600; font-family: "Plus Jakarta Sans", sans-serif; box-shadow: var(--sh-md); transition: opacity 0.3s var(--ease), transform 0.3s var(--ease); max-width: calc(100vw - 40px); text-align: center; }
+/* ══ TOAST ══
+   z-index subido de 3000 pra 10050: ficava escondido atrás da
+   barra de acessibilidade (eco-a11y.js, z-index: 9999) — mesmo
+   bug achado e corrigido em login.css/cadastro.css/admin-shared.css.
+   Esta regra também vale pra empresa.html (reaproveita coleta.css). ══ */
+#toast { position: fixed; bottom: 30px; left: 50%; transform: translate(-50%, 12px); background: var(--sage-500); color: #fff; padding: 14px 28px; border-radius: var(--br-pill); z-index: 10050; opacity: 0; pointer-events: none; font-weight: 600; font-family: "Plus Jakarta Sans", sans-serif; box-shadow: var(--sh-md); transition: opacity 0.3s var(--ease), transform 0.3s var(--ease); max-width: calc(100vw - 40px); text-align: center; }
 #toast.show { opacity: 1; transform: translate(-50%, 0); }
 
 /* ══ FOOTER ══ */

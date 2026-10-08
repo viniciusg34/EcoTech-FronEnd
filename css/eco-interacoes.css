@@ -18,8 +18,17 @@ html {
 
 /* ── 2) RIPPLE AO CLICAR EM BOTÕES ── */
 .eco-ripple-host {
-  position: relative;
   overflow: hidden;
+}
+
+/* Só força position:relative quando o botão NÃO tinha nenhum
+   posicionamento próprio antes (ver eco-interacoes.js). Isso evita
+   um bug real que aconteceu em login.html/cadastro.html: o botão
+   de trocar tema usa "position: fixed" pra ficar grudado no canto
+   da tela, e aplicar "position: relative" nele por cima quebrava
+   esse posicionamento — o botão "caía" pro meio do conteúdo. */
+.eco-ripple-host--relative {
+  position: relative;
 }
 .eco-ripple {
   position: absolute;

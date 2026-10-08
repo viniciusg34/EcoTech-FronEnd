@@ -83,6 +83,15 @@ const ECO_REDUZIR_MOVIMENTO = window.matchMedia(
       if (el.dataset.ecoRippleOk) return;
       el.dataset.ecoRippleOk = "1";
       el.classList.add("eco-ripple-host");
+
+      // Só adiciona position:relative se o elemento ainda for
+      // "static" (padrão). Um botão que já é fixed/absolute/sticky
+      // (ex: o seletor de tema flutuante) não pode ter isso
+      // sobrescrito, senão perde o posicionamento fixo na tela.
+      if (getComputedStyle(el).position === "static") {
+        el.classList.add("eco-ripple-host--relative");
+      }
+
       el.addEventListener("click", (e) => criarOnda(e, el));
     });
   }

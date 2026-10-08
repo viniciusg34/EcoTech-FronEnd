@@ -254,7 +254,9 @@ table.data-table tbody tr:hover { background: var(--sage-50); }
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s, transform 0.25s;
-  z-index: 3000;
+  /* precisa ficar ACIMA da barra de acessibilidade (eco-a11y.js,
+     z-index: 9999) — senão o aviso fica escondido atrás dela. */
+  z-index: 10050;
   max-width: 90vw;
   text-align: center;
 }

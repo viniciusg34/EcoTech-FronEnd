@@ -862,7 +862,11 @@ body {
   transition:
     opacity 0.3s,
     transform 0.3s var(--ease);
-  z-index: 9999;
+  /* precisa ficar ACIMA da barra de acessibilidade (eco-a11y.js,
+     z-index: 9999) — antes ficava empatado nela, o que deixa a
+     ordem de empilhamento ambígua/frágil. Mesmo fix aplicado em
+     login.css/cadastro.css/admin-shared.css/coleta.css. */
+  z-index: 10050;
   white-space: nowrap;
   box-shadow: var(--sh-md);
 }

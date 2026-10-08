@@ -475,7 +475,11 @@
   transform: translateY(20px);
   pointer-events: none;
   transition: 0.3s ease;
-  z-index: 999;
+  /* precisa ficar ACIMA da barra de acessibilidade (eco-a11y.js,
+     z-index: 9999) — senão o aviso fica escondido atrás dela.
+     (esta regra é sobrescrita pela segunda ".toast" mais abaixo
+     neste mesmo arquivo — corrigida também por consistência.) */
+  z-index: 10050;
 }
 
 .toast.show {
@@ -550,7 +554,9 @@
   transform: translateY(20px);
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
-  z-index: 999;
+  /* precisa ficar ACIMA da barra de acessibilidade (eco-a11y.js,
+     z-index: 9999) — senão o aviso fica escondido atrás dela. */
+  z-index: 10050;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
