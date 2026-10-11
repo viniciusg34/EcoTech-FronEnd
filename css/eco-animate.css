@@ -12,12 +12,9 @@
   z-index: 1;
 }
 
-/* Variante "ambiente": fica fixa na janela inteira, atrás do
-   conteúdo, em TODAS as páginas (não só onde tem foto grande). */
-.hero-leaves--ambiente {
-  position: fixed;
-  overflow: visible;
-  z-index: 2;
+/* Topo da index fora da tela → congela as folhas (sem custo de CPU) */
+.hero-leaves.folhas-pausadas .eco-leaf {
+  animation-play-state: paused;
 }
 
 .eco-leaf {
