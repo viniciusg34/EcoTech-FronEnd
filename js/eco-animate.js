@@ -4,8 +4,8 @@
    eco-animate.js — Animações leves (SVG + CSS puro, sem
    bibliotecas):
    1) Sistema de estações do ano (verão/outono/inverno/primavera)
-      com folhas/flocos/pétalas caindo no fundo de TODAS as
-      páginas — não só nas fotos, no site inteiro.
+      com folhas/flocos/pétalas caindo APENAS no topo (hero)
+      da página inicial — nas outras abas fica desativado.
    2) Números que contam ao entrar na tela ([data-count-to])
    3) Anéis de progresso em SVG que "desenham" ao entrar na
       tela ([data-progress-ring])
@@ -112,47 +112,52 @@ function ecoDefinirEstacao(chave) {
     });
   }
 
-  /* ── Cria os elementos caindo. Agora SEMPRE inclui a camada
-     ambiente (fundo da página inteira) em TODA página, além dos
-     containers .hero-leaves específicos (fotos) quando existirem
-     — antes a camada ambiente só entrava se não tivesse nenhum
-     hero-leaves; agora as duas coisas coexistem. ── */
+  /* ── Cria os elementos caindo. SÓ funciona no topo da página
+     inicial (index): o container precisa ter data-folhas="index".
+     Nas outras abas nada é criado, e não existe mais a camada
+     "ambiente" fixa na janela inteira — as folhas vivem dentro
+     do .hero (overflow: hidden), então somem ao rolar a página. ── */
+  function containerFolhas() {
+    return document.querySelector('.hero-leaves[data-folhas="index"]');
+  }
+
   function criarFolhas() {
     if (SEM_MOVIMENTO) return;
+    const container = containerFolhas();
+    if (!container || container.dataset.folhasProntas) return;
+
     const dados = ECO_ESTACOES[ecoEstacaoAtual()];
+    container.dataset.folhasProntas = "1";
+    const qtd = parseInt(container.dataset.qtdFolhas || "7", 10);
+    let html = "";
+    for (let i = 0; i < qtd; i++) html += ecoElementoSVG(i, dados);
+    container.insertAdjacentHTML("beforeend", html);
+  }
 
-    document.querySelectorAll(".hero-leaves").forEach((container) => {
-      if (container.dataset.folhasProntas) return;
-      container.dataset.folhasProntas = "1";
-      const qtd = parseInt(container.dataset.qtdFolhas || "7", 10);
-      let html = "";
-      for (let i = 0; i < qtd; i++) html += ecoElementoSVG(i, dados);
-      container.insertAdjacentHTML("beforeend", html);
-    });
-
-    if (!document.getElementById("eco-ambient-leaves")) {
-      const ambiente = document.createElement("div");
-      ambiente.id = "eco-ambient-leaves";
-      ambiente.className = "hero-leaves hero-leaves--ambiente";
-      ambiente.dataset.folhasProntas = "1";
-      let html = "";
-      for (let i = 0; i < 9; i++) html += ecoElementoSVG(i, dados);
-      ambiente.innerHTML = html;
-      document.body.appendChild(ambiente);
-    }
+  /* ── Pausa a animação quando o topo sai da tela (economiza
+     CPU) e retoma quando o usuário volta pro início. ── */
+  function pausarFolhasForaDaTela() {
+    const container = containerFolhas();
+    if (!container || SEM_MOVIMENTO) return;
+    const alvo = container.parentElement || container;
+    new IntersectionObserver(([entrada]) => {
+      container.classList.toggle("folhas-pausadas", !entrada.isIntersecting);
+    }).observe(alvo);
   }
 
   function ecoRecriarFolhas() {
-    document.querySelectorAll(".eco-leaf").forEach((el) => el.remove());
-    document.querySelectorAll(".hero-leaves, #eco-ambient-leaves").forEach((el) => {
-      delete el.dataset.folhasProntas;
-    });
+    const container = containerFolhas();
+    if (!container) return;
+    container.querySelectorAll(".eco-leaf").forEach((el) => el.remove());
+    delete container.dataset.folhasProntas;
     criarFolhas();
   }
 
   /* ── Botão flutuante pra escolher a estação (some no canto,
      igual o botão de tema/acessibilidade) ── */
   function ecoInjetarSeletorEstacao() {
+    // Sem folhas na página → sem botão de estação.
+    if (!containerFolhas() || SEM_MOVIMENTO) return;
     if (document.getElementById("eco-estacao-btn")) return;
     const btn = document.createElement("button");
     btn.id = "eco-estacao-btn";
@@ -273,6 +278,7 @@ function ecoDefinirEstacao(chave) {
 
   function iniciar() {
     criarFolhas();
+    pausarFolhasForaDaTela();
     ecoInjetarSeletorEstacao();
     iniciarObservadores();
 
