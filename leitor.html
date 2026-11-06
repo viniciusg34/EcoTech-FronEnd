@@ -66,6 +66,13 @@ font-family:"Poppins",system-ui,sans-serif;color:var(--lr-ink)}
 .leitor .reward.ok{color:var(--lr-ok)}
 .leitor .reward.no{color:var(--lr-muted);font-weight:400}
 
+.leitor .product{display:flex;gap:12px;align-items:center;margin-top:12px;padding:10px;border:1px solid var(--lr-line);border-radius:10px}
+.leitor .product[hidden]{display:none}
+.leitor .product img{width:56px;height:56px;object-fit:contain;border-radius:8px;background:#fff;flex:none}
+.leitor .product div{min-width:0}
+.leitor .product strong{display:block;overflow-wrap:anywhere}
+.leitor .product span{color:var(--lr-muted);font-size:.85rem;overflow-wrap:anywhere}
+
 /* tablet e desktop */
 @media (min-width:760px){
   main.leitor{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);padding-top:28px}
@@ -211,7 +218,7 @@ font-family:"Poppins",system-ui,sans-serif;color:var(--lr-ink)}
   function render(code){
     var v=checkEAN(code);
     var tag=v===true?'<span class="tag ok">Dígito verificador válido</span>':v===false?'<span class="tag">Dígito verificador inválido</span>':'<span class="tag">Outro formato</span>';
-    $("last").innerHTML='<div class="code">'+esc(code)+'</div>'+tag+'<div class="reward" id="reward"></div>'+
+    $("last").innerHTML='<div class="code">'+esc(code)+'</div>'+tag+'<div class="product" id="product" hidden></div><div class="reward" id="reward"></div>'+
       '<div class="row"><button id="copy">Copiar</button>'+
       '<a href="https://world.openfoodfacts.org/product/'+encodeURIComponent(code)+'" target="_blank" rel="noopener"><button type="button">Buscar produto</button></a></div>';
     $("copy").onclick=function(){
@@ -227,7 +234,58 @@ font-family:"Poppins",system-ui,sans-serif;color:var(--lr-ink)}
   // ===== CONFIGURAÇÃO DO BACKEND =====
   // API_URL vazio = modo demonstração (moedas simuladas, nada é enviado).
   // Em produção: preencha API_URL e ajuste getToken() para ler o token da sessão do EcoTech.
-  var CONFIG={API_URL:"",getToken:function(){try{return localStorage.getItem("eco-token")||""}catch(e){return""}}};
+  var CONFIG={
+    API_URL:"",
+    getToken:function(){try{return localStorage.getItem("eco-token")||""}catch(e){return""}},
+    OFF_BASE:"https://world.openfoodfacts.org", // base do Open Food Facts
+    REQUIRE_PRODUCT:true // true = só dá moedas se o produto existir no Open Food Facts
+  };
+  var offCache={};
+
+  // consulta o produto no Open Food Facts (com cache e limite de 8 s)
+  function lookup(code){
+    if(offCache[code])return Promise.resolve(offCache[code]);
+    var ctrl=window.AbortController?new AbortController():null;
+    var timer=setTimeout(function(){if(ctrl)ctrl.abort()},8000);
+    var url=CONFIG.OFF_BASE+"/api/v2/product/"+encodeURIComponent(code)+".json?fields=code,product_name,brands,quantity,image_front_small_url";
+    return fetch(url,ctrl?{signal:ctrl.signal}:undefined).then(function(r){
+      clearTimeout(timer);
+      if(r.status===404)return{found:false};
+      if(!r.ok)throw new Error("http "+r.status);
+      return r.json().then(function(d){
+        return d&&d.status===1&&d.product?{found:true,p:d.product}:{found:false};
+      });
+    }).then(function(res){offCache[code]=res;return res},function(err){clearTimeout(timer);throw err});
+  }
+
+  function showProduct(p){
+    var b=$("product");if(!b)return;
+    var img=p.image_front_small_url&&/^https:\/\//.test(p.image_front_small_url)?'<img src="'+esc(p.image_front_small_url)+'" alt="">':"";
+    var sub=[p.brands,p.quantity].filter(Boolean).join(" - ");
+    b.innerHTML=img+"<div><strong>"+esc(p.product_name||"Produto sem nome")+"</strong>"+(sub?"<span>"+esc(sub)+"</span>":"")+"</div>";
+    b.hidden=false;
+  }
+
+  // valida o código e só então chama o backend de moedas
+  function validate(code,entry){
+    var box=$("reward");if(!box)return;
+    function stop(t){box.className="reward no";box.textContent=t}
+    if(CONFIG.REQUIRE_PRODUCT){
+      var v=checkEAN(code);
+      if(v===null){stop("Este não é um código de produto (EAN/UPC). Nenhuma moeda foi dada.");return}
+      if(v===false){stop("Código inválido: o dígito verificador não confere. Escaneie de novo.");return}
+    }
+    box.className="reward";box.textContent="Verificando produto…";
+    lookup(code).then(function(r){
+      if(lastCode!==code)return; // outra leitura começou enquanto verificava
+      if(r.found){showProduct(r.p);reward(code,entry)}
+      else if(CONFIG.REQUIRE_PRODUCT){stop("Produto não encontrado no Open Food Facts. Nenhuma moeda foi dada.")}
+      else reward(code,entry);
+    }).catch(function(){
+      if(lastCode!==code)return;
+      stop("Não consegui verificar o produto agora. Tente de novo em instantes.");
+    });
+  }
 
   function uuid(){return window.crypto&&crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2)}
   function setBal(n){$("bal").textContent=n}
@@ -285,7 +343,7 @@ font-family:"Poppins",system-ui,sans-serif;color:var(--lr-ink)}
     try{localStorage.setItem("hist",JSON.stringify(history))}catch(e){}
     renderHist();
     msg("Código lido.");
-    reward(code,entry);
+    validate(code,entry);
   }
 
   function start(){
