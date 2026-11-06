@@ -13,7 +13,7 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
-    <link rel="stylesheet" href="css/index.css" />                      
+    <link rel="stylesheet" href="css/index.css" />
     <link rel="stylesheet" href="css/eco-arte-fundo.css" />
     <link rel="stylesheet" href="css/eco-animate.css" />
     <link rel="stylesheet" href="css/eco-interacoes.css" />
@@ -29,6 +29,7 @@
         <nav class="nav" id="main-nav" aria-label="Navegação principal">
           <a href="index.html" class="active">Início</a>
           <a href="coleta.html">Coleta ecológica</a>
+          <a href="leitor.html">Escanear produto</a>
           <a href="sobre_nos.html">Sobre nós</a>
           <a href="afilie_se.html" class="btn-nav">Afilie-se →</a>
         </nav>
@@ -85,6 +86,24 @@
                 />
                 <button type="submit">Seja Eco</button>
               </form>
+              <a
+                href="leitor.html"
+                class="btn-scan"
+                style="
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 8px;
+                  margin-top: 12px;
+                  padding: 10px 20px;
+                  border-radius: 999px;
+                  background: #3d9140;
+                  color: #fff;
+                  font-weight: 600;
+                  text-decoration: none;
+                "
+              >
+                📷 Escanear um produto
+              </a>
               <div class="hero-badges">
                 <span class="badge" id="badge-tons">
                   <span class="badge-icon">♻️</span>
@@ -251,6 +270,7 @@
               Acumule pontos EcoCredits e troque por benefícios, descontos em
               parceiros e experiências sustentáveis.
             </p>
+            <a href="leitor.html" class="svc-link">Escanear agora →</a>
           </div>
         </div>
       </section>
@@ -514,7 +534,7 @@
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
     <script src="js/eco-arte-fundo.js"></script>
-    
+
     <script>
       "use strict";
 
@@ -1017,7 +1037,7 @@
           };
           legendEl.appendChild(item);
         });
-      }); // fim DOMContentLoaded
+      });
     </script>
   </body>
 </html>
