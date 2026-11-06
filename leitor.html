@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="pt-br" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="shortcut icon" href="assets/fivecom.png" type="image/x-icon">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/index.css">
+<title>Escanear produto | ECOTECH</title>
+<style>
+.leitor{--lr-surface:#fff;--lr-ink:#1b2a1f;--lr-muted:#5c6f60;--lr-line:#d6e3d6;--lr-bg:#f2f6f2;--lr-primary:#3d9140;--lr-laser:#d62839;--lr-ok:#1b7f4b;--lr-cam:#10151c;max-width:960px;margin:0 auto;padding:24px 16px 40px;display:grid;gap:16px;grid-template-columns:1fr;font-family:"Poppins",system-ui,sans-serif;color:var(--lr-ink)}
+[data-theme="dark"] .leitor{--lr-surface:#16201a;--lr-ink:#eef3ee;--lr-muted:#9db0a1;--lr-line:#2a3a2f;--lr-bg:#0f1712;--lr-primary:#5aab5a;--lr-laser:#ff5a68;--lr-ok:#4cc98a;--lr-cam:#05080b}
+.leitor *,.leitor *::before,.leitor *::after{box-sizing:border-box}
+.leitor .lr-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.leitor h1{font-size:1.4rem;margin:0 0 2px;font-weight:600;color:var(--lr-ink)}
+.leitor h2{font-size:1rem;margin:0 0 10px;font-weight:600;color:var(--lr-ink)}
+.leitor .sub{margin:0;color:var(--lr-muted);font-size:.9rem}
+.leitor .coins{padding:8px 14px;border:1px solid var(--lr-line);border-radius:99px;background:var(--lr-surface);font-weight:600;white-space:nowrap}
+.leitor .coins b{margin-left:4px;color:var(--lr-primary)}
+.leitor .panel{background:var(--lr-surface);border:1px solid var(--lr-line);border-radius:14px;padding:14px}
+.leitor #cam{position:relative;aspect-ratio:4/3;background:var(--lr-cam);border-radius:10px;overflow:hidden;display:grid;place-items:center}
+.leitor #reader{position:absolute;inset:0}
+.leitor #reader video{width:100%!important;height:100%!important;object-fit:cover}
+.leitor #reader canvas{display:none}
+.leitor .frame{position:absolute;left:10%;right:10%;top:30%;bottom:30%;border:2px solid #fff;border-radius:8px;pointer-events:none;display:none;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.leitor .frame::after{content:"";position:absolute;left:4%;right:4%;top:50%;height:2px;background:var(--lr-laser);box-shadow:0 0 8px var(--lr-laser);animation:lrsweep 1.6s ease-in-out infinite alternate}
+@keyframes lrsweep{from{top:12%}to{top:88%}}
+@media (prefers-reduced-motion:reduce){.leitor .frame::after{animation:none}}
+.leitor #idle{position:relative;color:#c9d2dc;text-align:center;padding:16px;font-size:.95rem}
+.leitor .row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.leitor button,.leitor input{font:inherit}
+.leitor button{min-height:48px;padding:0 18px;border-radius:10px;border:1px solid var(--lr-line);background:var(--lr-surface);color:var(--lr-ink);cursor:pointer;font-weight:600}
+.leitor button.primary{background:var(--lr-primary);border-color:var(--lr-primary);color:#fff;flex:1}
+.leitor button:focus-visible,.leitor input:focus-visible,.leitor a:focus-visible{outline:3px solid var(--lr-primary);outline-offset:2px}
+.leitor .manual{display:flex;gap:8px}
+.leitor input{flex:1;min-width:0;min-height:48px;padding:0 12px;border-radius:10px;border:1px solid var(--lr-line);background:var(--lr-bg);color:var(--lr-ink);font-size:1rem}
+.leitor .code{font-size:1.5rem;font-weight:600;letter-spacing:.04em;word-break:break-all}
+.leitor .tag{display:inline-block;font-size:.8rem;padding:2px 8px;border-radius:99px;border:1px solid var(--lr-line);color:var(--lr-muted);margin-top:6px}
+.leitor .tag.ok{color:var(--lr-ok);border-color:var(--lr-ok)}
+.leitor .empty{color:var(--lr-muted);margin:0}
+.leitor ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.leitor li{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--lr-line);border-radius:10px;font-size:.95rem}
+.leitor li span{color:var(--lr-muted);font-size:.8rem;white-space:nowrap}
+.leitor a{color:var(--lr-ink)}
+.leitor #msg{min-height:1.4em;margin:10px 0 0;font-size:.9rem;color:var(--lr-muted)}
+.leitor .reward{margin-top:10px;font-weight:600}
+.leitor .reward:empty{display:none}
+.leitor .reward.ok{color:var(--lr-ok)}
+.leitor .reward.no{color:var(--lr-muted);font-weight:400}
+.leitor .side{display:grid;gap:16px;align-content:start}
+@media (min-width:760px){.leitor{grid-template-columns:1.2fr 1fr}.leitor .lr-head{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="nav-container">
+    <a href="index.html" class="logo" aria-label="EcoTech">
+      <img src="./assets/logo.svg" alt="EcoTech" class="logo-img">
+      <div class="logo-name"><em>Eco</em>Tech</div>
+    </a>
+    <nav class="nav" id="main-nav" aria-label="Navegação principal">
+      <a href="index.html">Início</a>
+      <a href="coleta.html">Coleta ecológica</a>
+      <a href="leitor.html" class="active">Escanear produto</a>
+      <a href="sobre_nos.html">Sobre nós</a>
+      <a href="afilie_se.html" class="btn-nav">Afilie-se →</a>
+    </nav>
+    <div class="nav-actions" style="margin-left:auto">
+      <button class="theme-toggle" id="theme-toggle" aria-label="Alternar tema"><span id="theme-icon">☀️</span></button>
+      <a href="login.html" class="icon-btn" aria-label="Perfil">👤</a>
+    </div>
+    <div class="menu-toggle" id="menu-toggle" role="button" aria-label="Abrir menu" aria-expanded="false" tabindex="0">☰</div>
+  </div>
+</header>
+
+<main class="leitor">
+<div class="lr-head">
+  <div>
+    <h1>Leitor de código de barras</h1>
+    <p class="sub">Aponte a câmera para o código do produto.</p>
+  </div>
+  <div class="coins" role="status" aria-live="polite">COINS <b id="bal">0</b></div>
+</div>
+
+<section class="panel" aria-label="Câmera">
+  <div id="cam">
+    <div id="reader"></div>
+    <div class="frame" id="frame"></div>
+    <div id="idle">A câmera está desligada.</div>
+  </div>
+  <div class="row">
+    <button class="primary" id="toggle">Ligar câmera</button>
+    <button id="swap" hidden>Trocar câmera</button>
+    <button id="snap">Fotografar o código</button>
+    <input type="file" id="file" accept="image/*" capture="environment" hidden>
+  </div>
+  <p id="msg" role="status" aria-live="polite"></p>
+</section>
+
+<div class="side">
+  <section class="panel" aria-label="Último código">
+    <h2>Último código lido</h2>
+    <div id="last"><p class="empty">Nenhum código lido ainda.</p></div>
+  </section>
+
+  <section class="panel" aria-label="Digitar código">
+    <h2>Digitar o código</h2>
+    <div class="manual">
+      <input id="manual" inputmode="numeric" autocomplete="off" placeholder="7891000100103" aria-label="Número do código de barras">
+      <button id="go">Usar</button>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Histórico">
+    <h2>Histórico</h2>
+    <ul id="hist"></ul>
+    <p class="empty" id="histEmpty">Os códigos lidos aparecem aqui.</p>
+  </section>
+</div>
+</main>
+
+<footer>
+  <div class="footer-socials">
+    <a href="https://www.instagram.com/ecotech.gp6?igsh=MXAyaHNjdXh6anZ2eg%3D%3D&utm_source=qr" target="_blank" rel="noopener" aria-label="Instagram"><img src="assets/instagram-logo-facebook-2-svgrepo-com.svg" alt="Instagram"></a>
+    <a href="https://br.linkedin.com/" target="_blank" rel="noopener" aria-label="LinkedIn"><img src="assets/linkedin-logo-svgrepo-com.svg" alt="LinkedIn"></a>
+    <a href="https://www.facebook.com/?locale=pt_BR" target="_blank" rel="noopener" aria-label="Facebook"><img src="assets/facebook-svgrepo-com.svg" alt="Facebook"></a>
+  </div>
+  <p>© 2026 EcoTech. Todos os direitos reservados.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script src="js/eco-session.js"></script>
+<script>
+(function(){
+  var root=document.documentElement,saved=null;
+  try{saved=localStorage.getItem("eco-theme")}catch(e){}
+  var pref=saved||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+  root.setAttribute("data-theme",pref);
+  var icon=document.getElementById("theme-icon");
+  icon.textContent=pref==="dark"?"🌙":"☀️";
+  document.getElementById("theme-toggle").addEventListener("click",function(){
+    var t=root.getAttribute("data-theme")==="dark"?"light":"dark";
+    root.setAttribute("data-theme",t);
+    try{localStorage.setItem("eco-theme",t)}catch(e){}
+    icon.textContent=t==="dark"?"🌙":"☀️";
+  });
+  var mt=document.getElementById("menu-toggle"),nav=document.getElementById("main-nav");
+  mt.addEventListener("click",function(){
+    var open=nav.classList.toggle("open");
+    mt.setAttribute("aria-expanded",String(open));
+    mt.textContent=open?"✕":"☰";
+  });
+})();
+</script>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var scanner=null,running=false,cams=[],camIdx=0,lastCode="",lastAt=0,history=[];
+  try{history=JSON.parse(localStorage.getItem("hist")||"[]")}catch(e){history=[]}
+
+  function msg(t){$("msg").textContent=t||""}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+  // valida dígito verificador de EAN-8, UPC-A (12) e EAN-13
+  function checkEAN(c){
+    if(!/^\d+$/.test(c)||[8,12,13].indexOf(c.length)<0)return null;
+    var d=c.split("").map(Number),chk=d.pop(),s=0;
+    d.reverse().forEach(function(n,i){s+=n*(i%2===0?3:1)});
+    return (10-(s%10))%10===chk;
+  }
+
+  function render(code){
+    var v=checkEAN(code);
+    var tag=v===true?'<span class="tag ok">Dígito verificador válido</span>':v===false?'<span class="tag">Dígito verificador inválido</span>':'<span class="tag">Outro formato</span>';
+    $("last").innerHTML='<div class="code">'+esc(code)+'</div>'+tag+'<div class="reward" id="reward"></div>'+
+      '<div class="row"><button id="copy">Copiar</button>'+
+      '<a href="https://world.openfoodfacts.org/product/'+encodeURIComponent(code)+'" target="_blank" rel="noopener"><button type="button">Buscar produto</button></a></div>';
+    $("copy").onclick=function(){
+      if(navigator.clipboard){navigator.clipboard.writeText(code).then(function(){msg("Código copiado.")},function(){msg("Não foi possível copiar.")})}
+    };
+  }
+
+  function renderHist(){
+    $("hist").innerHTML=history.map(function(h){return"<li>"+esc(h.c)+"<span>"+esc(h.t)+(h.r?" "+esc(h.r):"")+"</span></li>"}).join("");
+    $("histEmpty").style.display=history.length?"none":"block";
+  }
+
+  // ===== CONFIGURAÇÃO DO BACKEND =====
+  // API_URL vazio = modo demonstração (moedas simuladas, nada é enviado).
+  // Em produção: preencha API_URL e ajuste getToken() para ler o token da sessão do EcoTech.
+  var CONFIG={API_URL:"",getToken:function(){try{return localStorage.getItem("eco-token")||""}catch(e){return""}}};
+
+  function uuid(){return window.crypto&&crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2)}
+  function setBal(n){$("bal").textContent=n}
+  function saveHist(){try{localStorage.setItem("hist",JSON.stringify(history))}catch(e){}}
+  function authHeaders(){return{"Content-Type":"application/json","Authorization":"Bearer "+CONFIG.getToken()}}
+
+  function reward(code,entry){
+    var box=$("reward");if(!box)return;
+    box.className="reward";box.textContent="Verificando…";
+    function done(ok,text,coins){
+      box.className="reward "+(ok?"ok":"no");box.textContent=text;
+      if(ok&&coins){entry.r="+"+coins;saveHist();renderHist()}
+    }
+    if(!CONFIG.API_URL){
+      if(history.slice(1).some(function(h){return h.c===code})){done(false,"Demonstração: código já escaneado, sem moedas.");return}
+      var b=0;try{b=+localStorage.getItem("demoBal")||0}catch(e){}
+      b+=10;try{localStorage.setItem("demoBal",b)}catch(e){}
+      setBal(b);done(true,"+10 COINS (simulado, nada foi gravado).",10);return;
+    }
+    if(!CONFIG.getToken()){done(false,"Entre na sua conta para ganhar COINS.");return}
+    var h=authHeaders();h["Idempotency-Key"]=uuid();
+    fetch(CONFIG.API_URL+"/scans",{method:"POST",headers:h,body:JSON.stringify({code:code,scannedAt:new Date().toISOString()})})
+    .then(function(r){return r.json().catch(function(){return{}}).then(function(d){return{s:r.status,d:d}})})
+    .then(function(x){
+      var d=x.d||{};
+      if(x.s>=200&&x.s<300){
+        if(typeof d.balance==="number")setBal(d.balance);
+        var c=d.coinsAwarded||0;
+        done(c>0,c>0?"+"+c+" COINS":(d.message||"Código registrado, sem moedas."),c);
+      }
+      else if(x.s===409)done(false,d.message||"Você já escaneou este produto.");
+      else if(x.s===404)done(false,d.message||"Este produto não participa da campanha.");
+      else if(x.s===429)done(false,"Muitas leituras seguidas. Aguarde um pouco.");
+      else if(x.s===401||x.s===403)done(false,"Sessão expirada. Entre novamente.");
+      else done(false,d.message||"Não foi possível registrar. Tente de novo.");
+    })
+    .catch(function(){done(false,"Sem conexão com o servidor.")});
+  }
+
+  function loadBalance(){
+    if(!CONFIG.API_URL){try{setBal(+localStorage.getItem("demoBal")||0)}catch(e){}return}
+    fetch(CONFIG.API_URL+"/me/coins",{headers:authHeaders()}).then(function(r){return r.json()})
+      .then(function(d){if(typeof d.balance==="number")setBal(d.balance)}).catch(function(){});
+  }
+
+  function accept(code){
+    var now=Date.now();
+    if(code===lastCode&&now-lastAt<2500)return;
+    lastCode=code;lastAt=now;
+    if(navigator.vibrate)navigator.vibrate(60);
+    render(code);
+    var entry={c:code,t:new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})};
+    history.unshift(entry);
+    history=history.slice(0,20);
+    try{localStorage.setItem("hist",JSON.stringify(history))}catch(e){}
+    renderHist();
+    msg("Código lido.");
+    reward(code,entry);
+  }
+
+  function start(){
+    if(!window.Html5Qrcode){msg("Não foi possível carregar o leitor. Digite o código abaixo.");return}
+    scanner=scanner||new Html5Qrcode("reader",{
+      formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39,Html5QrcodeSupportedFormats.ITF],
+      verbose:false
+    });
+    var cfg={fps:10,qrbox:function(w,h){return{width:Math.floor(w*.8),height:Math.floor(h*.4)}}};
+    var target=cams.length?{deviceId:{exact:cams[camIdx].id}}:{facingMode:"environment"};
+    return scanner.start(target,cfg,accept,function(){}).then(function(){
+      running=true;$("idle").style.display="none";$("frame").style.display="block";
+      $("toggle").textContent="Desligar câmera";msg("Procurando código…");
+      return Html5Qrcode.getCameras().then(function(c){cams=c;$("swap").hidden=c.length<2}).catch(function(){});
+    }).catch(function(){
+      running=false;
+      msg("A câmera ao vivo foi bloqueada aqui. Toque em “Fotografar o código” ou abra o link direto no navegador do celular.");
+    });
+  }
+
+  function stop(){
+    if(!scanner||!running)return Promise.resolve();
+    return scanner.stop().then(function(){
+      running=false;$("idle").style.display="";$("frame").style.display="none";
+      $("toggle").textContent="Ligar câmera";msg("");
+    }).catch(function(){});
+  }
+
+  $("toggle").onclick=function(){running?stop():start()};
+  $("swap").onclick=function(){
+    if(cams.length<2)return;
+    camIdx=(camIdx+1)%cams.length;
+    stop().then(start);
+  };
+  function manual(){
+    var v=$("manual").value.replace(/\s+/g,"");
+    if(!v){msg("Digite o número do código.");return}
+    if(!/^\d{6,14}$/.test(v)){msg("Use apenas números (de 6 a 14 dígitos).");return}
+    lastCode="";accept(v);$("manual").value="";
+  }
+  $("snap").onclick=function(){$("file").click()};
+  $("file").onchange=function(e){
+    var f=e.target.files&&e.target.files[0];
+    e.target.value="";
+    if(!f)return;
+    if(!window.Html5Qrcode){msg("Não foi possível carregar o leitor.");return}
+    msg("Lendo a foto…");
+    stop().then(function(){
+      var s=new Html5Qrcode("reader",{verbose:false});
+      return s.scanFile(f,false).then(function(code){lastCode="";accept(code)});
+    }).catch(function(){msg("Não encontrei um código nessa foto. Chegue mais perto, deixe o código reto e bem iluminado.")});
+  };
+  $("go").onclick=manual;
+  $("manual").addEventListener("keydown",function(e){if(e.key==="Enter")manual()});
+  document.addEventListener("visibilitychange",function(){if(document.hidden)stop()});
+
+  loadBalance();
+  renderHist();
+})();
+</script>
+</body>
+</html>
