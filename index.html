@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-br" data-theme="light">
+<html data-efeitos lang="pt-br" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,6 +13,7 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" />
     <link rel="stylesheet" href="css/index.css" />                      
     <link rel="stylesheet" href="css/eco-arte-fundo.css" />
     <link rel="stylesheet" href="css/eco-animate.css" />
@@ -102,26 +103,26 @@
             <div class="hero-visual">
               <div class="hero-card-visual">
                 <svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg">
-                  <ellipse cx="180" cy="182" rx="100" ry="12" class="ilustra-media" fill="#d6ebd6" />
+                  <ellipse cx="180" cy="182" rx="100" ry="12" class="ilustra-media" fill="#D9C7A3" />
                   <path
                     d="M180 180 Q178 140 175 110"
-                    stroke="#5aab5a"
+                    stroke="#8CA98C"
                     stroke-width="3"
                     fill="none"
                     stroke-linecap="round"
                   />
                   <path
                     d="M175 130 Q130 90 120 55 Q155 75 165 120"
-                    fill="#3d9140"
+                    fill="#B08D57"
                     opacity=".9"
                   />
                   <path
                     d="M175 115 Q225 78 238 44 Q205 68 180 108"
-                    fill="#5aab5a"
+                    fill="#8CA98C"
                   />
                   <path
                     d="M175 110 Q145 75 148 48 Q168 70 175 105"
-                    fill="#acd4ac"
+                    fill="#BCCDB9"
                   />
                   <rect
                     x="152"
@@ -129,8 +130,8 @@
                     width="56"
                     height="22"
                     rx="6"
-                    fill="#c2e4c2"
-                    stroke="#acd4ac"
+                    fill="#BCCDB9"
+                    stroke="#BCCDB9"
                     stroke-width="1.5"
                   />
                   <rect
@@ -139,19 +140,19 @@
                     width="64"
                     height="10"
                     rx="5"
-                    fill="#acd4ac"
+                    fill="#BCCDB9"
                   />
-                  <circle cx="240" cy="44" r="4" fill="#f5a623" opacity=".7" />
-                  <circle cx="118" cy="55" r="3" fill="#5aab5a" opacity=".5" />
-                  <circle cx="260" cy="110" r="6" class="ilustra-media" fill="#d6ebd6" opacity=".8" />
-                  <circle cx="90" cy="130" r="5" class="ilustra-clara" fill="#eef5ee" opacity=".9" />
+                  <circle cx="240" cy="44" r="4" fill="#B08D57" opacity=".7" />
+                  <circle cx="118" cy="55" r="3" fill="#8CA98C" opacity=".5" />
+                  <circle cx="260" cy="110" r="6" class="ilustra-media" fill="#D9C7A3" opacity=".8" />
+                  <circle cx="90" cy="130" r="5" class="ilustra-clara" fill="#EDF0E8" opacity=".9" />
                   <rect
                     x="20"
                     y="20"
                     width="70"
                     height="6"
                     rx="3"
-                    class="ilustra-clara" fill="#eef5ee"
+                    class="ilustra-clara" fill="#EDF0E8"
                   />
                   <rect
                     x="20"
@@ -159,7 +160,7 @@
                     width="50"
                     height="6"
                     rx="3"
-                    class="ilustra-clara" fill="#eef5ee"
+                    class="ilustra-clara" fill="#EDF0E8"
                   />
                   <rect
                     x="20"
@@ -167,7 +168,7 @@
                     width="60"
                     height="6"
                     rx="3"
-                    class="ilustra-clara" fill="#eef5ee"
+                    class="ilustra-clara" fill="#EDF0E8"
                   />
                   <rect
                     x="270"
@@ -175,7 +176,7 @@
                     width="60"
                     height="6"
                     rx="3"
-                    class="ilustra-clara" fill="#eef5ee"
+                    class="ilustra-clara" fill="#EDF0E8"
                   />
                   <rect
                     x="278"
@@ -183,7 +184,7 @@
                     width="45"
                     height="6"
                     rx="3"
-                    class="ilustra-clara" fill="#eef5ee"
+                    class="ilustra-clara" fill="#EDF0E8"
                   />
                 </svg>
                 <div class="mini-stats">
@@ -510,9 +511,12 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/eco-session.js"></script>
+    <script>requireAuth();</script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js"></script>
     <script src="js/eco-arte-fundo.js"></script>
     
     <script>
@@ -521,60 +525,24 @@
       /* ════════════════════════════════════════════════════
          CONFIGURAÇÃO DA API
       ════════════════════════════════════════════════════ */
-      const API_BASE = "https://6a386bef64a2d82692228142.mockapi.io/api/v1";
-      const API_PESSOA = "https://6a38cde364a2d8269222d659.mockapi.io";
-
       /* ════════════════════════════════════════════════════
          CARREGA ESTATÍSTICAS DA API E ATUALIZA O DOM
       ════════════════════════════════════════════════════ */
       async function loadStats(ecopontosMapCount) {
-        // --- Toneladas: soma kgColetado de /empresa ---
         let tons = null;
-        try {
-          const res = await fetch(`${API_BASE}/empresa`);
-          if (res.ok) {
-            const empresas = await res.json();
-            if (Array.isArray(empresas) && empresas.length > 0) {
-              const totalKg = empresas.reduce(
-                (sum, e) => sum + parseFloat(e.kgColetado || 0),
-                0,
-              );
-              tons = parseFloat((totalKg / 1000).toFixed(1));
-              console.info(`[EcoTech API] ✅ /empresa → ${tons}t coletadas`);
-            }
-          }
-        } catch (err) {
-          console.warn("[EcoTech API] /empresa indisponível:", err);
+        const empresas = await api("/empresas");
+        if (empresas.sucesso && Array.isArray(empresas.dados)) {
+          const totalKg = empresas.dados.reduce(
+            (soma, e) => soma + (parseFloat(e.colected) || 0),
+            0,
+          );
+          tons = parseFloat((totalKg / 1000).toFixed(1));
         }
 
-        // --- Membros ativos: total de registros em /pessoa ---
-        let members = null;
-        try {
-          const res = await fetch(`${API_PESSOA}/pessoa`);
-          if (res.ok) {
-            const pessoas = await res.json();
-            if (Array.isArray(pessoas)) {
-              members = pessoas.length;
-              console.info(`[EcoTech API] ✅ /pessoa → ${members} membros`);
-            }
-          }
-        } catch (err) {
-          console.warn("[EcoTech API] /pessoa indisponível:", err);
-        }
+        // A lista de usuários é exclusiva do master: sem número público.
+        const members = null;
 
-        // --- Ecopontos: fallback para contagem do mapa ---
-        let ecopontos = ecopontosMapCount;
-        try {
-          const res = await fetch(`${API_BASE}/ecopontos`);
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data)) ecopontos = data.length;
-          }
-        } catch (_) {
-          /* usa fallback */
-        }
-
-        return { tons, members, ecopontos };
+        return { tons, members, ecopontos: ecopontosMapCount };
       }
 
       /* ════════════════════════════════════════════════════
@@ -742,9 +710,10 @@
           { key: "vidro", label: "Vidro", color: "#42a5f5" },
           { key: "plastico", label: "Plástico", color: "#ef5350" },
           { key: "eletronicos", label: "Eletrônicos", color: "#ab47bc" },
+          { key: "madeira", label: "Madeira", color: "#8d6e63" },
         ];
 
-        const POINTS = [
+        let POINTS = [
           {
             lat: -22.9597,
             lng: -44.0406,
@@ -901,6 +870,27 @@
           },
         ];
 
+        /* ── ECOPONTOS DA API (sem conexão, o mapa usa a lista acima) ── */
+        const pontosApi = await ecoListarEcopontos();
+        if (pontosApi) {
+          const chaves = CATEGORIES.map((c) => c.key);
+          POINTS = pontosApi
+            .filter((p) => p.lat != null && p.lng != null)
+            .map((p) => {
+              const cats = String(p.cats || "")
+                .toLowerCase()
+                .split(",")
+                .map((c) => c.trim());
+              return {
+                lat: parseFloat(p.lat),
+                lng: parseFloat(p.lng),
+                name: p.name || p.code || "Ecoponto",
+                cat: cats.find((c) => chaves.includes(c)) || "plastico",
+                desc: [p.adress, p.city, p.state].filter(Boolean).join(", "),
+              };
+            });
+        }
+
         /* ── BUSCA DADOS E ATUALIZA DOM ── */
         try {
           const { tons, members, ecopontos } = await loadStats(POINTS.length);
@@ -936,6 +926,7 @@
                     ? ecopontos
                     : null;
             if (value !== null) el.setAttribute("data-target", value);
+            else el.textContent = "—";
           });
         } catch (err) {
           console.error("[EcoTech API] Falha ao carregar stats:", err);

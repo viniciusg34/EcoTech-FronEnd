@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="light">
+<html data-efeitos lang="pt-BR" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -35,7 +35,6 @@
     </header>
 
     <main class="admin-main secao-arte-fundo" data-arte-fundo="circuito-folha">
-      <a href="perfil.html" class="btn-back-pill" style="margin-bottom:20px;">← Voltar</a>
       <h1 class="admin-title">Log de Autenticação</h1>
       <p class="admin-subtitle">
         Resumo das entradas dos usuários no sistema, com o segundo fator utilizado, do mais recente para o mais antigo.
@@ -81,13 +80,16 @@
           <div class="empty-state" id="emptyState" style="display:none;">
             <span class="emoji">🧾</span>
             Nenhum registro de autenticação encontrado ainda.<br />
-            <small style="font-size:0.78rem;">Os registros aparecem aqui após um login com 2FA neste navegador.</small>
+            <small style="font-size:0.78rem;">Os registros aparecem aqui após um login com 2FA.</small>
           </div>
         </div>
       </div>
     </main>
+    <div class="toast" id="toast"></div>
 
+    <script src="./js/api.js"></script>
     <script src="./js/ui-theme.js"></script>
+    <script src="./js/ui-toast.js"></script>
     <script src="./js/eco-session.js"></script>
     <script src="./js/eco-helpers.js"></script>
     <script src="./js/eco-admin.js"></script>
@@ -95,75 +97,55 @@
       initTheme();
       initThemeToggle();
 
-      const sessao = getSession();
-      let acessoLiberado = true;
-      if (!sessao) {
-        window.location.replace("login.html");
-      } else if (!isMaster(sessao)) {
-        acessoLiberado = false;
-        document.getElementById("accessNote").style.display = "flex";
-        document.getElementById("content").style.display = "none";
-      }
+      const tbody = document.getElementById("tbodyLogs");
+      const filtro = document.getElementById("filtroTipo");
+      const campoValor = document.getElementById("termo");
+      campoValor.disabled = true;
 
-      function formatarData(iso) {
-        const d = new Date(iso);
-        return d.toLocaleString("pt-BR", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      }
-
-      function renderizar() {
-        if (!acessoLiberado) return;
-        const tipo = document.getElementById("filtroTipo").value;
-        const termo = cleanText(document.getElementById("termo").value).toLowerCase();
-        let logs = getLogsAutenticacao();
-
-        if (tipo !== "todos" && termo) {
-          logs = logs.filter((l) => {
-            const campo = tipo === "nome" ? (l.nome || "") : (l.cpf || "");
-            return campo.toLowerCase().includes(termo);
-          });
-        }
-
-        document.getElementById("countTag").textContent = `${logs.length} registro(s)`;
-        const tbody = document.getElementById("tbodyLogs");
-
-        if (logs.length === 0) {
-          tbody.innerHTML = "";
-          document.getElementById("emptyState").style.display = "block";
+      async function buscarLogs() {
+        const valor = campoValor.value.trim();
+        const consulta =
+          filtro.value === "todos"
+            ? "filtro=todos"
+            : `filtro=${filtro.value}&valor=${encodeURIComponent(valor)}`;
+        const r = await api(`/logs?${consulta}`);
+        if (!r.sucesso) {
+          tratarFalha(r);
           return;
         }
-        document.getElementById("emptyState").style.display = "none";
-
+        const logs = r.dados || [];
+        document.getElementById("countTag").textContent = `${logs.length} registro(s)`;
+        document.getElementById("emptyState").style.display =
+          logs.length === 0 ? "block" : "none";
         tbody.innerHTML = logs
           .map(
             (l) => `
           <tr>
-            <td>${formatarData(l.data)}</td>
-            <td>${l.nome}</td>
-            <td>${l.cpf}</td>
-            <td><span class="badge-pill">${l.metodo2fa}</span></td>
+            <td>${escaparHtml(l.data_hora_formatada)}</td>
+            <td>${escaparHtml(l.nome)}</td>
+            <td>${escaparHtml(l.cpf)}</td>
+            <td><span class="badge-pill">${escaparHtml(l.pergunta_2fa)}</span></td>
           </tr>`,
           )
           .join("");
       }
 
-      document.getElementById("filtroTipo").addEventListener("change", (e) => {
-        const termoInput = document.getElementById("termo");
-        termoInput.disabled = e.target.value === "todos";
-        if (termoInput.disabled) termoInput.value = "";
-        renderizar();
+      filtro.addEventListener("change", () => {
+        campoValor.disabled = filtro.value === "todos";
+        if (campoValor.disabled) campoValor.value = "";
+        buscarLogs();
       });
-      document.getElementById("termo").addEventListener("input", renderizar);
+      let esperaBusca;
+      campoValor.addEventListener("input", () => {
+        clearTimeout(esperaBusca);
+        esperaBusca = setTimeout(buscarLogs, 300);
+      });
 
-      renderizar();
+      protegerTela(["master"]).then(buscarLogs);
     </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js"></script>
     <script src="js/eco-arte-fundo.js"></script>
   </body>
 </html>

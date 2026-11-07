@@ -49,81 +49,6 @@
   100% { transform: translate(72px, 112vh) rotate(400deg); opacity: 0; }
 }
 
-/* ── Botão + menu de escolha de estação do ano ── */
-#eco-estacao-btn {
-  position: fixed;
-  left: 20px;
-  bottom: 78px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 1.5px solid var(--sage-100, #d6ebd6);
-  background: var(--white, #fff);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
-  font-size: 20px;
-  cursor: pointer;
-  z-index: 9998;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s;
-}
-#eco-estacao-btn:hover { transform: scale(1.08); }
-
-#eco-estacao-menu {
-  position: fixed;
-  left: 20px;
-  bottom: 128px;
-  z-index: 9998;
-  background: var(--white, #fff);
-  border: 1.5px solid var(--sage-100, #d6ebd6);
-  border-radius: 16px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
-  padding: 8px;
-  min-width: 210px;
-  display: none;
-  flex-direction: column;
-  gap: 2px;
-}
-#eco-estacao-menu.aberto { display: flex; }
-.eco-estacao-titulo {
-  font-size: 0.68rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--ink-3, #6b8f6c);
-  padding: 6px 10px 4px;
-}
-#eco-estacao-menu button[data-estacao] {
-  all: unset;
-  display: block;
-  padding: 9px 10px;
-  border-radius: 10px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--ink, #1a2e1b);
-  cursor: pointer;
-}
-#eco-estacao-menu button[data-estacao]:hover {
-  background: var(--sage-50, #eef5ee);
-}
-#eco-estacao-menu button[data-estacao].ativo {
-  background: var(--sage-100, #d6ebd6);
-  font-weight: 800;
-}
-#eco-estacao-menu button.eco-estacao-auto {
-  margin-top: 4px;
-  border-top: 1px solid var(--sage-100, #d6ebd6);
-  padding-top: 10px;
-  color: var(--ink-3, #6b8f6c);
-  font-size: 0.78rem;
-}
-
-@media (max-width: 480px) {
-  #eco-estacao-btn { left: 14px; bottom: 70px; width: 40px; height: 40px; }
-  #eco-estacao-menu { left: 14px; bottom: 116px; }
-}
-
 /* ── Anel de progresso SVG ── */
 .eco-ring-bg {
   fill: none;
@@ -144,55 +69,32 @@
 }
 
 /* ══════════════════════════════
-   ÍCONES COM VIDA
+   ÍCONES ESTÁTICOS E CENTRALIZADOS
+   Este arquivo carrega depois do CSS de cada página, então as
+   regras daqui valem para o site todo.
 ══════════════════════════════ */
-
-/* Logo grande das telas de login/cadastro: balanço contínuo e
-   suave (só aparece nessas telas de entrada, não incomoda em
-   uso prolongado). */
-.eco-logo img {
-  animation: eco-logo-sway 6s ease-in-out infinite;
-  transform-origin: 50% 92%;
-  will-change: transform;
-}
-@keyframes eco-logo-sway {
-  0%, 100% { transform: rotate(-4deg); }
-  50%      { transform: rotate(4deg); }
+.logo img, .logo-img, .brand img, .eco-logo img,
+.numero-icon, .card-icons .icon, .icon-mao, .doc-icon-file,
+.svc-icon, .svc-icon-wrap, .step-icon, .stat-emoji, .info-icon,
+.reward-icon, .impact-icon, .history-icon, .timeline-icon, .footer-leaf,
+.icon-btn, .theme-toggle, .theme-toggle-float, #theme-icon,
+.footer-socials a, .footer-socials img, .eye, .btn-back-float,
+.map-fullscreen-btn, .balloon-refresh, .close-sheet {
+  animation: none !important;
+  transform: none !important;
 }
 
-/* Logo do cabeçalho (aparece em toda navegação): sem animação
-   contínua pra não cansar — só reage ao passar o mouse. */
-.logo img,
-.brand img {
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+.step-icon, .svc-icon-wrap, .info-icon, .reward-icon, .impact-icon,
+.history-icon, .timeline-icon, .footer-leaf, .icon-btn, .theme-toggle,
+.theme-toggle-float, .footer-socials a,
+.btn-back-float, .map-fullscreen-btn, .balloon-refresh:not(.is-text), .close-sheet {
+  display: grid !important;
+  place-items: center;
+  text-align: center;
+  line-height: 1 !important;
 }
-.logo:hover img,
-.brand:hover img {
-  transform: rotate(-8deg) scale(1.08);
-}
-
-/* Ícones de cartões/conteúdo: reagem ao passar o mouse no
-   cartão-pai, dando uma sensação de "vivo" sem nada em loop. */
-.numero-icon,
-.card-icons .icon,
-.icon-mao,
-.doc-icon-file,
-.svc-icon,
-.step-icon {
-  display: inline-block;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.numero-item:hover .numero-icon,
-.card:hover .card-icons .icon,
-.svc-card:hover .svc-icon,
-.step-card:hover .step-icon,
-.doc-card:hover .doc-icon-file {
-  transform: scale(1.18) rotate(-6deg);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .eco-logo img { animation: none !important; }
-}
+.numero-icon, .doc-icon-file, .stat-emoji { line-height: 1; }
+#theme-icon { display: block; line-height: 1; }
 
 @media (prefers-reduced-motion: reduce) {
   .eco-leaf { animation: none !important; opacity: 0.5; }

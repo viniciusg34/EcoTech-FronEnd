@@ -132,7 +132,7 @@ function _ensureModalDOM() {
   style.textContent = `
     #eco-modal-overlay {
       position: fixed; inset: 0;
-      background: rgba(26, 46, 27, 0.55);
+      background: rgba(31, 42, 31, 0.55);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
       z-index: 4000;
@@ -147,8 +147,8 @@ function _ensureModalDOM() {
     #eco-modal-box {
       background: var(--white, #fff);
       border-radius: var(--br-lg, 28px);
-      border: 1.5px solid var(--sage-100, #d6ebd6);
-      box-shadow: var(--sh-lg, 0 20px 56px rgba(30,82,32,0.14));
+      border: 1.5px solid var(--sage-100, #D9C7A3);
+      box-shadow: var(--sh-lg, 0 20px 56px rgba(31, 42, 31,0.14));
       width: 100%; max-width: 480px;
       max-height: 90vh; overflow-y: auto;
       padding: 28px;
@@ -163,29 +163,29 @@ function _ensureModalDOM() {
     .eco-modal-header {
       display: flex; align-items: flex-start; gap: 14px;
       padding-bottom: 20px;
-      border-bottom: 1.5px solid var(--sage-100, #d6ebd6);
+      border-bottom: 1.5px solid var(--sage-100, #D9C7A3);
       margin-bottom: 20px;
     }
     .eco-modal-badge {
       width: 48px; height: 48px; flex-shrink: 0;
       border-radius: var(--br-md, 20px);
-      background: var(--mint, #e8f7e8);
-      border: 1px solid var(--mint-border, #c2e4c2);
+      background: var(--mint, #E6EDE1);
+      border: 1px solid var(--mint-border, #BCCDB9);
       display: grid; place-items: center; font-size: 22px;
     }
     .eco-modal-name {
       font-family: "Lora", serif;
       font-weight: 600; font-size: 1.05rem;
-      color: var(--ink, #1a2e1b); margin-bottom: 3px;
+      color: var(--ink, #1F2A1F); margin-bottom: 3px;
     }
     .eco-modal-code {
       font-size: 0.75rem; font-weight: 700;
-      color: var(--sage-500, #3d9140);
+      color: var(--sage-text);
       letter-spacing: 0.06em; text-transform: uppercase;
       margin-bottom: 5px;
     }
     .eco-modal-desc {
-      font-size: 0.82rem; color: var(--ink-3, #6b8f6c);
+      font-size: 0.82rem; color: var(--ink-3, #526E53);
       line-height: 1.5;
     }
     .eco-modal-cats {
@@ -194,130 +194,130 @@ function _ensureModalDOM() {
     .eco-cat-chip {
       font-size: 0.72rem; font-weight: 600;
       padding: 3px 10px; border-radius: var(--br-pill, 99px);
-      background: var(--sage-50, #eef5ee);
-      border: 1px solid var(--sage-100, #d6ebd6);
-      color: var(--ink-2, #3b5e3d);
+      background: var(--sage-50, #EDF0E8);
+      border: 1px solid var(--sage-100, #D9C7A3);
+      color: var(--ink-2, #3E5A3F);
       text-transform: capitalize;
     }
 
     /* ── Botão fechar ── */
     .eco-modal-close {
       position: absolute; top: 16px; right: 16px;
-      background: var(--sage-50, #eef5ee);
-      border: 1.5px solid var(--sage-100, #d6ebd6);
-      color: var(--ink-3, #6b8f6c);
+      background: var(--sage-50, #EDF0E8);
+      border: 1.5px solid var(--sage-100, #D9C7A3);
+      color: var(--ink-3, #526E53);
       width: 32px; height: 32px; border-radius: 50%;
       font-size: 15px; cursor: pointer; line-height: 1;
       display: grid; place-items: center;
       transition: background 0.2s, color 0.2s;
     }
     .eco-modal-close:hover {
-      background: var(--sage-100, #d6ebd6); color: var(--ink, #1a2e1b);
+      background: var(--sage-100, #D9C7A3); color: var(--ink, #1F2A1F);
     }
 
     /* ── Linha de saldo ── */
     .eco-saldo-row {
       display: flex; align-items: center; gap: 10px;
-      background: var(--mint, #e8f7e8);
-      border: 1px solid var(--mint-border, #c2e4c2);
+      background: var(--mint, #E6EDE1);
+      border: 1px solid var(--mint-border, #BCCDB9);
       border-radius: var(--br-md, 20px);
       padding: 12px 16px; margin-bottom: 20px;
       font-size: 0.9rem;
     }
-    .eco-saldo-row .saldo-label { color: var(--ink-3, #6b8f6c); flex: 1; }
+    .eco-saldo-row .saldo-label { color: var(--ink-3, #526E53); flex: 1; }
     .eco-saldo-row .saldo-valor {
-      font-weight: 800; font-size: 1rem; color: var(--sage-600, #2d7230);
+      font-weight: 800; font-size: 1rem; color: var(--sage-600, #1F2A1F);
     }
 
     /* ── Materiais ── */
     .eco-materials-label {
       font-size: 0.75rem; font-weight: 700; letter-spacing: 0.07em;
-      text-transform: uppercase; color: var(--ink-3, #6b8f6c);
+      text-transform: uppercase; color: var(--ink-3, #526E53);
       margin-bottom: 12px;
     }
     #eco-modal-materials { margin-bottom: 20px; }
     .eco-mat-row {
       display: flex; align-items: center; justify-content: space-between;
       gap: 12px;
-      background: var(--cream, #faf9f6);
-      border: 1.5px solid var(--sage-100, #d6ebd6);
+      background: var(--cream, #FAF6EC);
+      border: 1.5px solid var(--sage-100, #D9C7A3);
       border-radius: var(--br-md, 20px);
       padding: 12px 16px; margin-bottom: 10px;
       transition: border-color 0.2s, background 0.2s;
     }
     .eco-mat-row.active {
-      border-color: var(--sage-400, #5aab5a);
-      background: var(--mint, #e8f7e8);
+      border-color: var(--sage-400, #8CA98C);
+      background: var(--mint, #E6EDE1);
     }
     .eco-mat-label {
       display: flex; align-items: center; gap: 10px;
     }
     .eco-mat-emoji { font-size: 22px; }
     .eco-mat-label strong {
-      display: block; font-size: 0.88rem; color: var(--ink, #1a2e1b);
+      display: block; font-size: 0.88rem; color: var(--ink, #1F2A1F);
     }
     .eco-mat-label small {
-      font-size: 0.75rem; color: var(--sage-500, #3d9140); font-weight: 600;
+      font-size: 0.75rem; color: var(--sage-text); font-weight: 600;
     }
     .eco-mat-controls {
       display: flex; align-items: center; gap: 6px; flex-shrink: 0;
     }
     .eco-qty-btn {
       width: 30px; height: 30px; border-radius: 50%;
-      border: 1.5px solid var(--sage-200, #acd4ac);
-      background: var(--white, #fff); color: var(--ink-2, #3b5e3d);
+      border: 1.5px solid var(--sage-200, #BCCDB9);
+      background: var(--white, #fff); color: var(--ink-2, #3E5A3F);
       font-size: 16px; font-weight: 700;
       cursor: pointer; display: grid; place-items: center; line-height: 1;
       transition: background 0.15s, border-color 0.15s;
     }
     .eco-qty-btn:hover {
-      background: var(--sage-100, #d6ebd6);
-      border-color: var(--sage-400, #5aab5a);
+      background: var(--sage-100, #D9C7A3);
+      border-color: var(--sage-400, #8CA98C);
     }
     .eco-qty-val {
       min-width: 26px; text-align: center;
-      font-size: 1rem; font-weight: 700; color: var(--ink, #1a2e1b);
+      font-size: 1rem; font-weight: 700; color: var(--ink, #1F2A1F);
     }
     .eco-mat-unit {
-      font-size: 0.72rem; color: var(--ink-3, #6b8f6c);
+      font-size: 0.72rem; color: var(--ink-3, #526E53);
       min-width: 20px;
     }
 
     /* ── Resumo ── */
     .eco-summary {
       display: flex; align-items: center; justify-content: space-between;
-      background: var(--sage-50, #eef5ee);
-      border: 1.5px solid var(--sage-100, #d6ebd6);
+      background: var(--sage-50, #EDF0E8);
+      border: 1.5px solid var(--sage-100, #D9C7A3);
       border-radius: var(--br-md, 20px);
       padding: 14px 18px; margin-bottom: 18px;
     }
     .eco-summary-coins {
       font-family: "Lora", serif; font-size: 1.6rem; font-weight: 600;
-      color: var(--sage-600, #2d7230); line-height: 1;
+      color: var(--sage-600, #1F2A1F); line-height: 1;
     }
     .eco-summary-label {
-      font-size: 0.75rem; color: var(--ink-3, #6b8f6c);
+      font-size: 0.75rem; color: var(--ink-3, #526E53);
       font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
       margin-bottom: 4px;
     }
     .eco-summary-items {
-      font-size: 0.82rem; color: var(--ink-3, #6b8f6c);
+      font-size: 0.82rem; color: var(--ink-3, #526E53);
     }
 
     /* ── Botão confirmar ── */
     #eco-btn-confirm {
       width: 100%; padding: 15px 24px;
       border-radius: var(--br-pill, 99px);
-      background: var(--sage-500, #3d9140); color: #fff;
+      background: var(--sage-500, #3E5A3F); color: #fff;
       border: none; font-family: "Plus Jakarta Sans", sans-serif;
       font-weight: 700; font-size: 1rem; cursor: pointer;
-      box-shadow: 0 4px 16px rgba(61,145,64,0.28);
+      box-shadow: 0 4px 16px rgba(62, 90, 63,0.28);
       transition: background 0.2s, transform 0.2s, box-shadow 0.2s, opacity 0.2s;
     }
     #eco-btn-confirm:hover:not(:disabled) {
-      background: var(--sage-600, #2d7230);
+      background: var(--btn-hover);
       transform: translateY(-2px);
-      box-shadow: 0 6px 22px rgba(61,145,64,0.36);
+      box-shadow: 0 6px 22px rgba(62, 90, 63,0.36);
     }
     #eco-btn-confirm:disabled {
       opacity: 0.45; cursor: not-allowed; transform: none;
@@ -335,39 +335,39 @@ function _ensureModalDOM() {
     }
     .eco-success-icon {
       width: 64px; height: 64px; border-radius: 50%;
-      background: var(--mint, #e8f7e8);
-      border: 2px solid var(--sage-200, #acd4ac);
+      background: var(--mint, #E6EDE1);
+      border: 2px solid var(--sage-200, #BCCDB9);
       display: grid; place-items: center; font-size: 30px;
       margin: 0 auto 16px;
     }
     .eco-success-title {
       font-family: "Lora", serif; font-size: 1.4rem; font-weight: 600;
-      color: var(--ink, #1a2e1b); margin-bottom: 6px;
+      color: var(--ink, #1F2A1F); margin-bottom: 6px;
     }
     .eco-success-pts {
       font-size: 2rem; font-weight: 800;
-      color: var(--sage-500, #3d9140); margin-bottom: 8px;
+      color: var(--sage-text); margin-bottom: 8px;
     }
     .eco-success-msg {
-      font-size: 0.85rem; color: var(--ink-3, #6b8f6c);
+      font-size: 0.85rem; color: var(--ink-3, #526E53);
       margin-bottom: 6px; line-height: 1.55;
     }
     .eco-success-balance {
-      font-size: 0.9rem; color: var(--ink-2, #3b5e3d);
+      font-size: 0.9rem; color: var(--ink-2, #3E5A3F);
       font-weight: 600; margin-bottom: 24px;
     }
-    .eco-success-balance span { color: var(--sage-600, #2d7230); }
+    .eco-success-balance span { color: var(--sage-600, #1F2A1F); }
     #eco-btn-close-success {
       padding: 12px 36px; border-radius: var(--br-pill, 99px);
-      background: var(--sage-50, #eef5ee);
-      border: 1.5px solid var(--sage-200, #acd4ac);
-      color: var(--ink-2, #3b5e3d);
+      background: var(--sage-50, #EDF0E8);
+      border: 1.5px solid var(--sage-200, #BCCDB9);
+      color: var(--ink-2, #3E5A3F);
       font-family: "Plus Jakarta Sans", sans-serif;
       font-weight: 700; font-size: 0.9rem; cursor: pointer;
       transition: background 0.2s, transform 0.2s;
     }
     #eco-btn-close-success:hover {
-      background: var(--sage-100, #d6ebd6); transform: translateY(-1px);
+      background: var(--sage-100, #D9C7A3); transform: translateY(-1px);
     }
   `;
   document.head.appendChild(style);

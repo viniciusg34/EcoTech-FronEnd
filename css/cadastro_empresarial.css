@@ -25,37 +25,39 @@
   
   /* ── Variáveis de Design Sincronizadas com o Ecossistema EcoTech ── */
   html[data-theme="light"] {
-    --nav-bg: rgba(248, 251, 248, 0.90);
-    --nav-border: rgba(67, 160, 71, 0.18);
-    --nav-link: #2d4430;
-    --text-color: #0f1f10;
-    --bg-color: #ece8e0;
+    --nav-bg: rgba(250, 246, 236, 0.90);
+    --nav-border: rgba(62, 90, 63, 0.18);
+    --nav-link: #2C3D2D;
+    --text-color: #0B0F0D;
+    --bg-color: #EFE6D3;
     
-    --panel-card-bg: #f6f5f1;
-    --input-bg-tint: #eef5ee;
-    --input-border: #a8cda9;
-    --input-focus-border: #43a047;
-    --input-placeholder: #5d7a5f;
-    --brand-green-primary: #2e7d32;
-    --brand-green-hover: #1b5e20;
-    --organic-shape-color: rgba(67, 160, 71, 0.12);
+    --panel-card-bg: #FAF6EC;
+    --input-bg-tint: #EDF0E8;
+    --input-border: #8CA98C;
+    --input-focus-border: #3E5A3F;
+    --input-placeholder: #526E53;
+    --brand-green-primary: #3E5A3F;
+    --brand-green-text: #3E5A3F;
+    --brand-green-hover: #1F2A1F;
+    --organic-shape-color: rgba(62, 90, 63, 0.12);
   }
   
   html[data-theme="dark"] {
-    --nav-bg: rgba(18, 26, 19, 0.90);
-    --nav-border: rgba(67, 160, 71, 0.30);
-    --nav-link: #c9deca;
-    --text-color: #f1faf2;
-    --bg-color: #0a0f0a;
+    --brand-green-text: #8CA98C;
+    --nav-bg: rgba(11, 15, 13, 0.90);
+    --nav-border: rgba(62, 90, 63, 0.30);
+    --nav-link: #BCCDB9;
+    --text-color: #EDF0E8;
+    --bg-color: #0B0F0D;
     
-    --panel-card-bg: #121a13;
-    --input-bg-tint: #1a251b;
-    --input-border: #3f5a41;
-    --input-focus-border: #66bb6a;
-    --input-placeholder: #8fa891;
-    --brand-green-primary: #43a047;
-    --brand-green-hover: #66bb6a;
-    --organic-shape-color: rgba(67, 160, 71, 0.06);
+    --panel-card-bg: #0B0F0D;
+    --input-bg-tint: #141B16;
+    --input-border: #3E5A3F;
+    --input-focus-border: #8CA98C;
+    --input-placeholder: #8CA98C;
+    --brand-green-primary: #3E5A3F;
+    --brand-green-hover: #4D6D4E;
+    --organic-shape-color: rgba(62, 90, 63, 0.06);
   }
   
   body {
@@ -99,11 +101,11 @@
     text-decoration: none;
     font-weight: 700;
     font-size: 1.1rem;
-    color: #43a047;
+    color: #3E5A3F;
   }
   .logo img { width: 38px; height: 38px; object-fit: contain; }
   .logo span { color: var(--text-color); }
-  .logo .eco { color: #43a047; } 
+  .logo .eco { color: #3E5A3F; } 
   
   .nav { display: flex; align-items: center; gap: 28px; margin-left: auto; }
   .nav a {
@@ -112,11 +114,11 @@
     font-weight: 500;
     font-size: 0.92rem;
   }
-  .nav a:hover { color: #43a047; }
+  .nav a:hover { color: #3E5A3F; }
   
   .btn-nav {
-    background: linear-gradient(135deg, #43a047, #2e7d32);
-    color: #f1faf2 !important;
+    background: linear-gradient(135deg, #3E5A3F, #3E5A3F);
+    color: #EDF0E8 !important;
     padding: 8px 20px;
     border-radius: 50px;
     font-weight: 600;
@@ -132,8 +134,8 @@
   }
   
   .theme-toggle { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 6px; border-radius: 50%; }
-  .theme-toggle:hover { background: rgba(67, 160, 71, 0.1); }
-  .nav-profile { display: flex; background: rgba(67, 160, 71, 0.1); padding: 6px; border-radius: 50%; }
+  .theme-toggle:hover { background: rgba(62, 90, 63, 0.1); }
+  .nav-profile { display: flex; background: rgba(62, 90, 63, 0.1); padding: 6px; border-radius: 50%; }
   .nav-profile img { width: 20px; height: 20px; }
   
   .menu-toggle { display: none; font-size: 24px; cursor: pointer; color: var(--nav-link); margin-left: 12px; }
@@ -200,7 +202,7 @@
     text-transform: uppercase;
     letter-spacing: 0.1em;
     font-weight: 600;
-    color: #43a047;
+    color: var(--brand-green-text);
     margin-bottom: 20px;
   }
   
@@ -208,7 +210,7 @@
     font-size: clamp(1.8rem, 3vw, 2.3rem);
     font-weight: 700;
     line-height: 1.25;
-    color: var(--brand-green-primary);
+    color: var(--brand-green-text);
   }
   
   .building-img {
@@ -280,7 +282,7 @@
   
   .input-group input:focus {
     border-color: var(--input-focus-border);
-    box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.12);
+    box-shadow: 0 0 0 3px rgba(62, 90, 63, 0.12);
   }
   
   .input-group input::placeholder {
@@ -340,7 +342,7 @@
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(67, 160, 71, 0.15);
+    box-shadow: 0 4px 12px rgba(62, 90, 63, 0.15);
     transition: background-color 0.2s ease, transform 0.2s ease;
   }
   
@@ -361,7 +363,7 @@
   }
   
   .form-footer-toggle a {
-    color: var(--brand-green-primary);
+    color: var(--brand-green-text);
     text-decoration: none;
     font-weight: 600;
   }
@@ -401,17 +403,17 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  background: #173d27; /* no cadastro_empresarial.css usei var(--brand-green-primary) p/ respeitar o dark mode */
+  background: #1F2A1F; /* no cadastro_empresarial.css usei var(--brand-green-primary) p/ respeitar o dark mode */
   color: #fff;
   border-radius: 50%;
   text-decoration: none;
-  box-shadow: 0 4px 14px rgba(23, 61, 39, 0.28);
+  box-shadow: 0 4px 14px rgba(31, 42, 31, 0.28);
   transition: 0.25s ease;
   z-index: 1000;
 }
 
 .btn-back:hover {
-  background: #0f2c1c; /* var(--brand-green-hover) no empresarial */
+  background: #0B0F0D; /* var(--brand-green-hover) no empresarial */
   transform: translateX(-3px);
 }
 
@@ -465,7 +467,7 @@
   position: fixed;
   right: 24px;
   bottom: 24px;
-  background: #153f2a;
+  background: #1F2A1F;
   color: #fff;
   padding: 13px 18px;
   border-radius: 12px;
@@ -523,7 +525,7 @@
   color: #fff;
   border-radius: 50%;
   text-decoration: none;
-  box-shadow: 0 4px 14px rgba(23, 61, 39, 0.28);
+  box-shadow: 0 4px 14px rgba(31, 42, 31, 0.28);
   transition: transform 0.25s ease, background 0.25s ease;
   z-index: 1000;
 }

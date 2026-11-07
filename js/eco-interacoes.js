@@ -104,63 +104,105 @@ const ECO_REDUZIR_MOVIMENTO = window.matchMedia(
 })();
 
 /* ══════════════════════════════════════════════════════════
-   3) TILT 3D NOS CARDS
-   Só em cards decorativos/informativos (sem formulário, sem
-   tabela dentro) — lista curada de propósito, igual ao ripple.
-   Desativado em toque (celular/tablet) e reduced-motion.
+   3) INCLINAÇÃO 3D DOS CONTAINERS
+   Efeito dos containers das páginas com <html data-efeitos>. Usa um único
+   listener no documento, então vale também para os cards criados
+   depois por JavaScript. Fica desativado em toque e reduced-motion.
+   A lista precisa ser igual à da seção 8 de eco-interacoes.css.
 ══════════════════════════════════════════════════════════ */
 (function () {
   const SEM_HOVER = window.matchMedia(
     "(hover: none), (pointer: coarse)",
   ).matches;
   if (ECO_REDUZIR_MOVIMENTO || SEM_HOVER) return;
+  if (!document.documentElement.hasAttribute("data-efeitos")) return;
 
   const SELETOR_TILT = [
+    ".hero-card-visual",
+    ".step-card",
+    ".stat-card",
+    ".svc-card",
+    ".testi-card",
+    ".faq-item",
+    ".card",
+    ".numero-item",
+    ".doc-card",
+    ".interactive-card",
+    ".news-container",
     ".card-impacto",
     ".card-beneficio",
-    ".step-card",
-    ".info-card",
-    ".stat-card",
-    ".dash-stat-card",
+    ".passo",
+    ".chamada-acao",
+    ".cta-section",
+    ".scanner-box",
+    ".scan-result",
+    ".history-item",
+    "#coins-banner",
     ".reward-card",
-    ".hero-card-visual",
+    ".timeline-item",
+    ".info-card",
+    ".dash-stat-card",
+    ".dash-chart-card",
+    ".dash-breakdown-card",
+    ".dash-table-card",
+    ".qr-form-card",
+    ".qr-preview-card",
+    ".profile-header",
+    ".section-card",
+    ".hero-card",
+    ".app",
+    ".split-card",
   ].join(", ");
 
   const GRAUS_MAX = 7;
+  // Acima deste tamanho o ângulo diminui, para a borda de um container
+  // grande se mover o mesmo tanto que a de um card comum.
+  const TAMANHO_BASE = 360;
+  let atual = null;
 
-  function aplicarTilt(el) {
-    el.classList.add("eco-tilt");
-
-    el.addEventListener("mousemove", (e) => {
-      const r = el.getBoundingClientRect();
-      const px = (e.clientX - r.left) / r.width;
-      const py = (e.clientY - r.top) / r.height;
-      const rotY = (px - 0.5) * GRAUS_MAX * 2;
-      const rotX = (0.5 - py) * GRAUS_MAX * 2;
-      // ── translateY(-4px) preserva o "levantar" que o card já tinha
-      // no :hover via CSS — sem isso, o transform inline (que sempre
-      // vence o CSS) cancelaria esse efeito enquanto o tilt roda.
-      el.style.transform = `perspective(800px) translateY(-4px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-    });
-
-    el.addEventListener("mouseleave", () => {
-      el.style.transform = "";
-    });
+  function soltar() {
+    if (!atual) return;
+    atual.classList.remove("eco-tilt-ativo");
+    atual = null;
   }
 
-  function iniciarTilt() {
-    document.querySelectorAll(SELETOR_TILT).forEach((el) => {
-      if (el.dataset.ecoTiltOk) return;
-      el.dataset.ecoTiltOk = "1";
-      aplicarTilt(el);
-    });
+  function digitandoDentro(el) {
+    const foco = document.activeElement;
+    return (
+      foco &&
+      el.contains(foco) &&
+      foco.matches("input, select, textarea, [contenteditable]")
+    );
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", iniciarTilt);
-  } else {
-    iniciarTilt();
-  }
+  document.addEventListener("mousemove", (e) => {
+    const el =
+      e.target instanceof Element ? e.target.closest(SELETOR_TILT) : null;
+    if (el !== atual) soltar();
+    if (!el || digitandoDentro(el)) return;
+
+    const r = el.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width;
+    const py = (e.clientY - r.top) / r.height;
+    const grausY = GRAUS_MAX * Math.min(1, TAMANHO_BASE / r.width);
+    const grausX = GRAUS_MAX * Math.min(1, TAMANHO_BASE / r.height);
+    el.style.setProperty("--eco-tilt-y", `${(px - 0.5) * grausY * 2}deg`);
+    el.style.setProperty("--eco-tilt-x", `${(0.5 - py) * grausX * 2}deg`);
+    el.classList.add("eco-tilt-ativo");
+    atual = el;
+  });
+
+  document.documentElement.addEventListener("mouseleave", soltar);
+  window.addEventListener("scroll", soltar, { passive: true });
+  document.addEventListener("click", (e) => {
+    setTimeout(() => {
+      const topo = document.elementFromPoint(e.clientX, e.clientY);
+      if (atual && !atual.contains(topo)) soltar();
+    }, 50);
+  });
+  document.addEventListener("focusin", (e) => {
+    if (atual && digitandoDentro(atual)) soltar();
+  });
 })();
 
 /* ══════════════════════════════════════════════════════════
@@ -283,7 +325,7 @@ const ECO_REDUZIR_MOVIMENTO = window.matchMedia(
    cadastro_empresarial.html) e ao subir de nível (perfil.html).
 ══════════════════════════════════════════════════════════ */
 (function () {
-  const CORES_CONFETE = ["#5aab5a", "#3d9140", "#f5a623", "#82d182", "#2d7230"];
+  const CORES_CONFETE = ["#8CA98C", "#3E5A3F", "#B08D57", "#8CA98C", "#1F2A1F"];
 
   window.ecoConfete = function ecoConfete(quantidade) {
     if (ECO_REDUZIR_MOVIMENTO) return;

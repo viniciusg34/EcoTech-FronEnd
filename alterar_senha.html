@@ -47,7 +47,6 @@
     </header>
 
     <main class="admin-main senha-shell">
-      <a href="perfil.html" class="btn-back-pill" style="margin-bottom:20px;">← Voltar ao perfil</a>
       <h1 class="admin-title">Alterar minha senha</h1>
       <p class="admin-subtitle">Apenas você tem acesso para alterar a sua própria senha.</p>
 
@@ -59,18 +58,18 @@
         <form id="formAlterarSenha">
           <div class="field">
             <label for="senhaAtual">Senha atual</label>
-            <input id="senhaAtual" type="password" required autocomplete="current-password" />
+            <input id="senhaAtual" name="senha_atual" type="password" required autocomplete="current-password" />
             <span class="eye-toggle" onclick="togglePassword('senhaAtual')">mostrar</span>
           </div>
           <div class="field">
             <label for="novaSenha">Nova senha</label>
-            <input id="novaSenha" type="password" required autocomplete="new-password" />
+            <input id="novaSenha" name="nova_senha" type="password" required autocomplete="new-password" />
             <span class="eye-toggle" onclick="togglePassword('novaSenha')">mostrar</span>
-            <small class="hint">Mínimo 8 caracteres, com letra maiúscula, minúscula e número.</small>
+            <small class="hint">Exatamente 8 letras, sem números ou símbolos.</small>
           </div>
           <div class="field">
             <label for="confirmarNovaSenha">Confirmar nova senha</label>
-            <input id="confirmarNovaSenha" type="password" required autocomplete="new-password" />
+            <input id="confirmarNovaSenha" name="confirmar_senha" type="password" required autocomplete="new-password" />
             <span class="eye-toggle" onclick="togglePassword('confirmarNovaSenha')">mostrar</span>
           </div>
           <button type="submit" class="btn btn-primary btn-block" id="btnSalvar">Salvar nova senha</button>
@@ -80,6 +79,7 @@
 
     <div class="toast" id="toast"></div>
 
+    <script src="./js/api.js"></script>
     <script src="./js/ui-theme.js"></script>
     <script src="./js/ui-toast.js"></script>
     <script src="./js/eco-session.js"></script>
@@ -88,69 +88,49 @@
       initTheme();
       initThemeToggle();
 
-      const API_PESSOA = "https://6a38cde364a2d8269222d659.mockapi.io/pessoa";
-      const sessao = requireAuth();
+      const form = document.getElementById("formAlterarSenha");
+      protegerTela(["comum"]);
 
-      if (sessao.perfil === "master") {
-        document.getElementById("masterNote").style.display = "flex";
-        document.getElementById("formCard").style.display = "none";
-      }
-
-      document.getElementById("formAlterarSenha").addEventListener("submit", async function (e) {
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        limparErrosCampos();
 
-        const senhaAtual = document.getElementById("senhaAtual").value;
-        const novaSenha = document.getElementById("novaSenha").value;
-        const confirmarNovaSenha = document.getElementById("confirmarNovaSenha").value;
+        const senha_atual = document.getElementById("senhaAtual").value;
+        const nova_senha = document.getElementById("novaSenha").value;
+        const confirmar_senha = document.getElementById("confirmarNovaSenha").value;
 
-        if (!senhaAtual || !novaSenha || !confirmarNovaSenha) {
-          showToast("Preencha todos os campos.");
+        if (!senhaValidaApi(nova_senha)) {
+          mostrarErrosCampos({ nova_senha: "A senha deve ter exatamente 8 letras." });
           return;
         }
-        if (!senhaSegura(novaSenha)) {
-          showToast("A nova senha não atende aos requisitos mínimos.");
-          return;
-        }
-        if (novaSenha !== confirmarNovaSenha) {
-          showToast("As senhas não coincidem.");
+        if (nova_senha !== confirmar_senha) {
+          mostrarErrosCampos({ confirmar_senha: "As senhas não coincidem." });
           return;
         }
 
         const btn = document.getElementById("btnSalvar");
         btn.disabled = true;
         btn.textContent = "Salvando...";
+        const r = await api("/alterar-senha", {
+          metodo: "POST",
+          corpo: { senha_atual, nova_senha, confirmar_senha },
+        });
+        btn.disabled = false;
+        btn.textContent = "Salvar nova senha";
 
-        try {
-          const resp = await fetch(`${API_PESSOA}/${sessao.id}`);
-          if (!resp.ok) throw new Error("Falha ao consultar usuário.");
-          const usuario = await resp.json();
-
-          if (usuario.senha !== senhaAtual) {
-            showToast("Senha atual incorreta.");
-            btn.disabled = false;
-            btn.textContent = "Salvar nova senha";
-            return;
-          }
-
-          const putResp = await fetch(`${API_PESSOA}/${sessao.id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ senha: novaSenha }),
-          });
-          if (!putResp.ok) throw new Error("Falha ao atualizar senha.");
-
-          showToast("✅ Senha alterada com sucesso!");
-          document.getElementById("formAlterarSenha").reset();
-        } catch (err) {
-          console.error(err);
-          showToast("⚠️ Erro ao conectar com o servidor. Tente novamente.");
-        } finally {
-          btn.disabled = false;
-          btn.textContent = "Salvar nova senha";
+        if (r.sucesso) {
+          mostrarMensagem(r.dados?.mensagem || "Senha alterada com sucesso!", "sucesso");
+          form.reset();
+        } else if (r.campos) {
+          mostrarErrosCampos(r.campos);
+          mostrarMensagem(r.erro);
+        } else {
+          tratarFalha(r);
         }
       });
     </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js"></script>
   </body>
 </html>

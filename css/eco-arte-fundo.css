@@ -23,7 +23,7 @@
   width: 100%;
   max-width: 1600px;
   height: 100%;
-  color: var(--sage-400, #5aab5a);
+  color: var(--sage-text);
 }
 
 [data-theme="dark"] .eco-bg-arte {

@@ -11,12 +11,12 @@
   background-image:
     radial-gradient(
       ellipse 55% 50% at 85% 15%,
-      rgba(172, 212, 172, 0.22) 0%,
+      rgba(140, 169, 140, 0.22) 0%,
       transparent 65%
     ),
     radial-gradient(
       ellipse 50% 55% at 5% 85%,
-      rgba(90, 171, 90, 0.12) 0%,
+      rgba(140, 169, 140, 0.12) 0%,
       transparent 60%
     );
 }
@@ -114,7 +114,7 @@
   background-image:
     radial-gradient(
       ellipse 60% 50% at 80% 30%,
-      rgba(172, 212, 172, 0.2) 0%,
+      rgba(140, 169, 140, 0.2) 0%,
       transparent 65%
     );
 }
@@ -256,7 +256,7 @@
   font-family: "Lora", serif;
   font-weight: 600;
   font-size: 2.2rem;
-  color: var(--sage-500);
+  color: var(--sage-text);
   line-height: 1;
   letter-spacing: -0.03em;
 }
@@ -585,7 +585,7 @@
 
 .status-manutencao {
   background: var(--sun-light);
-  color: #b06d00;
+  color: #7A5C30;
 }
 .status-manutencao::before {
   background: var(--sun);
