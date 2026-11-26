@@ -6,8 +6,8 @@
     <link rel="shortcut icon" href="./assets/fivecom.png" type="image/x-icon" />
     <title>Perfil da Empresa — EcoTech</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" />
-    <link rel="stylesheet" href="css/perfil.css" />
-    <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
+    <link rel="stylesheet" href="css/perfil.css?v=2" />
+    <link rel="stylesheet" href="css/eco-arte-fundo.css?v=4" />
     <link rel="stylesheet" href="css/eco-animate.css" />
     <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
     <link rel="stylesheet" href="css/eco-skeleton.css" />
@@ -25,7 +25,6 @@
       .ponto-sub { font-size: 0.8rem; opacity: 0.75; }
       .variacao { margin-top: 12px; font-size: 0.85rem; opacity: 0.8; text-align: center; }
       .avatar-empresa { cursor: default; }
-      .input-group textarea { resize: vertical; min-height: 70px; font: inherit; }
     </style>
   </head>
   <body>
@@ -147,7 +146,15 @@
         </div>
         <div class="input-group">
           <label for="input-endereco">Endereço</label>
-          <textarea id="input-endereco" maxlength="255"></textarea>
+          <textarea
+            id="input-endereco"
+            rows="3"
+            maxlength="255"
+            autocomplete="street-address"
+            placeholder="Rua, número, bairro, cidade e UF"
+            aria-describedby="dica-endereco"
+          ></textarea>
+          <small class="input-dica" id="dica-endereco">Ex.: Rua das Flores, 120, Centro, Rio de Janeiro – RJ</small>
         </div>
 
         <button class="btn-salvar" id="salvar-dados">Salvar alterações</button>
@@ -276,6 +283,18 @@
         $("input-email").value = empresa.email || "";
         $("input-endereco").value = empresa.endereco || "";
         openModal("modal-editar");
+        ajustarAltura($("input-endereco"));
+      });
+
+      /* Endereço: a caixa cresce com o texto (nada fica escondido atrás
+         de barra de rolagem); Enter não quebra linha, o texto quebra sozinho. */
+      function ajustarAltura(campo) {
+        campo.style.height = "auto";
+        campo.style.height = campo.scrollHeight + 2 + "px";
+      }
+      $("input-endereco").addEventListener("input", (e) => ajustarAltura(e.target));
+      $("input-endereco").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") e.preventDefault();
       });
 
       $("salvar-dados").addEventListener("click", async () => {
@@ -328,6 +347,6 @@
     <script src="js/eco-interacoes.js"></script>
     <script src="js/eco-voltar.js?v=3"></script>
     <script src="js/eco-arte-fundo.js?v=2"></script>
-    <script src="js/eco-acessibilidade.js"></script>
+    <script src="js/eco-acessibilidade.js?v=2"></script>
   </body>
 </html>

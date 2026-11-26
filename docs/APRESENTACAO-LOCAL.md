@@ -49,7 +49,7 @@ Veja `servidor-demo/LEIA-ME.md`. Resumo: `node servidor-demo/iniciar.mjs` e abri
 2. **Pessoa** (`DEMOUS`): login com **2FA** (e um erro de propósito: 3 erros voltam ao login) → perfil (nível, impacto) → mapa de ecopontos → recompensas e resgate.
 3. **Empresa** (`empresa@ecotech.com`): painel (6 meses, materiais) → gerar o **QR** de um ecoponto → **Exportar dados** (CSV).
 4. **Fluxo ao vivo** (duas telas): a pessoa lê o QR na coleta (ou cola o código do botão "Copiar código") → na tela da empresa, **Leitor do Ecoponto** mostra "Conectado: …" → ler um código de barras → o saldo da pessoa sobe sozinho.
-5. Mostre a **barra de acessibilidade** (A+/A− e contraste).
+5. Mostre a **acessibilidade**: clique no botão de tema (☀️/🌙) no topo; abre o painel com contraste (claro/escuro) e tamanho da fonte (A−, A, A+).
 
 ## Antes da apresentação (faça na véspera e 30 minutos antes)
 - [ ] Notebook carregado, com o carregador; **Node.js** instalado se for usar o plano B.

@@ -143,7 +143,21 @@ function renderDashboard(dash) {
   /* Expõe `points` para o script inline do empresa.html */
   window.__empresaPoints = points;
   window.__empresaDash = dash; // usado pela exportação do resumo (CSV)
-  if (typeof bindQrListeners === "function") bindQrListeners();
-  if (typeof bindReader === "function") bindReader();
-  if (typeof bindExport === "function") bindExport();
+  if (!window.__empresaEventosLigados) {
+    // 1ª vez: liga os botões da página (só uma vez, para não duplicar cliques)
+    window.__empresaEventosLigados = true;
+    if (typeof bindQrListeners === "function") bindQrListeners();
+    if (typeof bindReader === "function") bindReader();
+    if (typeof bindExport === "function") bindExport();
+  } else if (typeof atualizarListasEcopontos === "function") {
+    // painel recarregado (ex.: Ecoponto novo): só refaz as listas e os botões da tabela
+    atualizarListasEcopontos();
+  }
+}
+
+/* Recarrega o painel sem abrir a página de novo (ex.: depois de gerar um Ecoponto). */
+async function recarregarPainelEmpresa() {
+  const dash = await EmpresaApi.dashboard();
+  renderDashboard(dash);
+  return dash;
 }

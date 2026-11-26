@@ -94,7 +94,7 @@ Marque `[x]` ao passar. Se algo falhar, anote a tela, o passo e a mensagem.
 - [ ] `error_page.html?codigo=403` mostra "Acesso negado"; `?codigo=500`, "Algo inesperado aconteceu". Endereço inexistente (ex.: `/xyz`) cai na tela de erro 404.
 - [ ] Forçar um erro 500 na API (ou desligá-la durante uma ação) abre a tela de erro com o botão Voltar; a checagem de saldo em segundo plano **não** redireciona.
 - [ ] Logado, o menu do avatar aparece também na tela de erro, com "Sair da conta".
-- [ ] **Barra de acessibilidade** no topo de todas as páginas: A+ e A− mudam o tamanho do texto (85% a 150%), A restaura; "Contraste" alterna fundo claro/escuro; a escolha de fonte permanece ao trocar de página.
+- [ ] **Painel de acessibilidade** (botão de tema ☀️/🌙 em todas as páginas): abre sem trocar o tema; "Claro"/"Escuro" alternam o contraste; A+ e A− mudam o tamanho do texto (85% a 150%), A restaura; Esc ou clicar fora fecha; a escolha de fonte permanece ao trocar de página.
 - [ ] Com o aparelho em modo escuro, o site **abre claro**.
 - [ ] Consulta de Usuários → "Baixar PDF": baixa `usuarios-ecotech.pdf` com todos os usuários da busca atual, CPF mascarado, em mais de uma página se a lista for grande.
 - [ ] `modelo_bd.html`: aparece a **imagem** do DER; clicar abre o PNG em tamanho real.

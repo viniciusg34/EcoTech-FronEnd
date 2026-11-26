@@ -33,6 +33,16 @@
      domínio só para ela (ex.: o da Vercel) e peça outra para localhost.
      Sem chave, o mapa cai no OpenStreetMap padrão (ver js/eco-map-tiles.js).
 
+   AVISO_EMAIL
+     Quem recebe um e-mail de aviso quando uma empresa gera um Ecoponto
+     novo (painel da empresa). O envio é feito pelo FormSubmit
+     (formsubmit.co), direto do navegador, sem servidor de e-mail.
+     Na PRIMEIRA vez, o FormSubmit manda para esse endereço um e-mail
+     "Activate Form": é só clicar no botão uma vez. Depois disso todos os
+     avisos chegam direto. O e-mail de ativação traz um código aleatório
+     que pode substituir o endereço aqui (assim o e-mail não fica à mostra
+     no código do site).
+
    GOOGLE_CLIENT_ID
      ID público do OAuth (termina em .apps.googleusercontent.com).
      Não é segredo; a validação do token é feita pela API.
@@ -48,5 +58,6 @@ window.ECOTECH_CONFIG = {
   ORDEM: ["servidor", "porta8000", "local"],
   MOSTRAR_STATUS: true,
   CARTO_KEY: "",
+  AVISO_EMAIL: "viniciusgomesdecerqueira@gmail.com",
   GOOGLE_CLIENT_ID: "547710554770-v2ofvchbeskjbm9d80pq12m3jncve5v7.apps.googleusercontent.com",
 };
