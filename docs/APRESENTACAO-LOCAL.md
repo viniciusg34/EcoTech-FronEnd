@@ -8,7 +8,7 @@ Três formas de rodar. Escolha a principal e deixe a segunda pronta como reserva
 | **B. Servidor** | Site na Vercel + API hospedada (HTTPS) | Se a sala tiver boa internet e quiser mostrar online |
 | **C. Demonstração (plano B)** | Site + API **simulada** no computador | Só se A e B falharem; **avise a banca** |
 
-O front já sabe alternar: em `js/config.js` ficam os ambientes `local` e `servidor` e a ordem em que são tentados. Ele pergunta `GET /saude` a cada um e usa o primeiro que responder; se o escolhido cair no meio da apresentação, passa para o outro e pede novo login. Um **selo no canto inferior esquerdo** mostra onde ele está conectado (verde = real, amarelo = demonstração, vermelho = sem conexão) e, clicando, dá para trocar à mão.
+O front já sabe alternar: em `js/config.js` ficam os ambientes `local` e `servidor` e a ordem em que são tentados. Ele pergunta `GET /saude` a cada um e usa o primeiro que responder; se o escolhido cair no meio da apresentação, passa para o outro e pede novo login. Abrindo o site com **`?status=1`**, um **selo no canto inferior esquerdo** mostra onde ele está conectado (o usuário comum não vê o selo) (verde = real, amarelo = demonstração, vermelho = sem conexão) e, clicando, dá para trocar à mão.
 
 ## A. Tudo no seu computador (backend real)
 
