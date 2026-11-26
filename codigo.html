@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="./assets/fivecom.png" type="image/x-icon" />
+    <title>Código de verificação — EcoTech</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/admin-shared.css" />
+    <style>
+      .codigo-shell {
+        max-width: 480px;
+        margin: 60px auto;
+        padding: 0 20px;
+      }
+      .codigo-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: var(--sage-50);
+        border: 1.5px solid var(--sage-100);
+        display: grid;
+        place-items: center;
+        font-size: 26px;
+        margin-bottom: 16px;
+      }
+      .email-destino {
+        background: var(--sage-50);
+        border: 1.5px solid var(--sage-100);
+        border-radius: var(--br-md);
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-weight: 700;
+        color: var(--ink-2);
+        text-align: center;
+        word-break: break-all;
+      }
+      .codigo-caixas {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin: 6px 0 20px;
+      }
+      .codigo-caixas input {
+        width: 48px;
+        height: 58px;
+        text-align: center;
+        font-size: 1.6rem;
+        font-weight: 800;
+        border: 1.5px solid var(--sage-200, #c9d6c9);
+        border-radius: 12px;
+        background: var(--white, #fff);
+        color: var(--ink-1, #0b0f0d);
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      .codigo-caixas input:focus {
+        border-color: var(--sage-400);
+        box-shadow: 0 0 0 3px var(--sage-200);
+      }
+      .codigo-caixas.erro input {
+        border-color: var(--danger);
+        animation: tremer 0.3s;
+      }
+      @keyframes tremer {
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+      }
+      @media (max-width: 380px) {
+        .codigo-caixas { gap: 5px; }
+        .codigo-caixas input { width: 40px; height: 50px; font-size: 1.3rem; }
+      }
+      .nota {
+        font-size: 0.82rem;
+        color: var(--ink-3);
+        margin-top: 12px;
+        text-align: center;
+      }
+      .nota strong { color: var(--danger); }
+      .reenviar {
+        background: none;
+        border: none;
+        color: var(--sage-600, #3e5a3f);
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: underline;
+        font: inherit;
+        padding: 0;
+      }
+      .reenviar:disabled {
+        color: var(--ink-3);
+        cursor: default;
+        text-decoration: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .codigo-caixas.erro input { animation: none; }
+      }
+    </style>
+    <link rel="stylesheet" href="css/eco-animate.css" />
+    <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
+    <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
+  </head>
+  <body>
+    <header class="admin-header">
+      <a href="index.html" class="brand">
+        <img src="./assets/logo.svg" alt="" />
+        <span><em>Eco</em>Tech</span>
+      </a>
+      <div class="header-actions">
+        <button class="theme-toggle" id="theme-toggle" aria-label="Alternar tema">
+          <span id="theme-icon">☀️</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="admin-main codigo-shell secao-arte-tela" data-arte-fundo="seguranca">
+      <div class="card">
+        <div class="codigo-icon">✉️</div>
+        <h1 class="admin-title" style="margin-bottom:6px;" id="titulo">Digite o código</h1>
+        <p class="admin-subtitle" style="margin-bottom:16px;" id="subtitulo">
+          Enviamos um código de 6 dígitos para:
+        </p>
+
+        <div class="email-destino" id="emailDestino">—</div>
+
+        <form id="formCodigo" novalidate>
+          <label class="sr-only" for="d0" style="position:absolute;left:-9999px;">Código de 6 dígitos</label>
+          <div class="codigo-caixas" id="caixas" role="group" aria-label="Código de 6 dígitos">
+            <input id="d0" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-label="Dígito 1" />
+            <input id="d1" inputmode="numeric" maxlength="1" aria-label="Dígito 2" />
+            <input id="d2" inputmode="numeric" maxlength="1" aria-label="Dígito 3" />
+            <input id="d3" inputmode="numeric" maxlength="1" aria-label="Dígito 4" />
+            <input id="d4" inputmode="numeric" maxlength="1" aria-label="Dígito 5" />
+            <input id="d5" inputmode="numeric" maxlength="1" aria-label="Dígito 6" />
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="btnConfirmar">Confirmar</button>
+        </form>
+
+        <p class="nota" id="notaTentativas"></p>
+        <p class="nota">
+          Não recebeu? Olhe a caixa de spam ou
+          <button type="button" class="reenviar" id="btnReenviar">reenviar código</button>
+          <span id="contagem"></span>
+        </p>
+
+        <p style="text-align:center;margin-top:18px;">
+          <a href="login.html" class="btn-back-pill" id="btnCancelar">← Cancelar e voltar ao login</a>
+        </p>
+      </div>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="./js/ui-theme.js"></script>
+    <script src="./js/ui-toast.js"></script>
+    <script src="./js/eco-helpers.js"></script>
+    <script src="./js/config.js?v=6"></script>
+    <script src="./js/api.js?v=7"></script>
+    <script>
+      initTheme();
+      initThemeToggle();
+
+      /* O desafio vem da tela anterior (login, 2FA ou cadastro).
+         Só guardamos o id, a finalidade e o e-mail mascarado; o código é conferido na API. */
+      const pendente = Auth.lerCodigo();
+      if (!pendente || !pendente.desafio_id) {
+        window.location.replace("login.html");
+        throw new Error("Sem código pendente — voltando ao login.");
+      }
+
+      const TEXTOS = {
+        confirmar_email: {
+          titulo: "Confirme seu e-mail",
+          subtitulo: "Para ativar sua conta, digite o código de 6 dígitos que enviamos para:",
+          sucesso: "E-mail confirmado! Agora faça login.",
+        },
+        login: {
+          titulo: "Digite o código",
+          subtitulo: "Última etapa: digite o código de 6 dígitos que enviamos para:",
+          sucesso: "Tudo certo! Entrando…",
+        },
+      };
+      const texto = TEXTOS[pendente.finalidade] || TEXTOS.login;
+      document.getElementById("titulo").textContent = texto.titulo;
+      document.getElementById("subtitulo").textContent = texto.subtitulo;
+      document.getElementById("emailDestino").textContent = pendente.email || "seu e-mail";
+
+      const caixas = Array.from(document.querySelectorAll("#caixas input"));
+      const grupo = document.getElementById("caixas");
+      const btnConfirmar = document.getElementById("btnConfirmar");
+
+      /* ── As 6 caixas: digita e pula, apaga e volta, cola o código inteiro ── */
+      function preencher(digitos, inicio) {
+        const lista = String(digitos).replace(/\D/g, "").split("");
+        let i = inicio;
+        lista.forEach((d) => {
+          if (i < caixas.length) caixas[i++].value = d;
+        });
+        caixas[Math.min(i, caixas.length - 1)].focus();
+        if (codigoDigitado().length === 6) enviar();
+      }
+      function codigoDigitado() {
+        return caixas.map((c) => c.value).join("");
+      }
+      function limparCaixas() {
+        caixas.forEach((c) => (c.value = ""));
+        caixas[0].focus();
+      }
+
+      caixas.forEach((caixa, i) => {
+        caixa.addEventListener("input", () => {
+          grupo.classList.remove("erro");
+          const v = caixa.value.replace(/\D/g, "");
+          caixa.value = "";
+          if (v) preencher(v, i);
+        });
+        caixa.addEventListener("keydown", (e) => {
+          if (e.key === "Backspace" && !caixa.value && i > 0) {
+            caixas[i - 1].value = "";
+            caixas[i - 1].focus();
+            e.preventDefault();
+          } else if (e.key === "ArrowLeft" && i > 0) {
+            caixas[i - 1].focus();
+          } else if (e.key === "ArrowRight" && i < caixas.length - 1) {
+            caixas[i + 1].focus();
+          }
+        });
+        caixa.addEventListener("paste", (e) => {
+          e.preventDefault();
+          preencher((e.clipboardData || window.clipboardData).getData("text"), i);
+        });
+        caixa.addEventListener("focus", () => caixa.select());
+      });
+      caixas[0].focus();
+
+      /* ── Tentativas e reenviar ── */
+      function mostrarTentativas(restantes) {
+        document.getElementById("notaTentativas").innerHTML =
+          typeof restantes === "number" && restantes < 5
+            ? `Tentativas restantes: <strong>${restantes}</strong>`
+            : "";
+      }
+      mostrarTentativas(pendente.tentativas_restantes);
+      if (pendente.email_enviado === false) {
+        showToast("Não conseguimos enviar o código. Toque em \"reenviar código\".");
+      }
+
+      const btnReenviar = document.getElementById("btnReenviar");
+      const contagem = document.getElementById("contagem");
+      let relogio = null;
+
+      function iniciarContagem(reenviarEm) {
+        clearInterval(relogio);
+        const alvo = reenviarEm ? new Date(reenviarEm).getTime() : 0;
+        const tick = () => {
+          const falta = Math.ceil((alvo - Date.now()) / 1000);
+          if (falta > 0) {
+            btnReenviar.disabled = true;
+            contagem.textContent = `(em ${falta}s)`;
+          } else {
+            btnReenviar.disabled = false;
+            contagem.textContent = "";
+            clearInterval(relogio);
+          }
+        };
+        tick();
+        relogio = setInterval(tick, 1000);
+      }
+      iniciarContagem(pendente.reenviar_em);
+
+      btnReenviar.addEventListener("click", async () => {
+        btnReenviar.disabled = true;
+        try {
+          const r = await Auth.reenviarCodigo(pendente.desafio_id);
+          Auth.atualizarCodigo({ reenviar_em: r.reenviar_em, expira_em: r.expira_em });
+          iniciarContagem(r.reenviar_em);
+          limparCaixas();
+          showToast(r.message || "Enviamos um código novo.");
+        } catch (err) {
+          if (err.data && err.data.aguarde_segundos) {
+            iniciarContagem(new Date(Date.now() + err.data.aguarde_segundos * 1000).toISOString());
+          } else if (err.status === 410 || err.status === 423 || (err.status === 429 && err.erro === "limite_reenvios")) {
+            encerrar(err.message);
+            return;
+          } else {
+            btnReenviar.disabled = false;
+          }
+          Api.showError(err, "Não foi possível reenviar agora. Tente de novo.");
+        }
+      });
+
+      document.getElementById("btnCancelar").addEventListener("click", () => Auth.limparCodigo());
+
+      function encerrar(mensagem) {
+        Auth.limparCodigo();
+        Auth.limpar2fa();
+        showToast(mensagem || "Código bloqueado. Faça login novamente.");
+        setTimeout(() => (window.location.href = "login.html"), 1800);
+      }
+
+      /* ── Confirmar ── */
+      let enviando = false;
+      async function enviar() {
+        const codigo = codigoDigitado();
+        if (codigo.length !== 6) {
+          showToast("Digite os 6 números do código.");
+          return;
+        }
+        if (enviando) return;
+        enviando = true;
+        btnConfirmar.disabled = true;
+        btnConfirmar.textContent = "Conferindo…";
+
+        try {
+          if (pendente.finalidade === "confirmar_email") {
+            const r = await Auth.confirmarEmail(pendente.desafio_id, codigo);
+            Auth.limparCodigo();
+            if (typeof window.ecoConfete === "function") window.ecoConfete();
+            showToast(r.message || texto.sucesso, true);
+            setTimeout(() => (window.location.href = "login.html"), 1600);
+            return;
+          }
+
+          const r = await Auth.verificarCodigo(pendente.desafio_id, codigo, pendente.lembrar);
+          Session.save(r, pendente.lembrar);
+          Auth.limparCodigo();
+          Auth.limpar2fa();
+          showToast(texto.sucesso);
+          setTimeout(() => (window.location.href = Auth.destinoPosLogin(r.usuario)), 900);
+        } catch (err) {
+          enviando = false;
+          btnConfirmar.disabled = false;
+          btnConfirmar.textContent = "Confirmar";
+
+          if (err.name === "ApiError" && err.status === 410 && err.data && err.data.pode_reenviar) {
+            // expirou: dá para pedir outro sem recomeçar
+            Api.showError(err, "O código expirou. Peça um novo.");
+            btnReenviar.disabled = false;
+            contagem.textContent = "";
+            limparCaixas();
+            return;
+          }
+          if (err.name === "ApiError" && (err.status === 410 || err.status === 423)) {
+            encerrar(err.message);
+            return;
+          }
+          Api.showError(err, "Código incorreto. Tente novamente.");
+          mostrarTentativas(err.data && err.data.tentativas_restantes);
+          grupo.classList.add("erro");
+          limparCaixas();
+        }
+      }
+
+      document.getElementById("formCodigo").addEventListener("submit", (e) => {
+        e.preventDefault();
+        enviar();
+      });
+    </script>
+    <script src="js/eco-animate.js"></script>
+    <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
+    <script src="js/eco-acessibilidade.js"></script>
+  </body>
+</html>

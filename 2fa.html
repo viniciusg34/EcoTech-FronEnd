@@ -94,8 +94,8 @@
     <script src="./js/ui-theme.js"></script>
     <script src="./js/ui-toast.js"></script>
     <script src="./js/eco-helpers.js"></script>
-    <script src="./js/config.js?v=8"></script>
-    <script src="./js/api.js?v=8"></script>
+    <script src="./js/config.js?v=6"></script>
+    <script src="./js/api.js?v=7"></script>
     <script>
       initTheme();
       initThemeToggle();
@@ -183,6 +183,15 @@
         btn.disabled = true;
         try {
           const r = await Auth.verificar2fa(pendente.desafio_id, resposta, pendente.lembrar);
+
+          // Resposta certa: falta o código de 6 dígitos que a API mandou por e-mail
+          if (r && r.status === "codigo_email") {
+            Auth.limpar2fa();
+            showToast("Resposta certa! Agora digite o código do e-mail.");
+            setTimeout(() => Auth.irParaCodigo(r, pendente.lembrar), 700);
+            return;
+          }
+
           Session.save(r, pendente.lembrar);
           Auth.limpar2fa();
           showToast("Identidade confirmada! Entrando…");

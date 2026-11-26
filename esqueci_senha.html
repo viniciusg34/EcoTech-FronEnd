@@ -92,7 +92,7 @@
         <div class="recuperar-icon">🔑</div>
         <h1 class="admin-title" style="text-align:center; margin-bottom:6px;">Recuperar senha</h1>
         <p class="admin-subtitle" style="text-align:center; margin-bottom:22px;">
-          Vamos confirmar sua identidade em 3 passos rápidos.
+          Vamos confirmar que o e-mail é seu em 3 passos rápidos.
         </p>
 
         <div class="steps-indicator" id="steps-indicator">
@@ -112,17 +112,32 @@
           </button>
         </div>
 
-        <!-- ═══ ETAPA 2 — PERGUNTA DE SEGURANÇA ═══ -->
+        <!-- ═══ ETAPA 2 — CÓDIGO DE 6 DÍGITOS NO E-MAIL ═══ -->
         <div class="painel-etapa" data-etapa="2">
-          <div class="question-box" id="pergunta-seguranca">Carregando pergunta…</div>
+          <p class="admin-subtitle" style="margin-bottom:8px;">Se o e-mail tiver conta, enviamos um código de 6 dígitos para:</p>
+          <div class="question-box" id="email-destino">—</div>
           <div class="field">
-            <label for="resposta-seguranca">Sua resposta</label>
-            <input id="resposta-seguranca" type="text" autocomplete="off" required />
+            <label for="codigo-recuperacao">Código recebido</label>
+            <input
+              id="codigo-recuperacao"
+              type="text"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="7"
+              placeholder="000000"
+              style="text-align:center; font-size:1.5rem; letter-spacing:8px; font-weight:800;"
+              required
+            />
           </div>
           <button type="button" class="btn btn-primary btn-block" id="btn-confirmar-resposta">
             Confirmar
           </button>
           <p class="attempts-note" id="attempts-note"></p>
+          <p class="attempts-note">
+            Não chegou? Veja o spam ou
+            <button type="button" id="btn-reenviar" style="background:none;border:none;padding:0;font:inherit;font-weight:700;color:var(--sage-600,#3e5a3f);text-decoration:underline;cursor:pointer;">reenviar código</button>
+            <span id="contagem-reenvio"></span>
+          </p>
         </div>
 
         <!-- ═══ ETAPA 3 — NOVA SENHA ═══ -->
@@ -160,14 +175,14 @@
     <script src="./js/ui-theme.js"></script>
     <script src="./js/ui-toast.js"></script>
     <script src="./js/eco-helpers.js"></script>
-    <script src="./js/config.js?v=8"></script>
-    <script src="./js/api.js?v=8"></script>
+    <script src="./js/config.js?v=6"></script>
+    <script src="./js/api.js?v=7"></script>
     <script>
       initTheme();
       initThemeToggle();
 
       /* Estado só em memória: id do desafio e token de reset.
-         Pergunta, resposta e senha são conferidas pela API. */
+         O código do e-mail e a senha são conferidos pela API. */
       let desafioId = null;
       let tokenReset = null;
 
@@ -202,12 +217,12 @@
             return;
           }
           desafioId = r.desafio_id;
-          // o texto antigo trazia a dica do formato da data
-          const dica = Auth.tipoPergunta(r) === "nascimento" ? " (dd/mm/aaaa)" : "";
-          document.getElementById("pergunta-seguranca").textContent = (r.pergunta || "") + dica;
-          document.getElementById("resposta-seguranca").value = "";
+          document.getElementById("email-destino").textContent = r.email || email;
+          document.getElementById("codigo-recuperacao").value = "";
           document.getElementById("attempts-note").innerHTML = "";
+          iniciarContagem(r.reenviar_em);
           irParaEtapa(2);
+          document.getElementById("codigo-recuperacao").focus();
         } catch (err) {
           Api.showError(err, "Não foi possível continuar. Tente novamente.");
         } finally {
@@ -227,11 +242,51 @@
         );
       }
 
+      /* ── Reenviar código (espera 60 s entre envios) ── */
+      const btnReenviar = document.getElementById("btn-reenviar");
+      const contagem = document.getElementById("contagem-reenvio");
+      let relogio = null;
+      function iniciarContagem(reenviarEm) {
+        clearInterval(relogio);
+        const alvo = reenviarEm ? new Date(reenviarEm).getTime() : 0;
+        const tick = () => {
+          const falta = Math.ceil((alvo - Date.now()) / 1000);
+          btnReenviar.disabled = falta > 0;
+          btnReenviar.style.opacity = falta > 0 ? "0.5" : "1";
+          contagem.textContent = falta > 0 ? `(em ${falta}s)` : "";
+          if (falta <= 0) clearInterval(relogio);
+        };
+        tick();
+        relogio = setInterval(tick, 1000);
+      }
+      btnReenviar.addEventListener("click", async () => {
+        if (!desafioId) return;
+        btnReenviar.disabled = true;
+        try {
+          const r = await Auth.reenviarCodigo(desafioId);
+          iniciarContagem(r.reenviar_em);
+          document.getElementById("codigo-recuperacao").value = "";
+          showToast(r.message || "Enviamos um código novo.");
+        } catch (err) {
+          if (err.data && err.data.aguarde_segundos) {
+            iniciarContagem(new Date(Date.now() + err.data.aguarde_segundos * 1000).toISOString());
+          } else {
+            btnReenviar.disabled = false;
+          }
+          Api.showError(err, "Não foi possível reenviar agora.");
+        }
+      });
+
+      // Só números no campo do código (aceita colar "123 456")
+      document.getElementById("codigo-recuperacao").addEventListener("input", (e) => {
+        e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6);
+      });
+
       /* ── Etapa 2: POST /auth/esqueci-senha/verificar → token de reset ── */
       document.getElementById("btn-confirmar-resposta").addEventListener("click", async () => {
-        const resposta = document.getElementById("resposta-seguranca").value;
-        if (!resposta.trim()) {
-          showToast("Preencha a resposta.");
+        const resposta = document.getElementById("codigo-recuperacao").value.replace(/\D/g, "");
+        if (resposta.length !== 6) {
+          showToast("Digite os 6 números do código.");
           return;
         }
 
@@ -243,18 +298,23 @@
           if (!tokenReset) throw new Error("Resposta sem token de redefinição.");
           irParaEtapa(3);
         } catch (err) {
+          if (err.name === "ApiError" && err.status === 410 && err.data && err.data.pode_reenviar) {
+            Api.showError(err, "O código expirou. Peça um novo.");
+            iniciarContagem(null);
+            return;
+          }
           if (err.name === "ApiError" && desafioEncerrado(err)) {
-            showToast("3 tentativas sem sucesso. Tente novamente mais tarde.");
+            showToast(err.message || "Muitas tentativas erradas. Comece de novo.");
             setTimeout(() => (window.location.href = "login.html"), 1800);
             return;
           }
-          Api.showError(err, "Resposta incorreta. Tente novamente.");
+          Api.showError(err, "Código incorreto. Tente novamente.");
           const restantes = err.data && err.data.tentativas_restantes;
           document.getElementById("attempts-note").innerHTML =
             typeof restantes === "number"
               ? `Tentativas restantes: <strong>${restantes}</strong>`
               : "";
-          document.getElementById("resposta-seguranca").value = "";
+          document.getElementById("codigo-recuperacao").value = "";
         } finally {
           btn.disabled = false;
         }
@@ -293,7 +353,7 @@
       document.getElementById("email-recuperar").addEventListener("keydown", (e) => {
         if (e.key === "Enter") document.getElementById("btn-buscar-email").click();
       });
-      document.getElementById("resposta-seguranca").addEventListener("keydown", (e) => {
+      document.getElementById("codigo-recuperacao").addEventListener("keydown", (e) => {
         if (e.key === "Enter") document.getElementById("btn-confirmar-resposta").click();
       });
       document.getElementById("confirmar-nova-senha").addEventListener("keydown", (e) => {

@@ -22,6 +22,7 @@
     "logs.html": "index.html",
     "modelo_bd.html": "index.html",
     "2fa.html": "login.html",
+    "codigo.html": "login.html",
     "esqueci_senha.html": "login.html",
     "error_page.html": "index.html",
     "leitor.html": "coleta.html",

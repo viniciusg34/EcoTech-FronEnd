@@ -9,7 +9,7 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./css/cadastro.css?v=2" />
+    <link rel="stylesheet" href="./css/cadastro.css" />
     <link rel="stylesheet" href="./css/eco-animate.css" />
     <link rel="stylesheet" href="./css/eco-interacoes.css?v=2" />
   </head>
@@ -318,8 +318,8 @@
     <script src="js/eco-voltar.js?v=3"></script>
     <script src="js/ui-toast.js"></script>
     <script src="js/eco-helpers.js"></script>
-    <script src="js/config.js?v=8"></script>
-    <script src="js/api.js?v=8"></script>
+    <script src="js/config.js?v=6"></script>
+    <script src="js/api.js?v=7"></script>
     <script>
       initTheme();
       initThemeToggle();
@@ -673,6 +673,14 @@
               telefoneCelular, telefoneFixo, cep, logradouro,
               numero, bairro, cidade, uf, login, senha,
             });
+
+            // A API mandou um código para confirmar o e-mail: vai digitar o código
+            if (r && r.status === "codigo_email") {
+              if (typeof window.ecoConfete === "function") window.ecoConfete();
+              showToast("✅ Cadastro realizado! Confirme seu e-mail com o código que enviamos.", true);
+              setTimeout(() => Auth.irParaCodigo(r, false), 1800);
+              return;
+            }
 
             // Se a API já devolver sessão, entra direto; senão vai ao login.
             const logou = !!(r && r.token && r.usuario);

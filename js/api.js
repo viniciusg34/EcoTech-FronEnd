@@ -29,6 +29,7 @@
 
   var SESSION_KEY = "ecotech_session"; // { token, usuario }
   var PENDING_2FA_KEY = "ecotech_2fa"; // estado do fluxo 2FA (sessionStorage)
+  var PENDING_CODIGO_KEY = "ecotech_codigo"; // código de 6 dígitos por e-mail em andamento (sessionStorage)
   var LOGIN_PAGE = "login.html";
 
   /* ════════════════════════════════════════════════════════
@@ -176,19 +177,20 @@
       var antigo = ambiente.nome;
       var tinhaSessao = !!readRaw();
       definir(achou.chave, achou.info);
-      // Para a equipe (console); o usuário não vê nome de servidor
-      if (global.console) console.info("[api] " + antigo + " fora do ar. Usando " + ambiente.nome + ".");
-      if (!tinhaSessao) return true; // troca em silêncio: a página segue normal
+      if (!tinhaSessao) {
+        toast(antigo + " indisponível. Conectado a " + ambiente.nome + ".");
+        return true;
+      }
       clearSession();
       if (paginaPublica()) {
-        // tela aberta a todos: recarrega para o header mostrar "Entrar"
-        toast("Sua sessão foi encerrada. Entre novamente quando quiser.");
+        // tela aberta a todos: só atualiza o header (sem conta) recarregando
+        toast(antigo + " indisponível. Usando " + ambiente.nome + ". Entre novamente quando quiser.");
         trocandoDePagina = true;
         setTimeout(function () {
           location.reload();
         }, 1800);
       } else {
-        toast("Sua sessão foi encerrada. Entre novamente para continuar.");
+        toast(antigo + " indisponível. Usando " + ambiente.nome + ". Entre novamente.");
         trocandoDePagina = true;
         setTimeout(goToLogin, 1800);
       }
@@ -324,6 +326,7 @@
     sessionStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(PENDING_2FA_KEY);
+    sessionStorage.removeItem(PENDING_CODIGO_KEY);
     sessionStorage.removeItem("ecotech_sessao_ecoponto");
     // restos da versão anterior (MockAPI)
     localStorage.removeItem("ecotech_user_id");
@@ -350,6 +353,7 @@
     "cadastro.html",
     "cadastro_empresarial.html",
     "esqueci_senha.html",
+    "codigo.html",
     "error_page.html",
     "404.html",
   ];
@@ -537,7 +541,11 @@
             err.toasted = true;
           }
           setTimeout(goToLogin, 900);
-        } else if ((r.resp.status === 403 || r.resp.status >= 500) && !opts.silent) {
+        } else if (
+          (r.resp.status === 403 || r.resp.status >= 500) &&
+          !opts.silent &&
+          !(r.data && r.data.erro === "email_nao_enviado") // falha no envio do código: a tela mostra o aviso
+        ) {
           // inesperado: mostra a tela de erro (as chamadas silenciosas, como
           // a checagem periódica de saldo, nunca redirecionam)
           err.toasted = true;
@@ -637,7 +645,8 @@
       return Api.post("/auth/login", body, { auth: false });
     },
 
-    /* POST /auth/2fa → { token, usuario } */
+    /* POST /auth/2fa → { status:'codigo_email', desafio_id, email, ... }
+       (versões antigas da API devolviam { token, usuario } direto) */
     verificar2fa: function (desafioId, resposta, lembrar) {
       return Api.post(
         "/auth/2fa",
@@ -661,12 +670,70 @@
     esqueciSenha: function (email) {
       return Api.post("/auth/esqueci-senha", { email: email }, { auth: false });
     },
-    verificarRecuperacao: function (desafioId, resposta) {
+    verificarRecuperacao: function (desafioId, codigo) {
       return Api.post(
         "/auth/esqueci-senha/verificar",
-        { desafio_id: desafioId, resposta: resposta },
+        { desafio_id: desafioId, codigo: codigo },
         { auth: false },
       );
+    },
+
+    /* ── Código de 6 dígitos por e-mail ──
+       A API responde { status:'codigo_email', finalidade, desafio_id, email (mascarado),
+       tentativas_restantes, expira_em, reenviar_em, email_enviado } em:
+         finalidade 'confirmar_email' → cadastro (e login de quem ainda não confirmou)
+         finalidade 'login'           → depois da pergunta (pessoa) ou da senha (empresa)
+         finalidade 'recuperar_senha' → esqueci a senha (tratado no esqueci_senha.html) */
+
+    /* POST /auth/codigo → { token, usuario } (última etapa do login) */
+    verificarCodigo: function (desafioId, codigo, lembrar) {
+      return Api.post(
+        "/auth/codigo",
+        { desafio_id: desafioId, codigo: codigo, lembrar: !!lembrar },
+        { auth: false },
+      );
+    },
+    /* POST /auth/confirmar-email → { message } (depois vai para o login) */
+    confirmarEmail: function (desafioId, codigo) {
+      return Api.post("/auth/confirmar-email", { desafio_id: desafioId, codigo: codigo }, { auth: false });
+    },
+    /* POST /auth/codigo/reenviar → mesmos dados, com prazos novos */
+    reenviarCodigo: function (desafioId) {
+      return Api.post("/auth/codigo/reenviar", { desafio_id: desafioId }, { auth: false, silent: true });
+    },
+
+    /* Guarda o desafio do código e abre codigo.html. Nada pessoal: só id,
+       finalidade, e-mail mascarado e prazos. */
+    irParaCodigo: function (r, lembrar) {
+      sessionStorage.setItem(
+        PENDING_CODIGO_KEY,
+        JSON.stringify({
+          desafio_id: r.desafio_id,
+          finalidade: r.finalidade || "login",
+          email: r.email || "",
+          tentativas_restantes: r.tentativas_restantes,
+          expira_em: r.expira_em || null,
+          reenviar_em: r.reenviar_em || null,
+          email_enviado: r.email_enviado !== false,
+          lembrar: !!lembrar,
+        }),
+      );
+      window.location.href = "codigo.html";
+    },
+    lerCodigo: function () {
+      try {
+        return JSON.parse(sessionStorage.getItem(PENDING_CODIGO_KEY) || "null");
+      } catch (_) {
+        return null;
+      }
+    },
+    atualizarCodigo: function (parcial) {
+      var atual = Auth.lerCodigo();
+      if (!atual) return;
+      sessionStorage.setItem(PENDING_CODIGO_KEY, JSON.stringify(Object.assign(atual, parcial)));
+    },
+    limparCodigo: function () {
+      sessionStorage.removeItem(PENDING_CODIGO_KEY);
     },
     redefinirSenha: function (token, novaSenha) {
       return Api.post(
@@ -1082,29 +1149,8 @@
      simulados); vermelho = sem conexão. Com mais de um ambiente, clicar
      abre a troca manual. Desligue com MOSTRAR_STATUS: false no config.
   ════════════════════════════════════════════════════════ */
-  /* O selo é para a equipe, não para o usuário: só aparece com
-     MOSTRAR_STATUS: true no config ou abrindo o site com ?status=1
-     (vale para a aba; ?status=0 esconde). Escondido, o ambiente em uso
-     vai para o console do navegador (F12). */
-  var STATUS_KEY = "ecotech_mostrar_status";
-  function seloLigado() {
-    try {
-      var q = new URLSearchParams(location.search).get("status");
-      if (q === "1") sessionStorage.setItem(STATUS_KEY, "1");
-      else if (q === "0") sessionStorage.removeItem(STATUS_KEY);
-      if (sessionStorage.getItem(STATUS_KEY) === "1") return true;
-    } catch (_) {}
-    return CFG.MOSTRAR_STATUS === true;
-  }
-  var ultimoLog = "";
   function atualizarSelo() {
-    if (!ambiente.chave) return;
-    if (!seloLigado()) {
-      var log = ambiente.nome + (ambiente.ok === false ? " (sem conexão)" : ambiente.modo === "demo" ? " (demonstração)" : "");
-      if (log !== ultimoLog && global.console) console.info("[api] Conectado a: " + log);
-      ultimoLog = log;
-      return;
-    }
+    if (CFG.MOSTRAR_STATUS === false || !ambiente.chave) return;
     if (!document.body) {
       document.addEventListener("DOMContentLoaded", atualizarSelo);
       return;
@@ -1117,7 +1163,7 @@
     if (!b) {
       var st = document.createElement("style");
       st.textContent =
-        "#eco-ambiente{position:fixed;left:12px;bottom:12px;z-index:10002;display:flex;align-items:center;gap:7px;width:auto;max-width:calc(100vw - 24px);height:auto;margin:0;" +
+        "#eco-ambiente{position:fixed;left:12px;bottom:12px;z-index:10002;display:flex;align-items:center;gap:7px;" +
         "background:rgba(26,46,27,.94);color:#fff;border:0;border-radius:99px;padding:6px 12px;cursor:pointer;" +
         "font:600 12px/1.2 'Plus Jakarta Sans','Poppins',system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}" +
         "#eco-ambiente.fixo{cursor:default}" +
