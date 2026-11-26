@@ -161,8 +161,8 @@
     <script src="js/eco-voltar.js?v=3"></script>
     <script src="./js/ui-toast.js"></script>
     <script src="./js/eco-helpers.js"></script>
-    <script src="./js/config.js?v=8"></script>
-    <script src="./js/api.js?v=8"></script>
+    <script src="./js/config.js?v=6"></script>
+    <script src="./js/api.js?v=7"></script>
     <script>
       initTheme();
       initThemeToggle();
@@ -202,6 +202,13 @@
               lembrar,
             });
             window.location.href = "2fa.html";
+            return;
+          }
+
+          // Empresa (depois da senha) ou cadastro ainda não confirmado: código no e-mail
+          if (r && r.status === "codigo_email") {
+            if (r.message) showToast(r.message);
+            setTimeout(() => Auth.irParaCodigo(r, lembrar), r.finalidade === "confirmar_email" ? 1400 : 300);
             return;
           }
 
