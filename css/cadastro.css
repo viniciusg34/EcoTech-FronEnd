@@ -332,6 +332,11 @@ body {
   margin: 0 0 11px 2px;
   color: #e0554a;
 }
+/* Sem erro, a mensagem não ocupa espaço: clicar/sair de um campo não
+   empurra os outros. O espaço só aparece quando há erro para mostrar. */
+.field-msg:empty {
+  display: none;
+}
 
 .input-box span:first-child {
   font-size: 18px;
