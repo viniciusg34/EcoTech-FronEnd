@@ -971,6 +971,12 @@
     dashboard: function () {
       return Api.get("/empresas/me/dashboard").then(unwrap);
     },
+    /* POST /ecopontos — a empresa logada cadastra um Ecoponto em seu nome.
+       { nome, endereco?, cidade?, estado?, lat, lng, categorias: [chave], status? }
+       Devolve o Ecoponto criado (com o código gerado, ex.: "ECO-09"). */
+    criarEcoponto: function (dados) {
+      return Api.post("/ecopontos", dados).then(unwrap);
+    },
     qrSvg: function (ecopontoId) {
       return Api.request("GET", "/ecopontos/" + ecopontoId + "/qr.svg", { raw: true });
     },

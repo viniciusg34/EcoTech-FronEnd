@@ -481,10 +481,11 @@ small a:hover {
 }
 
 .google-btn {
-  width: 100%;
-  height: 56px;
+  width: min(100%, 340px);
+  height: 48px;
+  margin: 0 auto;
   border: 1.5px solid var(--sage-200);
-  border-radius: var(--br-sm);
+  border-radius: 999px;
   background: var(--white);
   color: var(--ink);
   font-size: 15.5px;
@@ -540,6 +541,16 @@ small a:hover {
   overflow: hidden;
   opacity: 0;
   pointer-events: none;
+}
+
+/* O botão do Google é desenhado dentro de um iframe com tema claro.
+   O cartão verde usa color-scheme: dark e, quando os dois não batem,
+   o navegador pinta o iframe com um fundo BRANCO retangular em volta
+   da pílula. color-scheme: light aqui deixa o fundo transparente:
+   só aparece o botão redondo. */
+.google-btn-real-holder,
+.google-btn-real-holder iframe {
+  color-scheme: light;
 }
 
 small {

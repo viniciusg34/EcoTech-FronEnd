@@ -233,3 +233,40 @@
   .admin-main.secao-arte-fundo .eco-bg-arte { opacity: 0.08; }
   [data-theme="dark"] .admin-main.secao-arte-fundo .eco-bg-arte { opacity: 0.05; }
 }
+
+/* ── Arte da página inteira (painel da empresa) ───────────────
+   <main class="arte-pagina" data-arte-fundo="..."> : a arte fica
+   parada no CENTRO da janela, de cima a baixo, enquanto a página
+   rola. z-index -1 = atrás de tudo: cartões, botões e rodapé ficam
+   sempre por cima e continuam clicáveis; ela só aparece nos espaços
+   vazios entre eles. */
+.arte-pagina > .eco-bg-arte {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: auto;
+  max-width: none;
+  transform: none;
+  z-index: -1;
+  --arte-pos: center center;
+  --arte-tam: auto 100%;
+  opacity: 0.16;
+}
+[data-theme="dark"] .arte-pagina > .eco-bg-arte {
+  opacity: 0.1;
+}
+/* o topo do painel deixa a arte aparecer (sem fundo próprio por cima) */
+.arte-pagina .dash-hero {
+  background-color: transparent;
+}
+@media (max-width: 640px) {
+  .arte-pagina > .eco-bg-arte {
+    --arte-tam: auto 100%;
+    opacity: 0.12;
+  }
+  [data-theme="dark"] .arte-pagina > .eco-bg-arte {
+    opacity: 0.08;
+  }
+}
