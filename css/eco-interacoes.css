@@ -272,6 +272,14 @@ html.eco-trocando-tema *::after {
   [data-theme="dark"] .news-container a {
     color: #3E5A3F !important;
   }
+  /* O botão de assinar é verde cheio: texto branco pra não sumir. */
+  [data-theme="dark"] .news-container a.btn-assinar {
+    background: #3E5A3F !important;
+    color: #fff !important;
+  }
+  [data-theme="dark"] .news-container a.btn-assinar:hover {
+    background: #1F2A1F !important;
+  }
   [data-theme="dark"] .hero :is(.stat-card, .hero-card) :is(p, span, strong) {
     color: #1F2A1F !important;
   }
@@ -436,4 +444,50 @@ html.eco-trocando-tema *::after {
   .eco-login-tag--fixa {
     display: none;
   }
+}
+
+/* ── 12) TEXTO SÓ PARA LEITOR DE TELA ── */
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── 13) ÁREA DE TOQUE (mínimo de 44px) ──
+   Um ::after transparente aumenta a área clicável sem mudar o desenho.
+   Não vale para botões com efeito de onda (overflow: hidden corta o ::after). */
+.nav-container > .eco-voltar,
+.admin-header .eco-voltar,
+.nav-actions > .theme-toggle,
+.nav-actions > a,
+.header-actions > a,
+.header-actions > .theme-toggle,
+.footer-socials a,
+.svc-link,
+.dash-table-action,
+.options > a,
+.admin-header .brand {
+  position: relative;
+}
+:is(.nav-container > .eco-voltar, .admin-header .eco-voltar)::after,
+:is(.nav-actions > .theme-toggle, .nav-actions > a, .header-actions > a, .header-actions > .theme-toggle, .footer-socials a)::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+}
+:is(.svc-link, .options > a)::after {
+  content: "";
+  position: absolute;
+  inset: -11px 0;
+}
+:is(.dash-table-action, .admin-header .brand)::after {
+  content: "";
+  position: absolute;
+  inset: -7px -2px;
 }

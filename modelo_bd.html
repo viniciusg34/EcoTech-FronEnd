@@ -16,13 +16,17 @@
         border-radius: var(--br-md);
         border: 1.5px solid var(--sage-100);
         overflow: auto;
-        padding: 10px;
+        padding: 14px;
+        color: #1a2e1b;
       }
-      .der-wrap img { width: 100%; min-width: 760px; display: block; }
+      .der-tabela { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+      .der-tabela th, .der-tabela td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--sage-100); vertical-align: top; }
+      .der-tabela th { font-weight: 700; }
+      .der-nota { font-size: 0.85rem; color: var(--ink-3, #6b8f6c); margin: 12px 2px 0; }
     </style>
-      <link rel="stylesheet" href="css/eco-arte-fundo.css" />
+      <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
       <link rel="stylesheet" href="css/eco-animate.css" />
-      <link rel="stylesheet" href="css/eco-interacoes.css" />
+      <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
   </head>
   <body>
     <header class="admin-header">
@@ -41,19 +45,64 @@
     <main class="admin-main secao-arte-fundo" data-arte-fundo="circuito-folha">
       <h1 class="admin-title">Modelo do Banco de Dados</h1>
       <p class="admin-subtitle">
-        Diagrama Entidade-Relacionamento (DER) utilizado pelo sistema EcoTech.
+        Imagem do Diagrama Entidade-Relacionamento (DER) do banco MySQL 8 da API:
+        17 tabelas.
       </p>
 
       <div class="card">
         <div class="der-wrap">
-          <img src="./assets/modelo-bd.svg" alt="Diagrama Entidade-Relacionamento do banco de dados EcoTech" />
+<a href="assets/modelo-bd.png" target="_blank" rel="noopener" title="Abrir a imagem em tamanho real">
+            <img
+              src="assets/modelo-bd.svg"
+              alt="Diagrama Entidade-Relacionamento (DER) do banco da EcoTech, com 17 tabelas: pessoa, empresa, ecoponto, categoria_material, ecoponto_categoria, sessao_ecoponto, coleta, coleta_item, produto_catalogo, leitura_codigo, movimento_coins, recompensa, resgate, desafio_verificacao, log_autenticacao, token_acesso e configuracao."
+              style="display:block;width:100%;height:auto;"
+            />
+          </a>
+        </div>
+        <p class="der-nota">
+          Clique na imagem para abrir em tamanho real (PNG) ou
+          <a href="assets/modelo-bd.svg" target="_blank" rel="noopener">veja o SVG</a>.
+          PK = chave primária, FK = chave estrangeira, UK = valor único.
+          Linhas tracejadas: <code>token_acesso.conta_id</code> aponta para
+          pessoa ou empresa conforme <code>conta_tipo</code> (sem chave
+          estrangeira). Toda tabela tem <code>criado_em</code> e
+          <code>atualizado_em</code>. O diagrama em texto está em
+          <code>docs/DER.md</code>.
+        </p>
+      </div>
+
+      <div class="card" style="margin-top:20px;">
+        <h2 class="admin-title" style="font-size:1.1rem;">Papel de cada tabela</h2>
+        <div style="overflow:auto;">
+          <table class="der-tabela">
+            <thead><tr><th>Tabela</th><th>Para que serve</th><th>Regra principal</th></tr></thead>
+            <tbody>
+      <tr><td><code>pessoa</code></td><td>Conta de pessoa (perfil `comum` ou `master`). `saldo_coins` é só cache do ledger.</td><td>CPF, e-mail e login únicos; excluir = anonimizar (LGPD).</td></tr>
+      <tr><td><code>empresa</code></td><td>Conta de empresa parceira.</td><td>CNPJ e e-mail únicos.</td></tr>
+      <tr><td><code>ecoponto</code></td><td>Ponto de coleta de uma empresa.</td><td>segredo_qr assina o QR; o peso coletado é calculado por view, não gravado.</td></tr>
+      <tr><td><code>categoria_material</code></td><td>Material reciclável e quanto vale.</td><td>coins_por_unidade por kg ou un.</td></tr>
+      <tr><td><code>ecoponto_categoria</code></td><td>Quais materiais cada ecoponto aceita (N:N).</td><td>PK composta (ecoponto, categoria).</td></tr>
+      <tr><td><code>sessao_ecoponto</code></td><td>Vínculo pessoa–ecoponto criado quando a pessoa lê o QR da placa.</td><td>Expira em N minutos (configuracao).</td></tr>
+      <tr><td><code>coleta</code></td><td>Check-in ou entrega de uma pessoa em um ecoponto.</td><td>Totais calculados no servidor.</td></tr>
+      <tr><td><code>coleta_item</code></td><td>Itens de uma coleta por categoria.</td><td>quantidade &gt; 0.</td></tr>
+      <tr><td><code>produto_catalogo</code></td><td>Produtos da campanha, com cache do Open Food Facts.</td><td>Chave natural: código de barras.</td></tr>
+      <tr><td><code>leitura_codigo</code></td><td>Cada leitura de código de barras feita pelo Ecoponto.</td><td>idempotency_key única: repetir não credita de novo.</td></tr>
+      <tr><td><code>movimento_coins</code></td><td>Ledger de EcoCoins (livro-razão).</td><td>Só INSERT; todo crédito/débito passa por aqui.</td></tr>
+      <tr><td><code>recompensa</code></td><td>Catálogo de recompensas.</td><td>custo_coins &gt; 0; estoque NULL = ilimitado.</td></tr>
+      <tr><td><code>resgate</code></td><td>Troca de moedas por recompensa, com cupom.</td><td>codigo_cupom único.</td></tr>
+      <tr><td><code>desafio_verificacao</code></td><td>Pergunta de 2FA e de recuperação de senha.</td><td>3 tentativas, expira em 5 minutos.</td></tr>
+      <tr><td><code>log_autenticacao</code></td><td>Registro de logins, inclusive falhas.</td><td>CHECK: exatamente um entre pessoa_id e empresa_id.</td></tr>
+      <tr><td><code>token_acesso</code></td><td>Tokens de sessão (Sanctum).</td><td>conta_id aponta para pessoa ou empresa conforme conta_tipo; sem FK.</td></tr>
+      <tr><td><code>configuracao</code></td><td>Parâmetros do sistema.</td><td>checkin_coins, checkin_kg, checkin_cooldown_horas, duplicidade_horas, sessao_minutos.</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </main>
 
-    <script src="./js/api.js"></script>
     <script src="./js/ui-theme.js"></script>
-    <script src="./js/eco-session.js"></script>
+    <script src="./js/config.js?v=6"></script>
+    <script src="./js/api.js?v=6"></script>
     <script>
       initTheme();
       initThemeToggle();
@@ -61,7 +110,8 @@
     </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
-    <script src="js/eco-voltar.js"></script>
-    <script src="js/eco-arte-fundo.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
+      <script src="js/eco-acessibilidade.js"></script>
   </body>
 </html>

@@ -8,9 +8,7 @@ function initTheme() {
   const saved = localStorage.getItem("eco-theme");
   const pref =
     saved ||
-    (window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light");
+    "light";
   document.documentElement.setAttribute("data-theme", pref);
 }
 

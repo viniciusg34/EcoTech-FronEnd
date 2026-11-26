@@ -10,10 +10,11 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
     />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" />
-    <link rel="stylesheet" href="css/sobre_nos.css" />
-    <link rel="stylesheet" href="css/eco-arte-fundo.css" />
+    <link rel="stylesheet" href="css/sobre_nos.css?v=2" />
+    <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
     <link rel="stylesheet" href="css/eco-animate.css" />
-    <link rel="stylesheet" href="css/eco-interacoes.css" />
+    <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
+    <link rel="stylesheet" href="css/eco-skeleton.css" />
     <title>Sobre Nós — EcoTech</title>
   </head>
 
@@ -56,8 +57,8 @@
     </header>
 
     <main>
-      <div class="container-imagem-topo">
-        <img src="assets/banner.jpg" alt="EcoTech Banner" class="imagem-topo eco-kenburns" />
+      <div class="container-imagem-topo topo-arte">
+        <img src="assets/arte/banner-floresta.webp" alt="" class="imagem-topo eco-kenburns" />
         <div class="hero-leaves" data-qtd-folhas="6"></div>
 
         <div class="banner-content">
@@ -72,7 +73,7 @@
             <span class="icon">🌿</span>
           </div>
           <h3 class="card-subtitle">Ecopontos Ativos</h3>
-          <h2 class="card-counter" id="hero-projects">0 Ecopontos</h2>
+          <h2 class="card-counter sk sk-curto" id="hero-projects" style="--sk-w: 9ch">0 Ecopontos</h2>
 
           <div class="progress-container">
             <div class="progress-bar" id="progressBar"></div>
@@ -86,7 +87,7 @@
       </div>
 
       <div class="secao-arte-fundo secao-arte-fundo--tela-cheia" data-arte-fundo="arvore-raizes">
-      <h1 id="ecotech">Nossos pilares</h1>
+      <h2 id="ecotech">Nossos pilares</h2>
 
       <section class="carrossel">
         <div class="cards">
@@ -131,17 +132,17 @@
         <div class="numeros-grid">
           <div class="numero-item reveal">
             <div class="numero-icon">🌱</div>
-            <h3 id="num-arvores">+0 toneladas</h3>
+            <h3 id="num-arvores" class="sk sk-centro" style="--sk-w: 11ch">+0 toneladas</h3>
             <p>de resíduos reciclados</p>
           </div>
           <div class="numero-item reveal">
             <div class="numero-icon">👥</div>
-            <h3 id="num-voluntarios">0</h3>
+            <h3 id="num-voluntarios" class="sk sk-centro" style="--sk-w: 4ch">0</h3>
             <p>Ecopontos instalados e aumentando.</p>
           </div>
           <div class="numero-item reveal">
             <div class="numero-icon">🏭</div>
-            <h3 id="num-parques">0</h3>
+            <h3 id="num-parques" class="sk sk-centro" style="--sk-w: 10ch">0</h3>
             <p>cooperando conosco</p>
           </div>
         </div>
@@ -188,44 +189,28 @@
       <section class="section-newsletter">
         <div class="news-container reveal">
           <div class="news-text">
-            <h2>Assine nossa newsletter</h2>
+            <h2>Receba notícias de ecologia</h2>
             <p>
-              Enviaremos sempre as novidades sobre novas matérias-primas
-              desenvolvidas, relatórios ecológicos e soluções de mercado.
+              A Mongabay é uma plataforma sem fins lucrativos de notícias sobre
+              natureza e conservação. Assine a newsletter dela para acompanhar
+              pesquisas, reportagens e soluções ambientais.
             </p>
           </div>
-          <form class="news-form" id="newsletterForm">
-            <div class="inputs-group">
-              <input
-                type="text"
-                placeholder="Informe seu nome"
-                required
-                autocomplete="name"
-              />
-              <input
-                type="email"
-                placeholder="E-mail profissional"
-                required
-                autocomplete="email"
-              />
-              <button type="submit" class="btn-submit">Enviar</button>
-            </div>
-            <div class="checkbox-group">
-              <label class="check-item">
-                <input type="checkbox" required />
-                <span
-                  >Aceito receber comunicados e atualizações da EcoTech.</span
-                >
-              </label>
-              <label class="check-item">
-                <input type="checkbox" required />
-                <span
-                  >Estou de acordo com as
-                  <a href="assets/EcoTech_Politica_de_Privacidade.pdf" target="_blank" rel="noopener">Políticas de Privacidade</a> deste website.</span
-                >
-              </label>
-            </div>
-          </form>
+          <div class="news-form">
+            <a
+              class="btn-assinar"
+              id="btnNewsletter"
+              href="https://news.mongabay.com/newsletter-subscribe/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Assinar a newsletter da Mongabay ↗</a
+            >
+            <p class="news-nota">
+              Você será levado ao site da Mongabay (em inglês), onde informa seu
+              e-mail e escolhe os boletins. A EcoTech não recebe nem guarda o
+              seu e-mail.
+            </p>
+          </div>
         </div>
       </section>
     </main>
@@ -282,12 +267,14 @@
       <p>© 2026 EcoTech. Todos os direitos reservados.</p>
     </footer>
 
-    <script src="js/api.js"></script>
-    <script src="js/eco-session.js"></script>
+    <script src="js/config.js?v=6"></script>
+    <script src="js/api.js?v=6"></script>
+    <script src="js/eco-skeleton.js"></script>
+    <script src="js/eco-admin.js?v=3"></script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
-    <script src="js/eco-voltar.js"></script>
-    <script src="js/eco-arte-fundo.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
     <script>
       "use strict";
 
@@ -320,16 +307,15 @@
         }, 20);
       }
 
+      /* GET /estatisticas (público): { toneladas, empresas, ecopontos }.
+         Sem resposta, o texto que já está no HTML permanece. */
       async function carregarDadosAPI() {
-        const empresas = await api("/empresas");
-        const lista = empresas.sucesso && Array.isArray(empresas.dados) ? empresas.dados : [];
-        const totalKg = lista.reduce((soma, e) => soma + (parseFloat(e.colected) || 0), 0);
-        const ecopontos = (await ecoListarEcopontos()) || [];
-        return {
-          totalEmpresas: lista.length,
-          totalKg: Math.round(totalKg),
-          totalEcopontos: ecopontos.length,
-        };
+        try {
+          return (await Publico.estatisticas()) || {};
+        } catch (err) {
+          console.warn("Estatísticas indisponíveis:", err);
+          return {};
+        }
       }
 
       document.addEventListener("DOMContentLoaded", async () => {
@@ -338,9 +324,7 @@
           const saved = localStorage.getItem("eco-theme");
           const pref =
             saved ||
-            (window.matchMedia("(prefers-color-scheme: dark)").matches
-              ? "dark"
-              : "light");
+            "light";
           document.documentElement.setAttribute("data-theme", pref);
         })();
 
@@ -446,26 +430,21 @@
         }, 400);
 
         // ── Dados da API ──
-        const { totalEmpresas, totalKg, totalEcopontos } =
-          await carregarDadosAPI();
+        const stats = await carregarDadosAPI();
 
         animarContador("percentageNumber", CONFIG_ECOTECH.porcentagemEficacia);
-        animarContador("hero-projects", totalEcopontos, " Ecopontos");
-        animarContador("num-arvores", totalKg, " toneladas", "+");
-        animarContador("num-voluntarios", totalEcopontos);
-        animarContador("num-parques", totalEmpresas, " Empresas");
-
-        // ── Newsletter ──
-        document
-          .getElementById("newsletterForm")
-          .addEventListener("submit", (e) => {
-            e.preventDefault();
-            alert(
-              "Obrigado por se inscrever! Seu e-mail foi cadastrado com sucesso em nossa base verde.",
-            );
-            e.target.reset();
-          });
+        if (stats.ecopontos != null) {
+          animarContador("hero-projects", Number(stats.ecopontos), " Ecopontos");
+          animarContador("num-voluntarios", Number(stats.ecopontos));
+        }
+        if (stats.toneladas != null) {
+          animarContador("num-arvores", Math.round(Number(stats.toneladas)), " toneladas", "+");
+        }
+        if (stats.empresas != null) {
+          animarContador("num-parques", Number(stats.empresas), " Empresas");
+        }
       });
     </script>
+      <script src="js/eco-acessibilidade.js"></script>
   </body>
 </html>

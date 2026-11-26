@@ -1,0 +1,18 @@
+Artes do site (PNG com fundo transparente, já reduzidas e comprimidas).
+
+  hero-broto.png               card verde da página inicial
+  fundo-cidade-verde.png       página inicial, leitor do Ecoponto e página de erro
+  fundo-arvore-raizes.png      sobre_nos.html
+  fundo-ciclo-coleta.png       coleta.html e telas de admin
+  fundo-arvore-crescendo.png   perfil.html e perfil_empresa.html
+  fundo-predio-verde.png       empresa.html
+  fundo-parceria-broto.png     afilie_se.html e páginas de senha (esqueci, 2FA, alterar)
+  banner-floresta.webp         banner do topo do sobre_nos.html (no lugar do banner.jpg)
+
+Artes próprias opcionais (prompts nº 7, 8 e 9 do doc "EcoTech — prompts das
+novas imagens"). Hoje essas páginas reaproveitam as artes acima:
+  fundo-circuito-folha.png     telas de admin
+  fundo-seguranca.png          esqueci_senha, 2fa, alterar_senha
+  fundo-caminho.png            error_page.html e 404
+Para usar uma delas, coloque o PNG aqui e troque o nome do arquivo na regra
+correspondente de css/eco-arte-fundo.css (está comentado lá).

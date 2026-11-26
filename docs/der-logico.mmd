@@ -1,0 +1,274 @@
+erDiagram
+    empresa ||--o{ ecoponto : "possui"
+    ecoponto ||--o{ ecoponto_categoria : "aceita"
+    categoria_material ||--o{ ecoponto_categoria : "é aceita em"
+    pessoa ||--o{ sessao_ecoponto : "abre"
+    ecoponto ||--o{ sessao_ecoponto : "recebe"
+    pessoa ||--o{ coleta : "realiza"
+    ecoponto ||--o{ coleta : "registra"
+    sessao_ecoponto |o--o{ coleta : "origina"
+    coleta ||--|{ coleta_item : "contém"
+    categoria_material ||--o{ coleta_item : "classifica"
+    categoria_material ||--o{ produto_catalogo : "agrupa"
+    pessoa ||--o{ leitura_codigo : "recebe"
+    ecoponto |o--o{ leitura_codigo : "lê em"
+    sessao_ecoponto |o--o{ leitura_codigo : "dentro de"
+    produto_catalogo |o--o{ leitura_codigo : "identifica"
+    coleta |o--o{ leitura_codigo : "gera"
+    pessoa ||--o{ movimento_coins : "tem no ledger"
+    pessoa ||--o{ resgate : "faz"
+    recompensa ||--o{ resgate : "é trocada em"
+    movimento_coins |o--o| resgate : "debita"
+    nivel_eco |o--o{ pessoa : "nível visto"
+    pessoa |o--o{ desafio_verificacao : "responde"
+    pessoa |o--o{ log_autenticacao : "gera"
+    empresa |o--o{ log_autenticacao : "gera"
+    pessoa ||..o{ personal_access_tokens : "tokenable"
+    empresa ||..o{ personal_access_tokens : "tokenable"
+    pessoa ||..o{ idempotencia_requisicao : "conta_tipo = pessoa"
+    empresa ||..o{ idempotencia_requisicao : "conta_tipo = empresa"
+
+    pessoa {
+        bigint id PK
+        varchar80 nome "15 a 80"
+        varchar190 email UK
+        char11 cpf UK "só dígitos"
+        char6 login UK "6 letras"
+        varchar255 senha_hash
+        varchar120 nome_mae "2FA"
+        date nascimento "2FA"
+        enum sexo "feminino|masculino|outro|nao_informar"
+        varchar11 telefone_celular "dígitos com DDD"
+        varchar10 telefone_fixo "dígitos com DDD"
+        char8 cep "2FA e endereço"
+        varchar120 logradouro
+        varchar10 numero
+        varchar80 bairro
+        varchar80 cidade
+        char2 uf
+        enum perfil "comum|master"
+        varchar500 avatar_url
+        bigint saldo_coins "cache do ledger"
+        bigint nivel_visto_id FK "NOVO: detecta subida de nível"
+        enum preferencia_notificacao "NOVO: todas|algumas|nenhuma"
+        varchar40 google_sub UK "NOVO opcional"
+        datetime termos_aceitos_em
+        boolean ativo
+        datetime anonimizado_em "NOVO"
+        datetime criado_em
+        datetime atualizado_em
+    }
+    empresa {
+        bigint id PK
+        char14 cnpj UK
+        varchar120 nome_empresa
+        varchar160 razao_social
+        varchar190 email UK
+        varchar255 senha_hash
+        varchar255 endereco
+        enum status "ativa|suspensa"
+        datetime criado_em
+        datetime atualizado_em
+    }
+    nivel_eco {
+        bigint id PK
+        varchar40 nome UK "NOVA TABELA"
+        bigint min_coins UK
+        tinyint ordem UK
+        datetime criado_em
+        datetime atualizado_em
+    }
+    ecoponto {
+        bigint id PK
+        bigint empresa_id FK
+        varchar20 codigo UK "ECO-01"
+        varchar120 nome
+        varchar255 descricao
+        varchar255 endereco
+        varchar80 cidade
+        char2 estado
+        decimal lat
+        decimal lng
+        enum status "ativo|manutencao|inativo"
+        char64 segredo_qr
+        datetime criado_em
+        datetime atualizado_em
+    }
+    categoria_material {
+        bigint id PK
+        varchar20 chave UK
+        varchar40 rotulo
+        char7 cor_hex
+        varchar8 icone "NOVO: emoji do histórico"
+        smallint ordem "NOVO: ordem da legenda"
+        int coins_por_unidade
+        enum unidade "kg|un"
+        datetime criado_em
+        datetime atualizado_em
+    }
+    ecoponto_categoria {
+        bigint ecoponto_id PK, FK
+        bigint categoria_id PK, FK
+        datetime criado_em
+        datetime atualizado_em
+    }
+    sessao_ecoponto {
+        bigint id PK
+        bigint ecoponto_id FK
+        bigint pessoa_id FK
+        char64 token UK
+        enum status "ativa|encerrada|expirada"
+        datetime iniciada_em
+        datetime expira_em
+        datetime encerrada_em
+        datetime criado_em
+        datetime atualizado_em
+    }
+    coleta {
+        bigint id PK
+        bigint pessoa_id FK
+        bigint ecoponto_id FK
+        bigint sessao_id FK "opcional"
+        enum tipo "checkin|entrega"
+        int total_coins
+        decimal total_kg
+        datetime criado_em
+        datetime atualizado_em
+    }
+    coleta_item {
+        bigint id PK
+        bigint coleta_id FK
+        bigint categoria_id FK
+        decimal quantidade
+        int coins
+        datetime criado_em
+        datetime atualizado_em
+    }
+    produto_catalogo {
+        varchar14 codigo_barras PK
+        varchar120 nome
+        bigint categoria_id FK
+        int coins
+        decimal peso_kg "NOVO: kg por unidade lida"
+        boolean ativo
+        varchar120 off_nome "cache Open Food Facts"
+        varchar80 off_marca
+        varchar500 off_imagem_url
+        datetime off_consultado_em
+        datetime criado_em
+        datetime atualizado_em
+    }
+    leitura_codigo {
+        bigint id PK
+        bigint pessoa_id FK
+        bigint ecoponto_id FK "opcional"
+        bigint sessao_id FK "opcional"
+        bigint coleta_id FK "NOVO: opcional"
+        varchar14 codigo_barras
+        varchar14 produto_codigo FK "opcional"
+        enum resultado "creditado|duplicado|nao_participa|invalido"
+        int coins_creditados
+        char36 idempotency_key UK
+        datetime lido_em
+        datetime criado_em
+        datetime atualizado_em
+    }
+    movimento_coins {
+        bigint id PK "ledger imutável"
+        bigint pessoa_id FK
+        enum tipo "checkin|entrega|leitura|resgate|estorno|ajuste"
+        int valor "negativo no débito"
+        bigint saldo_apos
+        varchar160 titulo "RENOMEADO de descricao"
+        varchar120 subtitulo "NOVO"
+        varchar8 icone "NOVO"
+        varchar30 origem_tipo
+        bigint origem_id
+        datetime criado_em
+        datetime atualizado_em
+    }
+    recompensa {
+        bigint id PK
+        enum categoria "food|transport|health|shop|leisure"
+        varchar8 icone
+        varchar80 nome
+        varchar160 descricao
+        int custo_coins
+        int estoque "NULL = ilimitado"
+        smallint ordem "NOVO"
+        boolean ativa
+        datetime criado_em
+        datetime atualizado_em
+    }
+    resgate {
+        bigint id PK
+        bigint pessoa_id FK
+        bigint recompensa_id FK
+        bigint movimento_id FK "NOVO: débito no ledger"
+        int custo_coins
+        varchar20 codigo_cupom UK
+        enum status "emitido|utilizado|cancelado"
+        datetime criado_em
+        datetime atualizado_em
+    }
+    desafio_verificacao {
+        bigint id PK
+        bigint pessoa_id FK "NULL = conta inexistente"
+        enum finalidade "login|recuperar_senha"
+        enum pergunta "nome_mae|nascimento|cep"
+        tinyint tentativas
+        tinyint max_tentativas "padrão 3"
+        boolean lembrar "NOVO: token de 30 dias"
+        char64 alvo_hash "NOVO: e-mail/login informado (HMAC)"
+        char64 reset_token_hash "NOVO"
+        datetime reset_expira_em "NOVO"
+        datetime expira_em
+        datetime bloqueado_em "NOVO"
+        datetime resolvido_em
+        datetime criado_em
+        datetime atualizado_em
+    }
+    log_autenticacao {
+        bigint id PK
+        bigint pessoa_id FK "no máximo um dos dois"
+        bigint empresa_id FK "no máximo um dos dois"
+        varchar190 identificador_informado "NOVO: quando a conta não existe"
+        datetime data_hora
+        varchar60 metodo_2fa
+        boolean sucesso
+        tinyint tentativa_n
+        varbinary16 ip
+        varchar255 user_agent
+        datetime criado_em
+        datetime atualizado_em
+    }
+    idempotencia_requisicao {
+        bigint id PK "NOVA TABELA"
+        enum conta_tipo "pessoa|empresa"
+        bigint conta_id
+        char36 chave
+        varchar80 rota
+        char64 corpo_hash
+        smallint status_http
+        json resposta
+        datetime expira_em
+        datetime criado_em
+    }
+    personal_access_tokens {
+        bigint id PK "Laravel Sanctum"
+        varchar tokenable_type
+        bigint tokenable_id
+        varchar64 token UK
+        text abilities
+        datetime expires_at
+        datetime last_used_at
+        datetime created_at
+    }
+    configuracao {
+        varchar60 chave PK
+        varchar255 valor
+        boolean publica "NOVO: entra em GET /config"
+        varchar160 descricao "NOVO"
+        datetime criado_em
+        datetime atualizado_em
+    }

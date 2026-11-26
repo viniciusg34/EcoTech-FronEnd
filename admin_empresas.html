@@ -1,0 +1,383 @@
+<!doctype html>
+<html data-efeitos lang="pt-BR" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="./assets/fivecom.png" type="image/x-icon" />
+    <title>Empresas (master) — EcoTech</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/admin-shared.css" />
+    <style>
+      .search-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: flex-end; }
+      .search-row .field { flex: 1; min-width: 180px; margin-bottom: 0; }
+      .count-tag { color: var(--ink-3); font-size: 0.82rem; margin-bottom: 14px; }
+      .acoes { display: flex; gap: 6px; flex-wrap: wrap; }
+      .acoes .btn { padding: 8px 12px; font-size: 0.8rem; }
+      .status-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+      .sub { display: block; color: var(--ink-3); font-size: 0.78rem; }
+      .modal-box.largo { max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; }
+      .grade { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+      .grade .inteiro { grid-column: 1 / -1; }
+      .cats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+      .cats label { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px;
+        border: 1px solid var(--sage-100); font-size: 0.82rem; cursor: pointer; }
+      .erro-form { color: var(--danger); font-size: 0.85rem; margin-bottom: 12px; display: none; }
+      @media (max-width: 560px) { .grade { grid-template-columns: 1fr; } }
+    </style>
+    <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
+    <link rel="stylesheet" href="css/eco-animate.css" />
+    <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
+    <link rel="stylesheet" href="css/eco-skeleton.css" />
+  </head>
+  <body>
+    <header class="admin-header">
+      <a href="index.html" class="brand">
+        <img src="./assets/logo.svg" alt="" />
+        <span><em>Eco</em>Tech</span>
+      </a>
+      <div class="header-actions">
+        <a href="perfil.html" class="icon-btn" aria-label="Perfil">👤</a>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Alternar tema">
+          <span id="theme-icon">☀️</span>
+        </button>
+      </div>
+    </header>
+
+        <main class="admin-main secao-arte-fundo" data-arte-fundo="circuito-folha">
+      <h1 class="admin-title">Empresas parceiras</h1>
+      <p class="admin-subtitle">
+        Edite os dados, suspenda ou exclua uma empresa. Empresa suspensa não consegue mais entrar.
+      </p>
+
+      <div class="access-note" id="accessNote" style="display:none;">
+        ⚠️ Esta tela é exclusiva do perfil <strong>master</strong>.
+      </div>
+
+      <div id="content">
+        <div class="card">
+          <div class="search-row">
+            <div class="field">
+              <label for="busca">Buscar</label>
+              <input id="busca" type="text" placeholder="Nome, e-mail ou CNPJ…" autocomplete="off" />
+            </div>
+            <div class="field" style="max-width:180px;">
+              <label for="filtroStatus">Status</label>
+              <select id="filtroStatus">
+                <option value="">Todas</option>
+                <option value="ativa">Ativas</option>
+                <option value="suspensa">Suspensas</option>
+              </select>
+            </div>
+            <button class="btn btn-ghost" id="btnLimpar" type="button">Limpar</button>
+          </div>
+
+          <p class="count-tag sk sk-curto" id="countTag" style="--sk-w: 14ch"></p>
+
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Empresa</th>
+                  <th>E-mail</th>
+                  <th>Ecopontos</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbody" data-sk-linhas="5">
+              </tbody>
+            </table>
+          </div>
+
+          <div class="empty-state" id="emptyState" style="display:none;">
+            <span class="emoji">🏢</span>
+            Nenhuma empresa encontrada.
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal de edição -->
+    <div class="modal-overlay" id="modalEditar">
+      <form class="modal-box largo" id="formEditar" novalidate>
+        <h3 id="tituloEditar">Editar empresa</h3>
+        <p class="erro-form" id="erroForm"></p>
+        <div class="grade">
+          <div class="field inteiro">
+            <label for="fNome">Nome da empresa</label>
+            <input id="fNome" maxlength="150" required />
+          </div>
+          <div class="field inteiro">
+            <label for="fRazao">Razão social</label>
+            <input id="fRazao" maxlength="150" />
+          </div>
+          <div class="field inteiro">
+            <label for="fEmail">E-mail de acesso</label>
+            <input id="fEmail" type="email" maxlength="255" required />
+          </div>
+          <div class="field inteiro">
+            <label for="fEndereco">Endereço</label>
+            <input id="fEndereco" maxlength="255" />
+          </div>
+          <div class="field">
+            <label>CNPJ</label>
+            <input id="fCnpj" disabled />
+          </div>
+          <div class="field">
+            <label for="fStatus">Status</label>
+            <select id="fStatus">
+              <option value="ativa">Ativa</option>
+              <option value="suspensa">Suspensa (não entra)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" type="button" id="btnCancelarEdicao">Cancelar</button>
+          <button class="btn btn-primary" type="submit" id="btnSalvar">Salvar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Modal de exclusão -->
+    <div class="modal-overlay" id="modalExcluir">
+      <div class="modal-box">
+        <h3>Excluir empresa?</h3>
+        <p id="modalExcluirTexto"></p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" id="btnCancelarExclusao">Cancelar</button>
+          <button class="btn btn-danger" id="btnConfirmarExclusao">Excluir</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="./js/ui-theme.js"></script>
+    <script src="./js/ui-toast.js"></script>
+    <script src="./js/config.js?v=6"></script>
+    <script src="./js/api.js?v=6"></script>
+    <script src="./js/eco-skeleton.js"></script>
+    <script src="./js/eco-helpers.js"></script>
+    <script src="./js/eco-admin.js?v=3"></script>
+    <script>
+      initTheme();
+      initThemeToggle();
+
+      const sessao = getSession();
+      let acessoLiberado = true;
+      if (!sessao) {
+        window.location.replace("login.html");
+      } else if (!isMaster(sessao)) {
+        bloquearAcesso();
+      }
+      function bloquearAcesso() {
+        acessoLiberado = false;
+        document.getElementById("accessNote").style.display = "flex";
+        document.getElementById("content").style.display = "none";
+      }
+
+      const esc = Api.escapeHtml;
+      const $ = (id) => document.getElementById(id);
+      let empresas = [];
+      let total = 0;
+      let emEdicao = null;
+      let emExclusao = null;
+      let ultimaBusca = 0;
+
+      /* GET /admin/empresas?busca=&status= */
+      async function carregar() {
+        if (!acessoLiberado) return;
+        const numero = ++ultimaBusca;
+        try {
+          const r = await Admin.empresas({
+            busca: $("busca").value.trim() || undefined,
+            status: $("filtroStatus").value || undefined,
+          });
+          if (numero !== ultimaBusca) return;
+          empresas = r.itens;
+          total = (r.meta && r.meta.total) || empresas.length;
+          renderizar();
+        } catch (err) {
+          if (numero !== ultimaBusca) return;
+          if (err.status === 403) return bloquearAcesso();
+          console.error(err);
+          $("tbody").innerHTML =
+            '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--danger);">Não foi possível carregar as empresas.</td></tr>';
+        }
+      }
+
+      function renderizar() {
+        $("countTag").textContent =
+          `${total} empresa(s)` + (total > empresas.length ? ` — mostrando ${empresas.length}` : "");
+        $("emptyState").style.display = empresas.length ? "none" : "block";
+        $("tbody").innerHTML = empresas
+          .map((e) => {
+            const ativa = e.status === "ativa";
+            return `
+          <tr>
+            <td><strong>${esc(e.nome_empresa)}</strong><span class="sub">CNPJ ${esc(e.cnpj_formatado || e.cnpj)}</span></td>
+            <td>${esc(e.email)}</td>
+            <td><a href="admin_ecopontos.html?empresa=${esc(e.id)}">${esc(e.total_ecopontos)} ponto(s)</a></td>
+            <td><span class="status-dot" style="background:${ativa ? "#43a047" : "#e53935"}"></span>${esc(e.status_rotulo || e.status)}</td>
+            <td>
+              <div class="acoes">
+                <button class="btn btn-ghost" data-editar="${esc(e.id)}">Editar</button>
+                <button class="btn btn-ghost" data-status="${esc(e.id)}">${ativa ? "Suspender" : "Reativar"}</button>
+                <button class="btn btn-danger" data-excluir="${esc(e.id)}">Excluir</button>
+              </div>
+            </td>
+          </tr>`;
+          })
+          .join("");
+        $("tbody").querySelectorAll("[data-editar]").forEach((b) =>
+          b.addEventListener("click", () => abrirEdicao(b.dataset.editar)),
+        );
+        $("tbody").querySelectorAll("[data-status]").forEach((b) =>
+          b.addEventListener("click", () => alternarStatus(b.dataset.status, b)),
+        );
+        $("tbody").querySelectorAll("[data-excluir]").forEach((b) =>
+          b.addEventListener("click", () => abrirExclusao(b.dataset.excluir)),
+        );
+      }
+
+      const acharEmpresa = (id) => empresas.find((e) => String(e.id) === String(id));
+      function trocarNaLista(atualizada) {
+        const i = empresas.findIndex((e) => e.id === atualizada.id);
+        if (i >= 0) empresas[i] = atualizada;
+        renderizar();
+      }
+
+      /* ---------- Suspender / reativar ---------- */
+      async function alternarStatus(id, btn) {
+        const e = acharEmpresa(id);
+        if (!e) return;
+        btn.disabled = true;
+        try {
+          const r = await Admin.editarEmpresa(e.id, { status: e.status === "ativa" ? "suspensa" : "ativa" });
+          trocarNaLista(r);
+          showToast(r.message || "Status atualizado.");
+        } catch (err) {
+          Api.showError(err, "Não foi possível mudar o status.");
+          btn.disabled = false;
+        }
+      }
+
+      /* ---------- Editar ---------- */
+      function abrirEdicao(id) {
+        const e = acharEmpresa(id);
+        if (!e) return;
+        emEdicao = e;
+        $("tituloEditar").textContent = `Editar ${e.nome_empresa}`;
+        $("erroForm").style.display = "none";
+        $("fNome").value = e.nome_empresa || "";
+        $("fRazao").value = e.razao_social || "";
+        $("fEmail").value = e.email || "";
+        $("fEndereco").value = e.endereco || "";
+        $("fCnpj").value = e.cnpj_formatado || e.cnpj || "";
+        $("fStatus").value = e.status;
+        $("modalEditar").classList.add("show");
+        $("fNome").focus();
+      }
+      function fecharEdicao() {
+        $("modalEditar").classList.remove("show");
+        emEdicao = null;
+      }
+      function mostrarErro(msg) {
+        $("erroForm").textContent = msg;
+        $("erroForm").style.display = "block";
+      }
+
+      $("formEditar").addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        if (!emEdicao) return;
+        if (!$("fNome").value.trim()) return mostrarErro("Informe o nome da empresa.");
+        if (!$("fEmail").value.trim()) return mostrarErro("Informe o e-mail.");
+
+        const dados = {
+          nome_empresa: $("fNome").value.trim(),
+          razao_social: $("fRazao").value.trim() || null,
+          email: $("fEmail").value.trim(),
+          endereco: $("fEndereco").value.trim() || null,
+          status: $("fStatus").value,
+        };
+        const btn = $("btnSalvar");
+        btn.disabled = true;
+        btn.textContent = "Salvando…";
+        try {
+          const r = await Admin.editarEmpresa(emEdicao.id, dados); // PATCH /admin/empresas/{id}
+          trocarNaLista(r);
+          fecharEdicao();
+          showToast(r.message || "Empresa atualizada.");
+        } catch (err) {
+          mostrarErro(Api.primeiroCampo(err) || err.message || "Não foi possível salvar.");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Salvar";
+        }
+      });
+
+      /* ---------- Excluir ---------- */
+      function abrirExclusao(id) {
+        const e = acharEmpresa(id);
+        if (!e) return;
+        emExclusao = e;
+        $("modalExcluirTexto").textContent =
+          `Excluir "${e.nome_empresa}" e os ${e.total_ecopontos} Ecoponto(s) dela? ` +
+          `Se algum ponto já recebeu coletas, a empresa não é apagada: fica suspensa e os pontos saem do mapa, ` +
+          `para não perder o histórico das pessoas.`;
+        $("modalExcluir").classList.add("show");
+      }
+      function fecharExclusao() {
+        $("modalExcluir").classList.remove("show");
+        emExclusao = null;
+      }
+      $("btnConfirmarExclusao").addEventListener("click", async () => {
+        if (!emExclusao) return;
+        const btn = $("btnConfirmarExclusao");
+        btn.disabled = true;
+        btn.textContent = "Excluindo…";
+        try {
+          const r = await Admin.excluirEmpresa(emExclusao.id); // DELETE /admin/empresas/{id}
+          fecharExclusao();
+          showToast((r && r.message) || "Empresa excluída.");
+          carregar();
+        } catch (err) {
+          Api.showError(err, "Não foi possível excluir. Tente novamente.");
+          fecharExclusao();
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Excluir";
+        }
+      });
+
+      /* ---------- Eventos ---------- */
+      $("btnCancelarEdicao").addEventListener("click", fecharEdicao);
+      $("btnCancelarExclusao").addEventListener("click", fecharExclusao);
+      $("modalEditar").addEventListener("click", (e) => { if (e.target.id === "modalEditar") fecharEdicao(); });
+      $("modalExcluir").addEventListener("click", (e) => { if (e.target.id === "modalExcluir") fecharExclusao(); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape") { fecharEdicao(); fecharExclusao(); } });
+
+      let temporizador = null;
+      $("busca").addEventListener("input", () => {
+        clearTimeout(temporizador);
+        temporizador = setTimeout(carregar, 300);
+      });
+      $("filtroStatus").addEventListener("change", carregar);
+      $("btnLimpar").addEventListener("click", () => {
+        $("busca").value = "";
+        $("filtroStatus").value = "";
+        carregar();
+      });
+
+      carregar();
+    </script>
+    <script src="js/eco-animate.js"></script>
+    <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
+    <script src="js/eco-acessibilidade.js"></script>
+  </body>
+</html>

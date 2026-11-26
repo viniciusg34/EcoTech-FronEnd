@@ -12,8 +12,16 @@
     />
     <link rel="stylesheet" href="./css/login.css" />
     <link rel="stylesheet" href="./css/eco-animate.css" />
-    <link rel="stylesheet" href="./css/eco-interacoes.css" />
+    <link rel="stylesheet" href="./css/eco-interacoes.css?v=2" />
 
+    <!-- Biblioteca oficial do Google (Google Identity Services) —
+         usada exclusivamente pelo botão "Entrar com Google" desta
+         página. "async defer" pra não atrasar o carregamento do
+         resto da tela; se a rede bloquear esse script (ex: sem
+         internet), o botão simplesmente avisa que não conseguiu
+         carregar, sem quebrar o resto do login (ver script no
+         fim do arquivo). -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
 
   <body>
@@ -89,14 +97,14 @@
             <label for="email">Login ou e-mail</label>
             <div class="input-box">
               <span>✉</span>
-              <input type="text" id="email" placeholder="seu login ou e-mail" />
+              <input type="text" id="email" placeholder="seu login ou e-mail" autocomplete="username" />
             </div>
 
             <label for="password">Senha</label>
             <div class="input-box">
               <span>🔒</span>
               <input type="password" id="password" placeholder="••••••••" />
-              <span class="eye" onclick="togglePassword()">◎</span>
+              <button type="button" class="eye" onclick="togglePassword('password')" aria-label="Mostrar ou ocultar senha">◎</button>
             </div>
 
             <div class="options">
@@ -113,6 +121,7 @@
             </button>
 
             <div class="divisor-ou">ou</div>
+            <!-- Google: só para usuário comum (empresa e master usam e-mail e senha) -->
 
             <!-- Botão real do Google, renderizado pela lib oficial,
                  escondido fora da tela (ver comentário em css/login.css) -->
@@ -144,65 +153,223 @@
       </section>
     </main>
 
-    <div class="toast" id="toast"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="./js/api.js"></script>
     <script src="./js/ui-theme.js"></script>
     <script src="./js/eco-animate.js"></script>
     <script src="./js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
     <script src="./js/ui-toast.js"></script>
     <script src="./js/eco-helpers.js"></script>
-    <script src="./js/eco-admin.js"></script>
+    <script src="./js/config.js?v=6"></script>
+    <script src="./js/api.js?v=6"></script>
     <script>
       initTheme();
       initThemeToggle();
 
-      const btnEntrar = document.getElementById("btnEntrar");
-
+      /* ─── Estado de carregamento do botão Entrar ─── */
       function setLoading(ativo) {
-        btnEntrar.disabled = ativo;
-        btnEntrar.textContent = ativo ? "Entrando..." : "Entrar";
+        const btn = document.getElementById("btnEntrar");
+        if (!btn) return;
+        btn.disabled = ativo;
+        btn.textContent = ativo ? "Entrando…" : "Entrar";
       }
 
-      /* Login em duas etapas: a senha certa libera o 2FA. Empresas
-         parceiras pulam o 2FA e já entram. */
+      /* ─── Login principal: POST /auth/login ───
+         Pessoa (comum ou master) recebe um desafio de 2FA;
+         empresa recebe o token direto. */
       async function handleLogin() {
-        const login = document.getElementById("email").value.trim();
+        let identificador = document.getElementById("email").value.trim();
         const senha = document.getElementById("password").value;
-        if (!login || !senha) {
-          mostrarMensagem("Preencha todos os campos.");
+        const lembrar = document.getElementById("lembrarMe").checked;
+
+        if (!identificador || !senha) {
+          showToast("Preencha todos os campos.");
           return;
         }
+        // e-mail vai em minúsculas; o login (ex.: MASTER) segue como digitado
+        if (identificador.includes("@")) identificador = identificador.toLowerCase();
 
         setLoading(true);
-        const r = await api("/login", { metodo: "POST", corpo: { login, senha } });
-        setLoading(false);
+        try {
+          const r = await Auth.login(identificador, senha, lembrar);
 
-        if (r.sucesso) {
-          window.location.href =
-            r.dados.etapa === "2fa" ? "2fa.html" : "index.html";
-          return;
+          if (r && r.status === "2fa") {
+            Auth.guardar2fa({
+              desafio_id: r.desafio_id,
+              pergunta: r.pergunta,
+              pergunta_tipo: r.pergunta_tipo || null,
+              lembrar,
+            });
+            window.location.href = "2fa.html";
+            return;
+          }
+
+          if (r && r.token) {
+            Session.save(r, lembrar);
+            showToast("Entrando…");
+            setTimeout(() => {
+              window.location.href = Auth.destinoPosLogin(r.usuario);
+            }, 1000);
+            return;
+          }
+
+          showToast("Não foi possível entrar. Tente novamente.");
+        } catch (err) {
+          Api.showError(err, "E-mail ou senha incorretos.");
+        } finally {
+          setLoading(false);
         }
-        if (r.semConexao && entrarComContaTeste(login, senha)) {
-          window.location.href = "index.html";
-          return;
-        }
-        if (r.status >= 500) {
-          irParaErro(r.erro);
-          return;
-        }
-        mostrarMensagem(r.erro || "Não foi possível entrar.");
       }
 
-      ["email", "password"].forEach((id) => {
-        document.getElementById(id).addEventListener("keydown", (e) => {
-          if (e.key === "Enter") handleLogin();
-        });
+      document.getElementById("email").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") handleLogin();
+      });
+      document.getElementById("password").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") handleLogin();
       });
 
-      document.getElementById("btnGoogleLogin").addEventListener("click", () => {
-        mostrarMensagem("O login com Google ainda não tem rota na API.");
-      });
+      /* ══════════════════════════════════════════════════════════
+         LOGIN COM GOOGLE (exclusivo desta tela).
+         O botão do Google Identity roda no navegador; o ID token
+         é validado na API (POST /auth/google). O Client ID (público)
+         fica em js/config.js?v=2.
+      ══════════════════════════════════════════════════════════ */
+      const GOOGLE_CLIENT_ID =
+        (window.ECOTECH_CONFIG && window.ECOTECH_CONFIG.GOOGLE_CLIENT_ID) || "";
+
+      function googleConfigurado() {
+        return (
+          typeof GOOGLE_CLIENT_ID === "string" &&
+          GOOGLE_CLIENT_ID.length > 0 &&
+          !GOOGLE_CLIENT_ID.startsWith("SEU_CLIENT_ID")
+        );
+      }
+
+      /* ── Estado de carregamento do botão Google ── */
+      function setLoadingGoogle(ativo) {
+        const btn = document.getElementById("btnGoogleLogin");
+        const texto = document.getElementById("googleBtnTexto");
+        if (!btn || !texto) return;
+        btn.disabled = ativo;
+        texto.textContent = ativo ? "Entrando…" : "Entrar com Google";
+      }
+
+      /* ── Callback do Google: manda o credential para a API ── */
+      async function handleGoogleCredentialResponse(resposta) {
+        const lembrar = document.getElementById("lembrarMe").checked;
+        try {
+          const r = await Auth.google(resposta.credential, lembrar);
+
+          // Sem conta ainda: segue para o cadastro com nome e e-mail do Google.
+          if (r && r.status === "cadastro_pendente") {
+            sessionStorage.setItem(
+              "ecotech_google_prefill",
+              JSON.stringify({ nome: r.nome || "", email: r.email || "" }),
+            );
+            showToast(r.message || "Complete seu cadastro para continuar.");
+            setTimeout(() => {
+              window.location.href = "cadastro.html";
+            }, 1200);
+            return;
+          }
+
+          // Conta encontrada: igual ao login normal, responde a pergunta de segurança
+          if (r && r.status === "2fa") {
+            Auth.guardar2fa({
+              desafio_id: r.desafio_id,
+              pergunta: r.pergunta,
+              pergunta_tipo: r.pergunta_tipo || null,
+              lembrar,
+            });
+            window.location.href = "2fa.html";
+            return;
+          }
+
+          Session.save(r, lembrar);
+          const primeiroNome = String((r.usuario && r.usuario.nome) || "").split(" ")[0];
+          showToast(`✅ Bem-vindo(a), ${primeiroNome}!`, true);
+          setTimeout(() => {
+            window.location.href = Auth.destinoPosLogin(r.usuario);
+          }, 900);
+        } catch (err) {
+          Api.showError(err, "Erro ao entrar com Google. Tente novamente.");
+          setLoadingGoogle(false);
+        }
+      }
+
+      /* ── Inicializa a lib do Google assim que ela carregar (o
+         script é "async defer", então pode terminar de carregar
+         depois do nosso código — por isso o setInterval abaixo
+         fica esperando até o objeto "google" existir). ── */
+      (function iniciarGoogleLogin() {
+        const botaoVisivel = document.getElementById("btnGoogleLogin");
+        const containerReal = document.getElementById("googleBtnReal");
+        if (!botaoVisivel || !containerReal) return;
+
+        let tentativas = 0;
+        const esperaLibGoogle = setInterval(() => {
+          tentativas++;
+          const libPronta =
+            typeof google !== "undefined" &&
+            google.accounts &&
+            google.accounts.id;
+
+          if (libPronta) {
+            clearInterval(esperaLibGoogle);
+
+            if (!googleConfigurado()) {
+              // Deixa o botão visível, mas avisa com clareza (em vez
+              // de deixar a lib do Google estourar um erro genérico
+              // no console quando alguém clicar).
+              botaoVisivel.addEventListener("click", () => {
+                showToast(
+                  "Login com Google ainda não configurado neste projeto (falta o Client ID).",
+                );
+              });
+              return;
+            }
+
+            google.accounts.id.initialize({
+              client_id: GOOGLE_CLIENT_ID,
+              callback: (resposta) => {
+                setLoadingGoogle(true);
+                handleGoogleCredentialResponse(resposta);
+              },
+              auto_select: false,
+            });
+
+            // O botão OFICIAL do Google aparece no lugar do nosso.
+            // (Ele fica dentro de um iframe do Google: não dá para
+            // "clicar nele" por código, então ele precisa estar visível.)
+            const largura = Math.min(400, Math.max(200, Math.round(botaoVisivel.getBoundingClientRect().width) || 320));
+            containerReal.style.cssText =
+              "position:static;left:auto;top:auto;width:auto;height:auto;opacity:1;" +
+              "pointer-events:auto;overflow:visible;display:flex;justify-content:center;margin:4px 0;";
+            google.accounts.id.renderButton(containerReal, {
+              type: "standard",
+              theme: "outline",
+              size: "large",
+              text: "signin_with",
+              shape: "pill",
+              logo_alignment: "left",
+              locale: "pt-BR",
+              width: largura,
+            });
+            botaoVisivel.style.display = "none";
+          } else if (tentativas > 100) {
+            // ~10s tentando (100 x 100ms) — a lib do Google não
+            // carregou (provavelmente sem internet ou bloqueada).
+            clearInterval(esperaLibGoogle);
+            botaoVisivel.addEventListener("click", () => {
+              showToast(
+                "Não foi possível carregar o login do Google agora. Verifique sua conexão.",
+              );
+            });
+          }
+        }, 100);
+      })();
     </script>
+      <script src="js/eco-acessibilidade.js"></script>
   </body>
 </html>

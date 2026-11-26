@@ -1,256 +1,131 @@
 "use strict";
 
-/* ══════════════════════════════
-   CONFIG
-══════════════════════════════ */
-/* ══════════════════════════════
-   METADADOS ESTÁTICOS
-══════════════════════════════ */
-const MONTH_LABELS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"];
+/* ══════════════════════════════════════════════════════════
+   empresa-data.js — Painel da empresa.
+   Tudo vem de GET /empresas/me/dashboard (totais, série dos
+   últimos 6 meses, percentuais por material e a lista de
+   ecopontos com status e última atividade). Nada é calculado
+   nem inventado aqui; só desenhado.
+   Depende de js/config.js e js/api.js.
+══════════════════════════════════════════════════════════ */
 
-const CATEGORY_META = {
-  metal: { label: "Metal", color: "#f9a825" },
-  papel: { label: "Papel", color: "#66bb6a" },
-  vidro: { label: "Vidro", color: "#42a5f5" },
-  plastico: { label: "Plástico", color: "#ef5350" },
-  eletronicos: { label: "Eletrônicos", color: "#ab47bc" },
-  madeira: { label: "Madeira", color: "#8d6e63" },
-};
-
-const STATUS_META = {
-  ativo: { label: "Ativo", className: "status-ativo" },
-  manutencao: { label: "Em manutenção", className: "status-manutencao" },
-  inativo: { label: "Inativo", className: "status-inativo" },
-};
-
-/* ══════════════════════════════
-   HELPERS
-══════════════════════════════ */
-
-/** Normaliza a string "cats" da API → array de chaves internas
- *  Ex: "Metal, Plástico" → ["metal", "plastico"]
- */
-function parseCats(catsField) {
-  if (!catsField || typeof catsField !== "string") return ["papel"];
-  const MAP = {
-    metal: "metal",
-    papel: "papel",
-    vidro: "vidro",
-    plástico: "plastico",
-    plastico: "plastico",
-    eletrônicos: "eletronicos",
-    eletronicos: "eletronicos",
-    madeira: "madeira",
-  };
-  return catsField
-    .split(",")
-    .map((s) => MAP[s.trim().toLowerCase()] || "papel")
-    .filter((v, i, a) => a.indexOf(v) === i); // dedup
-}
-
-/** Converte status boolean da API → chave interna */
-function parseStatus(statusField) {
-  if (statusField === true) return "ativo";
-  if (statusField === false) return "inativo";
-  return "inativo";
-}
-
-/** Gera série mensal fictícia baseada no kgColetado total da empresa
- *  (API não tem histórico mensal, então simulamos crescimento realista)
- */
-function buildMonthlySeries(kgTotal) {
-  const total = parseFloat(kgTotal) || 0;
-  const base = total / 6;
-  return [0.72, 0.83, 0.91, 1.0, 1.09, 1.18].map((f) => Math.round(base * f));
-}
-
-/** Gera lastActivity fictício baseado no id do ecoponto */
-function fakeLastActivity(id) {
-  const n = parseInt(id, 10) % 5;
-  const opts = [
-    "Hoje, 08h30",
-    "Hoje, 11h15",
-    "Ontem, 16h40",
-    "Há 2 dias",
-    "Há 4 dias",
-  ];
-  return opts[n] || "Hoje";
-}
-
-/** monthlyKg simulado por ecoponto baseado em coletado */
-function pointMonthlyKg(coletado, id) {
-  const total = parseFloat(coletado) || 0;
-  const factor = [0.14, 0.17, 0.19, 0.16, 0.18][parseInt(id, 10) % 5];
-  return Math.round(total * factor);
-}
-
-/* ══════════════════════════════
-   SESSÃO
-══════════════════════════════ */
-
-
-/* ══════════════════════════════
-   INICIALIZAÇÃO PRINCIPAL
-   Busca dados na API e renderiza o painel.
-   Chamada de empresa.html via: initEmpresaDashboard()
-══════════════════════════════ */
 async function initEmpresaDashboard() {
-  const sessao = await protegerTela(["empresa"]);
+  const sessao = getSession();
 
-  /* ── Dados da empresa logada e seus ecopontos ──
-     A conta de teste (API fora do ar) começa com o painel zerado. */
-  let empresaData = { name: sessao.nome, colected: 0 };
-  let rawPoints = [];
-  if (!sessao.demo) {
-    const res = await api(`/empresas/${encodeURIComponent(sessao.id)}`);
-    if (!res.sucesso) {
-      tratarFalha(res);
-      return;
-    }
-    empresaData = res.dados;
-    rawPoints = (await ecoListarEcopontos(sessao.id)) || [];
+  /* ── Só empresa logada entra ── */
+  if (!sessao || sessao.tipo !== "empresa") {
+    window.location.href = "login.html";
+    return;
   }
 
-  /* ── Monta objeto `company` compatível com o HTML ── */
-  const company = {
-    id: ecoId(empresaData, "empre_id"),
-    name: empresaData.name,
-    icon: "🏢",
-  };
-
-  /* ── Converte os ecopontos → formato interno ── */
-  const points = rawPoints.map((ep) => {
-    const id = ecoId(ep, "eco_id");
-    const kg = pointMonthlyKg(ep.collected, id);
-    return {
-      ecopontoId: id,
-      code: ep.code || `ECO-${id}`,
-      name: ep.name || "Ecoponto",
-      cats: parseCats(ep.cats),
-      address: ep.adress
-        ? `${ep.adress}, ${ep.city || ""}`
-        : "Endereço não informado",
-      status: typeof ep.status === "string" && isNaN(ep.status)
-        ? parseStatus(ep.status)
-        : ecoAtivo(Number(ep.status)) ? "ativo" : "inativo",
-      monthlyKg: kg,
-      validations: Math.round(kg * 0.6),
-      lastActivity: fakeLastActivity(id),
-    };
-  });
-
-  /* ── Série mensal baseada no kgColetado total da empresa ── */
-  const monthly = buildMonthlySeries(empresaData.colected);
-
-  /* ── Renderiza o painel ── */
-  renderDashboard({ company, points, monthly });
+  let dash;
+  try {
+    dash = await EmpresaApi.dashboard();
+  } catch (err) {
+    console.error("Erro ao carregar o painel da empresa:", err);
+    Api.showError(err, "❌ Erro ao carregar dados da empresa.");
+    return;
+  }
+  renderDashboard(dash);
 }
 
-/* ══════════════════════════════
-   RENDERIZAÇÃO
-══════════════════════════════ */
-function renderDashboard({ company, points, monthly }) {
+function renderDashboard(dash) {
+  const esc = Api.escapeHtml;
+  const nome = (dash.empresa && dash.empresa.nome) || "";
+  const totais = dash.totais || {};
+  const serie = dash.serie || { labels: [], valores: [] };
+  const categorias = dash.categorias || [];
+  const ecopontos = dash.ecopontos || [];
+
   /* Cabeçalho */
-  document.getElementById("dashCompanyBadge").textContent =
-    `🏢 ${company.name}`;
+  document.getElementById("dashCompanyBadge").textContent = `🏢 ${nome}`;
   document.getElementById("dashCompanyName").textContent =
-    `Painel de Acompanhamento — ${company.name}`;
+    `Painel de Acompanhamento — ${nome}`;
 
-  /* Stats */
-  const totalKg = points.reduce((s, p) => s + p.monthlyKg, 0);
-  const totalValidations = points.reduce((s, p) => s + p.validations, 0);
-  const activeCount = points.filter((p) => p.status === "ativo").length;
-
-  document.getElementById("statPoints").textContent = points.length;
-  document.getElementById("statKg").textContent =
-    totalKg.toLocaleString("pt-BR");
+  /* Cartões de totais (textos prontos da API) */
+  document.getElementById("statPoints").textContent =
+    totais.ecopontos != null ? totais.ecopontos : ecopontos.length;
+  document.getElementById("statKg").textContent = totais.kg_formatado || "0";
   document.getElementById("statValidations").textContent =
-    totalValidations.toLocaleString("pt-BR");
-  document.getElementById("statActive").textContent = activeCount;
-
-  if (monthly.length >= 2) {
-    const last = monthly[monthly.length - 1];
-    const prev = monthly[monthly.length - 2];
-    const pct = prev > 0 ? Math.round(((last - prev) / prev) * 100) : 0;
-    document.getElementById("statKgDelta").textContent =
-      (pct >= 0 ? "↑ " : "↓ ") + Math.abs(pct) + "% vs mês anterior";
+    totais.validacoes_formatado || "0";
+  document.getElementById("statActive").textContent = totais.ativos || 0;
+  if (totais.variacao_kg_texto) {
+    document.getElementById("statKgDelta").textContent = totais.variacao_kg_texto;
   }
 
-  /* Gráfico de barras */
-  const chartBars = document.getElementById("chartBars");
-  const maxVal = Math.max(...monthly, 1);
-  chartBars.innerHTML = monthly
+  /* Gráfico de barras (a altura é só escala visual da maior barra) */
+  const valores = (serie.valores || []).map(Number);
+  const maxVal = Math.max(...valores, 1);
+  document.getElementById("chartBars").innerHTML = valores
     .map((val, i) => {
       const h = Math.max((val / maxVal) * 100, 6);
+      const rotuloValor =
+        (serie.valores_formatados && serie.valores_formatados[i]) != null
+          ? serie.valores_formatados[i]
+          : val;
       return `
         <div class="dash-chart-col">
           <div class="dash-chart-bar" style="height:${h}%;">
-            <span class="dash-chart-bar-value">${val.toLocaleString("pt-BR")}</span>
+            <span class="dash-chart-bar-value">${esc(rotuloValor)}</span>
           </div>
-          <div class="dash-chart-col-label">${MONTH_LABELS[i]}</div>
+          <div class="dash-chart-col-label">${esc((serie.labels || [])[i] || "")}</div>
         </div>`;
     })
     .join("");
-
   document.getElementById("chartTotalLabel").textContent =
-    "Total: " +
-    monthly.reduce((a, b) => a + b, 0).toLocaleString("pt-BR") +
-    " kg";
+    serie.total_formatado || "";
 
-  /* Breakdown por material */
-  const catTotals = {};
-  points.forEach((p) => {
-    const share = p.monthlyKg / (p.cats.length || 1);
-    p.cats.forEach((c) => {
-      catTotals[c] = (catTotals[c] || 0) + share;
-    });
-  });
-  const catSum = Object.values(catTotals).reduce((a, b) => a + b, 0) || 1;
-
-  document.getElementById("breakdownList").innerHTML = Object.entries(catTotals)
-    .sort((a, b) => b[1] - a[1])
-    .map(([key, val]) => {
-      const meta = CATEGORY_META[key] || { label: key, color: "#aaa" };
-      const pct = Math.round((val / catSum) * 100);
-      return `
+  /* Coleta por material (percentuais já calculados) */
+  document.getElementById("breakdownList").innerHTML = categorias
+    .map(
+      (c) => `
         <div class="dash-breakdown-item">
           <div class="dash-breakdown-row">
-            <span class="dash-breakdown-dot" style="background:${meta.color};"></span>
-            <span class="dash-breakdown-label">${meta.label}</span>
-            <span class="dash-breakdown-pct">${pct}%</span>
+            <span class="dash-breakdown-dot" style="background:${esc(c.cor_hex)};"></span>
+            <span class="dash-breakdown-label">${esc(c.rotulo)}</span>
+            <span class="dash-breakdown-pct">${esc(c.percentual)}%</span>
           </div>
           <div class="dash-breakdown-track">
-            <div class="dash-breakdown-fill" style="width:${pct}%; background:${meta.color};"></div>
+            <div class="dash-breakdown-fill" style="width:${esc(c.percentual)}%; background:${esc(c.cor_hex)};"></div>
           </div>
-        </div>`;
-    })
+        </div>`,
+    )
     .join("");
+
+  /* Pontos no formato usado pelo QR e pelo leitor */
+  const points = ecopontos.map((p) => ({
+    id: p.id,
+    code: p.codigo,
+    name: p.nome || "Ecoponto",
+    address: p.endereco || "Endereço não informado",
+    status: p.status,
+    statusLabel: p.status_rotulo || p.status,
+  }));
 
   /* Tabela de ecopontos */
   document.getElementById("tableCount").textContent =
-    points.length + (points.length === 1 ? " Ecoponto" : " Ecopontos");
+    ecopontos.length + (ecopontos.length === 1 ? " Ecoponto" : " Ecopontos");
 
-  document.getElementById("pointsTableBody").innerHTML = points
-    .map((p) => {
-      const sm = STATUS_META[p.status] || STATUS_META.inativo;
-      const catsHtml = p.cats
-        .map((c) => {
-          const meta = CATEGORY_META[c] || { label: c, color: "#aaa" };
-          return `<span class="dash-cat-chip"><span style="background:${meta.color};"></span>${meta.label}</span>`;
-        })
+  document.getElementById("pointsTableBody").innerHTML = ecopontos
+    .map((p, i) => {
+      const catsHtml = (p.categorias || [])
+        .map(
+          (c) =>
+            `<span class="dash-cat-chip"><span style="background:${esc(c.cor_hex)};"></span>${esc(c.rotulo)}</span>`,
+        )
         .join("");
       return `
         <tr>
           <td>
-            <span class="dash-point-name">${p.name}</span>
-            <span class="dash-point-address">${p.address}</span>
+            <span class="dash-point-name">${esc(points[i].name)}</span>
+            <span class="dash-point-address">${esc(points[i].address)}</span>
           </td>
-          <td><span class="dash-point-code">${p.code}</span></td>
+          <td><span class="dash-point-code">${esc(p.codigo)}</span></td>
           <td><div class="dash-cats">${catsHtml}</div></td>
-          <td><span class="dash-status-pill ${sm.className}">${sm.label}</span></td>
-          <td>${p.monthlyKg.toLocaleString("pt-BR")} kg</td>
-          <td>${p.lastActivity}</td>
-          <td><button class="dash-table-action" data-code="${p.code}">...</button></td>
+          <td><span class="dash-status-pill status-${esc(p.status)}">${esc(points[i].statusLabel)}</span></td>
+          <td>${esc(p.kg_mes_formatado || "")}</td>
+          <td>${esc(p.ultima_atividade || "—")}</td>
+          <td><button class="dash-table-action" data-code="${esc(p.codigo)}" aria-label="Gerar QR do ${esc(p.codigo)}" title="Gerar QR do ${esc(p.codigo)}">…</button></td>
         </tr>`;
     })
     .join("");
@@ -265,17 +140,10 @@ function renderDashboard({ company, points, monthly }) {
     qrSelect.appendChild(opt);
   });
 
-  /* Expõe `points` globalmente para o script inline do empresa.html */
+  /* Expõe `points` para o script inline do empresa.html */
   window.__empresaPoints = points;
-
-  /* Re-inicializa listeners de QR (empresa.html usa window.__empresaPoints) */
+  window.__empresaDash = dash; // usado pela exportação do resumo (CSV)
   if (typeof bindQrListeners === "function") bindQrListeners();
-}
-
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  if (!t) return;
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2800);
+  if (typeof bindReader === "function") bindReader();
+  if (typeof bindExport === "function") bindExport();
 }

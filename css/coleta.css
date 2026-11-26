@@ -445,7 +445,8 @@ body.map-fullscreen-active { overflow: hidden; }
 .page { display: none; animation: fadeInPage 0.4s var(--ease); }
 .page.active { display: block; }
 @keyframes fadeInPage { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-.page h1 { font-family: "Lora", serif; font-weight: 600; font-size: clamp(1.5rem, 3.2vw, 2.2rem); color: var(--ink); letter-spacing: -0.02em; text-align: center; margin-bottom: 10px; }
+.page h1, .page h2.titulo-aba { font-family: "Lora", serif; font-weight: 600; font-size: clamp(1.5rem, 3.2vw, 2.2rem); color: var(--ink); letter-spacing: -0.02em; text-align: center; margin-bottom: 10px; }
+.page h2.titulo-aba { margin-top: 0.67em; } /* mesma margem de cima que o h1 tinha */
 .page .subtitle { text-align: center; color: var(--ink-3); font-size: 0.95rem; max-width: 560px; margin: 0 auto 36px; line-height: 1.7; }
 
 .btn-primary, .btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: var(--br-pill); padding: 12px 26px; font-weight: 700; font-size: 0.9rem; font-family: "Plus Jakarta Sans", sans-serif; cursor: pointer; transition: transform 0.2s var(--ease), background 0.2s, box-shadow 0.2s; }
@@ -639,7 +640,7 @@ footer p      { font-size: 0.8rem; color: var(--footer-copy); }
   .stat-card { padding: 18px 12px; }
 
   /* Mapa em mobile */
-  .map-section  { padding: 24px 0; margin: 16px 0; }
+  .map-section  { padding: 24px 0; margin: 84px 0 16px; } /* 84px = menu fixo (10 + 64) + folga */
   .map-container { padding: 0 10px; }
 
   .map-wrapper {

@@ -1,0 +1,144 @@
+/* ══════════════════════════════════════════════════════════
+   eco-skeleton.css — Skeleton loading
+   Blocos com um brilho passando, no lugar do conteúdo que ainda
+   está vindo da API. Quem coloca e tira é o js/eco-skeleton.js
+   (veja o cabeçalho de lá para usar no HTML).
+
+   A cor do bloco sai da cor do TEXTO de onde ele está
+   (currentColor): fica claro em cima dos cartões verdes, escuro em
+   cima do creme, e acompanha o tema claro/escuro sozinho.
+══════════════════════════════════════════════════════════ */
+@keyframes sk-brilho {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+
+/* ── 1. Valor que vem da API (texto, número, mapa, vídeo) ──
+   O elemento mantém o lugar, mas o conteúdo provisório fica
+   invisível (inclusive emoji); só o bloco do ::after aparece. */
+.sk {
+  position: relative;
+  min-width: var(--sk-w, 3ch);
+  min-height: 1em;
+  visibility: hidden;
+  user-select: none;
+}
+span.sk,
+a.sk,
+b.sk,
+strong.sk,
+small.sk,
+em.sk {
+  display: inline-block;
+  vertical-align: middle;
+}
+.sk::after,
+.sk-bloco {
+  background-color: rgba(128, 128, 128, 0.2); /* navegador antigo */
+  background-color: color-mix(in srgb, currentColor 18%, transparent);
+  background-image: linear-gradient(
+    100deg,
+    transparent 30%,
+    color-mix(in srgb, currentColor 10%, transparent) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: sk-brilho 1.4s ease-in-out infinite;
+}
+.sk::after {
+  content: "";
+  visibility: visible;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: var(--sk-raio, 8px);
+}
+
+/* Bloco do tamanho do valor (não da linha inteira). sk-centro centraliza. */
+.sk.sk-curto,
+.sk.sk-centro {
+  width: fit-content;
+}
+.sk.sk-centro {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── 2. Blocos soltos (linhas de tabela, cartões de lista) ── */
+.sk-bloco {
+  display: block;
+  width: var(--sk-w, 100%);
+  height: var(--sk-h, 0.9em);
+  border-radius: var(--sk-raio, 8px);
+}
+.sk-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  min-height: var(--sk-h, 72px);
+  border-radius: var(--sk-raio, 14px);
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  list-style: none;
+}
+.sk-item + .sk-item {
+  margin-top: 12px;
+}
+.sk-item .sk-circulo {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  --sk-raio: 50%;
+}
+.sk-item .sk-textos {
+  flex: 1;
+  display: grid;
+  gap: 8px;
+}
+.sk-item.sk-cartao {
+  flex-direction: column;
+  justify-content: center;
+  padding: 22px;
+}
+.sk-item.sk-cartao .sk-circulo {
+  width: 48px;
+  height: 48px;
+}
+.sk-item.sk-cartao .sk-textos {
+  flex: 0 0 auto;
+  width: 100%;
+  justify-items: center;
+  gap: 10px;
+}
+/* dentro de grade/flex com gap, o espaço já vem do container */
+.rewards-grid > .sk-item + .sk-item,
+#timeline-list > .sk-item + .sk-item {
+  margin-top: 0;
+}
+tr.sk-linha td {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+.sk-vazio {
+  text-align: center;
+  padding: 24px 12px;
+  opacity: 0.75;
+  font-size: 0.9rem;
+  list-style: none;
+}
+
+/* Movimento reduzido: bloco parado, sem brilho passando */
+@media (prefers-reduced-motion: reduce) {
+  .sk::after,
+  .sk-bloco {
+    animation: none;
+    background-image: none;
+  }
+}
+
+/* Elemento com cor própria (ex.: avatar de texto branco): o bloco usa a
+   cor do texto de quem está em volta, para aparecer nos dois temas. */
+.sk.sk-herda-cor {
+  color: inherit !important;
+}

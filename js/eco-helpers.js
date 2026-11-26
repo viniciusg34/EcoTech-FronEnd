@@ -1,16 +1,9 @@
 "use strict";
 
 /* ══════════════════════════════════════════════════════════
-   eco-helpers.js — Funções utilitárias compartilhadas
-   (validação, máscara, autocompletar CEP).
-
-   Algumas destas funções já eram CHAMADAS em cadastro.html e
-   login.html (cleanText, validarCPF, calcularIdade, senhaSegura,
-   togglePassword, autenticarLocal) mas nunca tinham sido
-   definidas em nenhum arquivo do projeto — os formulários
-   quebravam ao serem enviados. Este arquivo apenas ADICIONA
-   essas implementações; nenhum HTML/JS existente foi alterado
-   em sua lógica.
+   eco-helpers.js — Funções utilitárias compartilhadas:
+   validação e máscaras de formulário, e preenchimento de
+   endereço pelo CEP (via API, precisa de js/api.js na página).
 ══════════════════════════════════════════════════════════ */
 
 /* ── Texto ── */
@@ -58,17 +51,6 @@ function calcularIdade(dataStr) {
 /* ── Força de senha (8+ caracteres, maiúscula, minúscula e número) ── */
 function senhaSegura(senha) {
   return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(senha || "");
-}
-
-/* ── Senha aceita pela API: exatamente 8 letras ── */
-function senhaValidaApi(senha) {
-  return /^[A-Za-zÀ-ÿ]{8}$/.test(senha || "");
-}
-
-/* ── Telefone no formato da API: (+55)21-999999999 ── */
-function telefoneParaApi(valor) {
-  const digitos = (valor || "").replace(/\D/g, "");
-  return `(+55)${digitos.slice(0, 2)}-${digitos.slice(2)}`;
 }
 
 /* ── Login: exatamente 6 caracteres alfabéticos (item 6 do PDF) ── */
@@ -135,7 +117,7 @@ function aplicarMascaraComCursor(input, maskFn) {
   });
 }
 
-/* ── CEP: máscara + preenchimento automático via ViaCEP ── */
+/* ── CEP: máscara + preenchimento automático (GET /cep/{cep} na API) ── */
 function formatarCEP(valor) {
   const d = (valor || "").replace(/[^\d]/g, "").slice(0, 8);
   return d.length > 5 ? d.slice(0, 5) + "-" + d.slice(5) : d;
@@ -154,18 +136,16 @@ async function buscarEnderecoPorCEP(cepInput, campos) {
   const cep = (cepInput || "").replace(/[^\d]/g, "");
   if (cep.length !== 8) return { ok: false, motivo: "CEP incompleto." };
   try {
-    const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    if (!resp.ok) throw new Error("Falha na consulta.");
-    const dados = await resp.json();
-    if (dados.erro) return { ok: false, motivo: "CEP não encontrado." };
+    const dados = await Cep.buscar(cep); // precisa de js/api.js na página
     if (campos) {
       if (campos.logradouro) campos.logradouro.value = dados.logradouro || "";
       if (campos.bairro) campos.bairro.value = dados.bairro || "";
-      if (campos.cidade) campos.cidade.value = dados.localidade || "";
+      if (campos.cidade) campos.cidade.value = dados.cidade || "";
       if (campos.uf) campos.uf.value = dados.uf || "";
     }
     return { ok: true, dados };
   } catch (err) {
+    if (err && err.status === 404) return { ok: false, motivo: "CEP não encontrado." };
     return { ok: false, motivo: "Sem conexão — preencha o endereço manualmente." };
   }
 }

@@ -38,7 +38,7 @@ const ECO_REDUZIR_MOVIMENTO = window.matchMedia(
   if (ECO_REDUZIR_MOVIMENTO) return;
 
   const SELETOR_RIPPLE = [
-    "button:not(.icon-btn):not(.theme-toggle)",
+    "button:not(.icon-btn):not(.theme-toggle):not(.eye):not(.eye-toggle)",
     ".btn",
     ".btn-primary",
     ".btn-ghost",

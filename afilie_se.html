@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="shortcut icon" href="assets/fivecom.png" type="image/x-icon" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" />
-    <link rel="stylesheet" href="css/afilie_se.css" />
-    <link rel="stylesheet" href="css/eco-arte-fundo.css" />
+    <link rel="stylesheet" href="css/afilie_se.css?v=2" />
+    <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
     <link rel="stylesheet" href="css/eco-animate.css" />
-    <link rel="stylesheet" href="css/eco-interacoes.css" />
+    <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
+    <link rel="stylesheet" href="css/eco-skeleton.css" />
     <title>Pontos Inteligentes</title>
   </head>
 
@@ -71,9 +72,6 @@
           </div>
         </div>
 
-        <div class="secao-principal-imagem">
-          <img src="assets/coletor_inteligente.jpg" alt="Ponto de coleta" class="eco-kenburns" />
-        </div>
       </div>
     </section>
 
@@ -85,7 +83,7 @@
         </div>
 
         <div class="card-impacto reveal">
-          <h3 id="num-voluntarios">+9 Ecopontos</h3>
+          <h3 id="num-voluntarios" class="sk sk-centro" style="--sk-w: 9ch">+9 Ecopontos</h3>
           <p>novos pontos inteligentes em implantação</p>
         </div>
 
@@ -99,6 +97,62 @@
         <div class="card-impacto reveal">
           <h3>Empresas conscientes</h3>
           <p>fazem parte dessa mudança</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ VÍDEO: ideia de como o Ecoponto funciona ═══ -->
+    <section class="ecoponto-video" aria-labelledby="titulo-ecoponto-video">
+      <div class="container ecoponto-video-grade">
+        <div class="ecoponto-video-midia reveal">
+          <div class="video-moldura sk" id="video-moldura" style="--sk-raio: 20px">
+            <video
+              id="video-ecoponto"
+              src="assets/ecoponto-conceito.mp4"
+              poster="assets/ecoponto-conceito-capa.jpg"
+              muted
+              loop
+              playsinline
+              preload="metadata"
+              aria-describedby="video-ecoponto-desc"
+            ></video>
+            <span class="video-selo">Vídeo conceitual</span>
+            <div class="video-controles">
+              <button type="button" class="video-botao" id="video-play" aria-label="Reproduzir vídeo" title="Reproduzir vídeo">
+                <svg class="ic-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" /></svg>
+                <svg class="ic-pausa" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor" /></svg>
+              </button>
+              <button type="button" class="video-botao" id="video-som" aria-label="Ativar som" title="Ativar som">
+                <svg class="ic-mudo" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" /><path d="M16 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" /></svg>
+                <svg class="ic-som" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" /><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" /></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ecoponto-video-texto reveal">
+          <span class="etiqueta">CONHEÇA O ECOPONTO</span>
+          <h2 id="titulo-ecoponto-video">Uma ideia de como o Ecoponto vai funcionar na sua empresa</h2>
+          <p id="video-ecoponto-desc">
+            O morador aproxima o celular, coloca a embalagem no compartimento
+            certo e recebe EcoCoins na mesma hora. Sua empresa acompanha cada
+            coleta pelo painel.
+          </p>
+          <ol class="ecoponto-passos">
+            <li>
+              <span class="ecoponto-passo-num">1</span>
+              <div><strong>Conecta</strong> Aproxima o celular e lê o QR da placa do Ecoponto.</div>
+            </li>
+            <li>
+              <span class="ecoponto-passo-num">2</span>
+              <div><strong>Deposita</strong> Vidro, plástico ou metal, cada um no seu compartimento.</div>
+            </li>
+            <li>
+              <span class="ecoponto-passo-num">3</span>
+              <div><strong>Ganha</strong> As EcoCoins entram na conta assim que a embalagem é lida.</div>
+            </li>
+          </ol>
+          <a href="cadastro_empresarial.html" class="botao-principal">Quero um Ecoponto →</a>
         </div>
       </div>
     </section>
@@ -207,19 +261,27 @@
       </div>
       <p>© 2026 EcoTech. Todos os direitos reservados.</p>
     </footer>
-    <script src="js/api.js"></script>
-    <script src="js/eco-session.js"></script>
+    <script src="js/config.js?v=6"></script>
+    <script src="js/api.js?v=6"></script>
+    <script src="js/eco-skeleton.js"></script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
-    <script src="js/eco-voltar.js"></script>
-    <script src="js/eco-arte-fundo.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
+      <script src="js/eco-acessibilidade.js"></script>
   </body>
   <script>
     "use strict";
 
+    /* GET /estatisticas (público): totais prontos. Sem resposta, o texto
+       que já está no HTML permanece (nada de número inventado). */
     async function carregarDadosAPI() {
-      const ecopontos = (await ecoListarEcopontos()) || [];
-      return { totalEcopontos: ecopontos.length };
+      try {
+        return (await Publico.estatisticas()) || {};
+      } catch (err) {
+        console.warn("Estatísticas indisponíveis:", err);
+        return {};
+      }
     }
 
     function animarContador(elementoId, valorAlvo, sufixo = "", prefixo = "") {
@@ -238,15 +300,85 @@
       }, 20);
     }
 
+    /* Vídeo conceitual do Ecoponto.
+       • Toca sem som e em loop quando aparece na tela; pausa quando sai.
+       • Quem prefere menos movimento (prefers-reduced-motion) vê só a
+         capa e aperta o play se quiser.
+       • Se a pessoa pausar, o vídeo não volta a tocar sozinho.
+       • O skeleton sai quando a capa ou o primeiro quadro carrega. */
+    function iniciarVideoEcoponto() {
+      const video = document.getElementById("video-ecoponto");
+      const moldura = document.getElementById("video-moldura");
+      const btnPlay = document.getElementById("video-play");
+      const btnSom = document.getElementById("video-som");
+      if (!video || !moldura) return;
+
+      const pronto = () => window.EcoSkeleton ? EcoSkeleton.pronto(moldura) : moldura.classList.remove("sk");
+      const capa = new Image();
+      capa.onload = pronto;
+      capa.src = video.getAttribute("poster");
+      video.addEventListener("loadeddata", pronto, { once: true });
+      video.addEventListener("error", pronto, { once: true });
+
+      const menosMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let pausadoPelaPessoa = menosMovimento;
+
+      function atualizarBotoes() {
+        const tocando = !video.paused;
+        moldura.classList.toggle("tocando", tocando);
+        moldura.classList.toggle("com-som", !video.muted);
+        const rotuloPlay = tocando ? "Pausar vídeo" : "Reproduzir vídeo";
+        btnPlay.setAttribute("aria-label", rotuloPlay);
+        btnPlay.title = rotuloPlay;
+        const rotuloSom = video.muted ? "Ativar som" : "Desativar som";
+        btnSom.setAttribute("aria-label", rotuloSom);
+        btnSom.title = rotuloSom;
+      }
+      ["play", "pause", "volumechange"].forEach((ev) => video.addEventListener(ev, atualizarBotoes));
+
+      function tocar() {
+        const p = video.play();
+        if (p && p.catch) p.catch(() => {}); // navegador bloqueou: fica a capa
+      }
+
+      btnPlay.addEventListener("click", () => {
+        if (video.paused) {
+          pausadoPelaPessoa = false;
+          tocar();
+        } else {
+          pausadoPelaPessoa = true;
+          video.pause();
+        }
+      });
+      btnSom.addEventListener("click", () => {
+        video.muted = !video.muted;
+        if (!video.muted && video.paused) {
+          pausadoPelaPessoa = false;
+          tocar();
+        }
+      });
+
+      if ("IntersectionObserver" in window) {
+        new IntersectionObserver(
+          ([e]) => {
+            if (e.isIntersecting && !pausadoPelaPessoa) tocar();
+            else if (!e.isIntersecting && !video.paused) video.pause();
+          },
+          { threshold: 0.4 },
+        ).observe(video);
+      } else if (!pausadoPelaPessoa) {
+        tocar();
+      }
+      atualizarBotoes();
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
       // ── Tema ──
       (function () {
         const saved = localStorage.getItem("eco-theme");
         const pref =
           saved ||
-          (window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light");
+          "light";
         document.documentElement.setAttribute("data-theme", pref);
       })();
 
@@ -287,9 +419,14 @@
         }),
       );
 
+      // ── Vídeo do Ecoponto ──
+      iniciarVideoEcoponto();
+
       // ── Contador da API ──
-      const { totalEcopontos } = await carregarDadosAPI();
-      animarContador("num-voluntarios", totalEcopontos, " Ecopontos", "+");
+      const stats = await carregarDadosAPI();
+      if (stats.ecopontos != null) {
+        animarContador("num-voluntarios", Number(stats.ecopontos), " Ecopontos", "+");
+      }
     });
   </script>
 </html>

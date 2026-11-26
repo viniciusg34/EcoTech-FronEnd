@@ -16,9 +16,10 @@
       .search-row .field.filtro-tipo { flex: 0 0 170px; min-width: 150px; }
       .count-tag { color: var(--ink-3); font-size: 0.82rem; margin-bottom: 14px; }
     </style>
-      <link rel="stylesheet" href="css/eco-arte-fundo.css" />
+      <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
       <link rel="stylesheet" href="css/eco-animate.css" />
-      <link rel="stylesheet" href="css/eco-interacoes.css" />
+      <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
+      <link rel="stylesheet" href="css/eco-skeleton.css" />
   </head>
   <body>
     <header class="admin-header">
@@ -61,7 +62,7 @@
             </div>
           </div>
 
-          <p class="count-tag" id="countTag"></p>
+          <p class="count-tag sk sk-curto" id="countTag" style="--sk-w: 14ch"></p>
 
           <div class="table-wrap">
             <table class="data-table">
@@ -73,7 +74,7 @@
                   <th>2FA utilizado</th>
                 </tr>
               </thead>
-              <tbody id="tbodyLogs"></tbody>
+              <tbody id="tbodyLogs" data-sk-linhas="6"></tbody>
             </table>
           </div>
 
@@ -85,67 +86,99 @@
         </div>
       </div>
     </main>
-    <div class="toast" id="toast"></div>
 
-    <script src="./js/api.js"></script>
     <script src="./js/ui-theme.js"></script>
-    <script src="./js/ui-toast.js"></script>
-    <script src="./js/eco-session.js"></script>
+    <script src="./js/config.js?v=6"></script>
+    <script src="./js/api.js?v=6"></script>
+    <script src="./js/eco-skeleton.js"></script>
     <script src="./js/eco-helpers.js"></script>
-    <script src="./js/eco-admin.js"></script>
+    <script src="./js/eco-admin.js?v=3"></script>
     <script>
       initTheme();
       initThemeToggle();
 
-      const tbody = document.getElementById("tbodyLogs");
-      const filtro = document.getElementById("filtroTipo");
-      const campoValor = document.getElementById("termo");
-      campoValor.disabled = true;
+      const sessao = getSession();
+      let acessoLiberado = true;
+      if (!sessao) {
+        window.location.replace("login.html");
+      } else if (!isMaster(sessao)) {
+        acessoLiberado = false;
+        document.getElementById("accessNote").style.display = "flex";
+        document.getElementById("content").style.display = "none";
+      }
 
-      async function buscarLogs() {
-        const valor = campoValor.value.trim();
-        const consulta =
-          filtro.value === "todos"
-            ? "filtro=todos"
-            : `filtro=${filtro.value}&valor=${encodeURIComponent(valor)}`;
-        const r = await api(`/logs?${consulta}`);
-        if (!r.sucesso) {
-          tratarFalha(r);
+      const esc = Api.escapeHtml;
+      let ultimaBusca = 0;
+
+      /* GET /admin/logs-autenticacao?tipo=&termo= — filtro no servidor;
+         data e CPF mascarado já chegam prontos. */
+      async function renderizar() {
+        if (!acessoLiberado) return;
+        const tipo = document.getElementById("filtroTipo").value;
+        const termo = cleanText(document.getElementById("termo").value);
+        const numero = ++ultimaBusca;
+
+        let r;
+        try {
+          r = await Admin.logs(tipo, termo);
+        } catch (err) {
+          if (numero !== ultimaBusca) return;
+          if (err.status === 403) {
+            acessoLiberado = false;
+            document.getElementById("accessNote").style.display = "flex";
+            document.getElementById("content").style.display = "none";
+            return;
+          }
+          Api.showError(err, "Não foi possível carregar os registros.");
           return;
         }
-        const logs = r.dados || [];
-        document.getElementById("countTag").textContent = `${logs.length} registro(s)`;
-        document.getElementById("emptyState").style.display =
-          logs.length === 0 ? "block" : "none";
+        if (numero !== ultimaBusca) return; // resposta antiga
+
+        const logs = r.itens;
+        const total = (r.meta && r.meta.total) || logs.length;
+        document.getElementById("countTag").textContent =
+          `${total} registro(s)` + (total > logs.length ? ` — mostrando ${logs.length}` : "");
+        const tbody = document.getElementById("tbodyLogs");
+
+        if (logs.length === 0) {
+          tbody.innerHTML = "";
+          document.getElementById("emptyState").style.display = "block";
+          return;
+        }
+        document.getElementById("emptyState").style.display = "none";
+
         tbody.innerHTML = logs
           .map(
             (l) => `
           <tr>
-            <td>${escaparHtml(l.data_hora_formatada)}</td>
-            <td>${escaparHtml(l.nome)}</td>
-            <td>${escaparHtml(l.cpf)}</td>
-            <td><span class="badge-pill">${escaparHtml(l.pergunta_2fa)}</span></td>
+            <td>${esc(l.data_formatada)}</td>
+            <td>${esc(l.nome)}</td>
+            <td>${esc(l.cpf_mascarado || l.cpf || "")}</td>
+            <td><span class="badge-pill">${esc(l.metodo_2fa)}${l.sucesso === false ? " (falhou)" : ""}</span></td>
           </tr>`,
           )
           .join("");
       }
 
-      filtro.addEventListener("change", () => {
-        campoValor.disabled = filtro.value === "todos";
-        if (campoValor.disabled) campoValor.value = "";
-        buscarLogs();
+      let temporizador = null;
+
+      document.getElementById("filtroTipo").addEventListener("change", (e) => {
+        const termoInput = document.getElementById("termo");
+        termoInput.disabled = e.target.value === "todos";
+        if (termoInput.disabled) termoInput.value = "";
+        renderizar();
       });
-      let esperaBusca;
-      campoValor.addEventListener("input", () => {
-        clearTimeout(esperaBusca);
-        esperaBusca = setTimeout(buscarLogs, 300);
+      document.getElementById("termo").addEventListener("input", () => {
+        clearTimeout(temporizador);
+        temporizador = setTimeout(renderizar, 300);
       });
 
-      protegerTela(["master"]).then(buscarLogs);
+      renderizar();
     </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
-    <script src="js/eco-voltar.js"></script>
-    <script src="js/eco-arte-fundo.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
+      <script src="js/eco-acessibilidade.js"></script>
   </body>
 </html>

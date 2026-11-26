@@ -11,18 +11,20 @@
     />
     <link rel="stylesheet" href="./css/admin-shared.css" />
     <link rel="stylesheet" href="./css/eco-animate.css" />
-    <link rel="stylesheet" href="./css/eco-interacoes.css" />
+    <link rel="stylesheet" href="./css/eco-interacoes.css?v=2" />
+    <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
     <style>
       body {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
         min-height: 100vh;
       }
       .recuperar-shell {
         width: 100%;
         max-width: 460px;
         padding: 20px;
+        margin: auto 0;
       }
       .recuperar-icon {
         width: 56px;
@@ -85,7 +87,7 @@
       <span id="theme-icon">☀️</span>
     </button>
 
-    <main class="recuperar-shell">
+    <main class="recuperar-shell secao-arte-tela" data-arte-fundo="seguranca">
       <div class="card">
         <div class="recuperar-icon">🔑</div>
         <h1 class="admin-title" style="text-align:center; margin-bottom:6px;">Recuperar senha</h1>
@@ -112,7 +114,7 @@
 
         <!-- ═══ ETAPA 2 — PERGUNTA DE SEGURANÇA ═══ -->
         <div class="painel-etapa" data-etapa="2">
-          <div class="question-box" id="pergunta-seguranca">Carregando pergunta...</div>
+          <div class="question-box" id="pergunta-seguranca">Carregando pergunta…</div>
           <div class="field">
             <label for="resposta-seguranca">Sua resposta</label>
             <input id="resposta-seguranca" type="text" autocomplete="off" required />
@@ -153,25 +155,155 @@
       </div>
     </main>
 
-    <div class="toast" id="toast"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="./js/api.js"></script>
     <script src="./js/ui-theme.js"></script>
     <script src="./js/ui-toast.js"></script>
     <script src="./js/eco-helpers.js"></script>
+    <script src="./js/config.js?v=6"></script>
+    <script src="./js/api.js?v=6"></script>
     <script>
       initTheme();
       initThemeToggle();
 
-      /* A API ainda não tem rota de recuperação de senha. */
-      document.getElementById("btn-buscar-email").addEventListener("click", () => {
-        mostrarMensagem(
-          "A recuperação de senha ainda não está disponível. Fale com o administrador.",
+      /* Estado só em memória: id do desafio e token de reset.
+         Pergunta, resposta e senha são conferidas pela API. */
+      let desafioId = null;
+      let tokenReset = null;
+
+      function irParaEtapa(numero) {
+        document.querySelectorAll(".painel-etapa").forEach((painel) => {
+          painel.classList.toggle("ativa", painel.dataset.etapa === String(numero));
+        });
+        document.querySelectorAll("#steps-indicator span").forEach((bolinha) => {
+          const passo = parseInt(bolinha.dataset.step, 10);
+          bolinha.classList.toggle("ativo", passo === numero);
+          bolinha.classList.toggle("concluido", passo < numero);
+        });
+      }
+
+      /* ── Etapa 1: POST /auth/esqueci-senha ──
+         A resposta é sempre a mesma, exista ou não a conta. */
+      document.getElementById("btn-buscar-email").addEventListener("click", async () => {
+        const email = cleanText(document.getElementById("email-recuperar").value).toLowerCase();
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showToast("Digite um e-mail válido.");
+          return;
+        }
+
+        const btn = document.getElementById("btn-buscar-email");
+        btn.disabled = true;
+        btn.textContent = "Procurando…";
+
+        try {
+          const r = await Auth.esqueciSenha(email);
+          if (!r || !r.desafio_id) {
+            showToast((r && r.message) || "Não foi possível continuar. Tente novamente.");
+            return;
+          }
+          desafioId = r.desafio_id;
+          // o texto antigo trazia a dica do formato da data
+          const dica = Auth.tipoPergunta(r) === "nascimento" ? " (dd/mm/aaaa)" : "";
+          document.getElementById("pergunta-seguranca").textContent = (r.pergunta || "") + dica;
+          document.getElementById("resposta-seguranca").value = "";
+          document.getElementById("attempts-note").innerHTML = "";
+          irParaEtapa(2);
+        } catch (err) {
+          Api.showError(err, "Não foi possível continuar. Tente novamente.");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Continuar";
+        }
+      });
+
+      function desafioEncerrado(err) {
+        const texto = `${err.erro || ""} ${err.message || ""}`;
+        const restantes = err.data && err.data.tentativas_restantes;
+        return (
+          err.status === 410 ||
+          err.status === 423 ||
+          restantes === 0 ||
+          /bloquead|expirad/i.test(texto)
         );
+      }
+
+      /* ── Etapa 2: POST /auth/esqueci-senha/verificar → token de reset ── */
+      document.getElementById("btn-confirmar-resposta").addEventListener("click", async () => {
+        const resposta = document.getElementById("resposta-seguranca").value;
+        if (!resposta.trim()) {
+          showToast("Preencha a resposta.");
+          return;
+        }
+
+        const btn = document.getElementById("btn-confirmar-resposta");
+        btn.disabled = true;
+        try {
+          const r = await Auth.verificarRecuperacao(desafioId, resposta);
+          tokenReset = r && (r.token || r.token_reset);
+          if (!tokenReset) throw new Error("Resposta sem token de redefinição.");
+          irParaEtapa(3);
+        } catch (err) {
+          if (err.name === "ApiError" && desafioEncerrado(err)) {
+            showToast("3 tentativas sem sucesso. Tente novamente mais tarde.");
+            setTimeout(() => (window.location.href = "login.html"), 1800);
+            return;
+          }
+          Api.showError(err, "Resposta incorreta. Tente novamente.");
+          const restantes = err.data && err.data.tentativas_restantes;
+          document.getElementById("attempts-note").innerHTML =
+            typeof restantes === "number"
+              ? `Tentativas restantes: <strong>${restantes}</strong>`
+              : "";
+          document.getElementById("resposta-seguranca").value = "";
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      /* ── Etapa 3: POST /auth/redefinir-senha ── */
+      document.getElementById("btn-salvar-nova-senha").addEventListener("click", async () => {
+        const novaSenha = document.getElementById("nova-senha").value;
+        const confirmar = document.getElementById("confirmar-nova-senha").value;
+
+        if (!senhaSegura(novaSenha)) {
+          showToast("A senha não atende aos requisitos mínimos.");
+          return;
+        }
+        if (novaSenha !== confirmar) {
+          showToast("As senhas não coincidem.");
+          return;
+        }
+
+        const btn = document.getElementById("btn-salvar-nova-senha");
+        btn.disabled = true;
+        btn.textContent = "Salvando…";
+
+        try {
+          await Auth.redefinirSenha(tokenReset, novaSenha);
+          tokenReset = null;
+          irParaEtapa(4);
+        } catch (err) {
+          Api.showError(err, "⚠️ Erro ao salvar. Tente novamente.");
+          btn.disabled = false;
+          btn.textContent = "Salvar nova senha";
+        }
+      });
+
+      // Permite continuar apertando Enter nos campos
+      document.getElementById("email-recuperar").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") document.getElementById("btn-buscar-email").click();
+      });
+      document.getElementById("resposta-seguranca").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") document.getElementById("btn-confirmar-resposta").click();
+      });
+      document.getElementById("confirmar-nova-senha").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") document.getElementById("btn-salvar-nova-senha").click();
       });
     </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
-    <script src="js/eco-voltar.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
+      <script src="js/eco-acessibilidade.js"></script>
   </body>
 </html>

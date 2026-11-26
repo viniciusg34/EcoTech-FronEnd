@@ -178,7 +178,7 @@ a { color: inherit; }
   outline: none;
   transition: border-color 0.2s, background 0.2s;
 }
-.field input:focus, .field select:focus { border-color: var(--sage-400); background: var(--white); }
+.field input:focus, .field select:focus { border-color: var(--sage-400); background: var(--white); box-shadow: 0 0 0 3px var(--sage-200); }
 .field small.hint { display: block; margin-top: 6px; color: var(--ink-3); font-size: 0.76rem; }
 
 .btn {

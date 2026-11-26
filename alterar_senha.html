@@ -20,7 +20,13 @@
         font-size: 0.9rem;
         color: var(--ink-3);
         user-select: none;
+        background: none;
+        border: 0;
+        padding: 10px;
+        margin: -10px;
+        font-family: inherit;
       }
+      .eye-toggle:focus-visible { outline: 2px solid var(--sage-400); outline-offset: -4px; border-radius: 8px; }
       .field { position: relative; }
       /* Remove o "olho" nativo do Edge/IE nos campos de senha —
          ele ficava sobreposto ao nosso ícone customizado. */
@@ -30,7 +36,8 @@
       }
     </style>
       <link rel="stylesheet" href="css/eco-animate.css" />
-      <link rel="stylesheet" href="css/eco-interacoes.css" />
+      <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
+      <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
   </head>
   <body>
     <header class="admin-header">
@@ -46,7 +53,7 @@
       </div>
     </header>
 
-    <main class="admin-main senha-shell">
+    <main class="admin-main senha-shell secao-arte-tela" data-arte-fundo="seguranca">
       <h1 class="admin-title">Alterar minha senha</h1>
       <p class="admin-subtitle">Apenas você tem acesso para alterar a sua própria senha.</p>
 
@@ -58,79 +65,85 @@
         <form id="formAlterarSenha">
           <div class="field">
             <label for="senhaAtual">Senha atual</label>
-            <input id="senhaAtual" name="senha_atual" type="password" required autocomplete="current-password" />
-            <span class="eye-toggle" onclick="togglePassword('senhaAtual')">mostrar</span>
+            <input id="senhaAtual" type="password" required autocomplete="current-password" />
+            <button type="button" class="eye-toggle" onclick="togglePassword('senhaAtual')" aria-label="Mostrar ou ocultar senha atual">mostrar</button>
           </div>
           <div class="field">
             <label for="novaSenha">Nova senha</label>
-            <input id="novaSenha" name="nova_senha" type="password" required autocomplete="new-password" />
-            <span class="eye-toggle" onclick="togglePassword('novaSenha')">mostrar</span>
-            <small class="hint">Exatamente 8 letras, sem números ou símbolos.</small>
+            <input id="novaSenha" type="password" required autocomplete="new-password" />
+            <button type="button" class="eye-toggle" onclick="togglePassword('novaSenha')" aria-label="Mostrar ou ocultar nova senha">mostrar</button>
+            <small class="hint">Mínimo 8 caracteres, com letra maiúscula, minúscula e número.</small>
           </div>
           <div class="field">
             <label for="confirmarNovaSenha">Confirmar nova senha</label>
-            <input id="confirmarNovaSenha" name="confirmar_senha" type="password" required autocomplete="new-password" />
-            <span class="eye-toggle" onclick="togglePassword('confirmarNovaSenha')">mostrar</span>
+            <input id="confirmarNovaSenha" type="password" required autocomplete="new-password" />
+            <button type="button" class="eye-toggle" onclick="togglePassword('confirmarNovaSenha')" aria-label="Mostrar ou ocultar confirmação da nova senha">mostrar</button>
           </div>
           <button type="submit" class="btn btn-primary btn-block" id="btnSalvar">Salvar nova senha</button>
         </form>
       </div>
     </main>
 
-    <div class="toast" id="toast"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="./js/api.js"></script>
     <script src="./js/ui-theme.js"></script>
     <script src="./js/ui-toast.js"></script>
-    <script src="./js/eco-session.js"></script>
     <script src="./js/eco-helpers.js"></script>
+    <script src="./js/config.js?v=6"></script>
+    <script src="./js/api.js?v=6"></script>
     <script>
       initTheme();
       initThemeToggle();
 
-      const form = document.getElementById("formAlterarSenha");
-      protegerTela(["comum"]);
+      const sessao = requireAuth();
 
-      form.addEventListener("submit", async (e) => {
+      if (sessao.perfil === "master") {
+        document.getElementById("masterNote").style.display = "flex";
+        document.getElementById("formCard").style.display = "none";
+      }
+
+      document.getElementById("formAlterarSenha").addEventListener("submit", async function (e) {
         e.preventDefault();
-        limparErrosCampos();
 
-        const senha_atual = document.getElementById("senhaAtual").value;
-        const nova_senha = document.getElementById("novaSenha").value;
-        const confirmar_senha = document.getElementById("confirmarNovaSenha").value;
+        const senhaAtual = document.getElementById("senhaAtual").value;
+        const novaSenha = document.getElementById("novaSenha").value;
+        const confirmarNovaSenha = document.getElementById("confirmarNovaSenha").value;
 
-        if (!senhaValidaApi(nova_senha)) {
-          mostrarErrosCampos({ nova_senha: "A senha deve ter exatamente 8 letras." });
+        if (!senhaAtual || !novaSenha || !confirmarNovaSenha) {
+          showToast("Preencha todos os campos.");
           return;
         }
-        if (nova_senha !== confirmar_senha) {
-          mostrarErrosCampos({ confirmar_senha: "As senhas não coincidem." });
+        if (!senhaSegura(novaSenha)) {
+          showToast("A nova senha não atende aos requisitos mínimos.");
+          return;
+        }
+        if (novaSenha !== confirmarNovaSenha) {
+          showToast("As senhas não coincidem.");
           return;
         }
 
         const btn = document.getElementById("btnSalvar");
         btn.disabled = true;
-        btn.textContent = "Salvando...";
-        const r = await api("/alterar-senha", {
-          metodo: "POST",
-          corpo: { senha_atual, nova_senha, confirmar_senha },
-        });
-        btn.disabled = false;
-        btn.textContent = "Salvar nova senha";
+        btn.textContent = "Salvando…";
 
-        if (r.sucesso) {
-          mostrarMensagem(r.dados?.mensagem || "Senha alterada com sucesso!", "sucesso");
-          form.reset();
-        } else if (r.campos) {
-          mostrarErrosCampos(r.campos);
-          mostrarMensagem(r.erro);
-        } else {
-          tratarFalha(r);
+        try {
+          /* PUT /me/senha — a API confere a senha atual e aplica as regras */
+          await Auth.alterarSenha(senhaAtual, novaSenha);
+
+          showToast("✅ Senha alterada com sucesso!");
+          document.getElementById("formAlterarSenha").reset();
+        } catch (err) {
+          Api.showError(err, "⚠️ Erro ao conectar com o servidor. Tente novamente.");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Salvar nova senha";
         }
       });
     </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
-    <script src="js/eco-voltar.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
+      <script src="js/eco-acessibilidade.js"></script>
   </body>
 </html>

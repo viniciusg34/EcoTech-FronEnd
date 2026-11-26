@@ -19,9 +19,10 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/coleta.css" />
-    <link rel="stylesheet" href="css/eco-arte-fundo.css" />
+    <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
       <link rel="stylesheet" href="css/eco-animate.css" />
-      <link rel="stylesheet" href="css/eco-interacoes.css" />
+      <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
+      <link rel="stylesheet" href="css/eco-skeleton.css" />
   </head>
   <body>
     <header class="header">
@@ -60,6 +61,7 @@
     </header>
 
     <main>
+      <h1 class="sr-only">Coleta ecológica</h1>
       <div class="map-section">
         <div class="map-container">
           <div class="section-header secao-arte-fundo" data-arte-fundo="ciclo-coleta">
@@ -142,9 +144,9 @@
         <!-- SCANNER -->
         <div class="page active" id="page-scanner" role="tabpanel">
           <div class="scanner-page">
-            <h1>📷 Escanear Ecoponto</h1>
+            <h2 class="titulo-aba">📷 Escanear Ecoponto</h2>
             <p class="subtitle">
-              Escaneie o código de barras do Ecoponto para começar a reciclar
+              Escaneie o QR da placa do Ecoponto para começar a reciclar
             </p>
             <div class="scanner-box">
               <div id="video-container" style="display: none">
@@ -157,7 +159,7 @@
                 <div style="font-size: 64px; margin-bottom: 12px">📦</div>
                 <p style="color: var(--ink-3); font-size: 14px">
                   Clique em <strong>Iniciar Scanner</strong> para usar a
-                  câmera<br />ou insira o código manualmente do produto
+                  câmera<br />ou cole o código do QR do Ecoponto
                 </p>
               </div>
               <div class="scanner-btn-row">
@@ -181,8 +183,9 @@
                 <input
                   type="text"
                   id="manual-code"
-                  placeholder="Digite o código de barras..."
-                  maxlength="14"
+                  aria-label="Código do QR do Ecoponto"
+                  placeholder="Cole o código do QR do Ecoponto…"
+                  maxlength="200"
                 />
                 <button
                   class="btn-primary"
@@ -197,21 +200,28 @@
             <div class="scan-result" id="scan-result">
               <div class="result-icon" id="result-icon">✅</div>
               <div class="result-title" id="result-title">
-                Produto Validado!
+                Ecoponto conectado!
               </div>
               <div class="result-points" id="result-points">
                 🪙 +50 EcoCoins ganhos!
               </div>
               <div class="result-desc" id="result-desc">
-                Embalagem reciclável detectada.
+                Entregue seus recicláveis: o Ecoponto lê os produtos e as moedas caem aqui.
               </div>
               <button
                 class="btn-primary"
                 style="margin-top: 16px; width: 100%; justify-content: center"
                 onclick="clearScan()"
               >
-                ♻️ Escanear outro produto
+                ♻️ Escanear outro Ecoponto
               </button>
+              <a
+                class="btn-secondary"
+                href="leitor.html"
+                style="margin-top: 10px; width: 100%; justify-content: center; display: flex; text-decoration: none"
+              >
+                Ver minha sessão no Ecoponto
+              </a>
             </div>
             <div class="history-list">
               <h3>🕐 Últimas validações</h3>
@@ -223,7 +233,7 @@
         <!-- RECOMPENSAS -->
         <div class="page" id="page-recompensas" role="tabpanel">
           <div class="rewards-page">
-            <h1>🎁 Recompensas</h1>
+            <h2 class="titulo-aba">🎁 Recompensas</h2>
             <p class="subtitle">
               Troque seus EcoCoins por descontos nas melhores lojas do Rio de
               Janeiro
@@ -261,7 +271,7 @@
                     color: var(--sage-600, #3E5A3F);
                   "
                 >
-                  <span id="coins-display">…</span> EcoCoins
+                  <span id="coins-display" class="sk" style="--sk-w: 4ch">0</span> EcoCoins
                 </div>
               </div>
               <div
@@ -305,18 +315,18 @@
                 🎭 Lazer
               </button>
             </div>
-            <div class="rewards-grid" id="rewards-grid"></div>
+            <div class="rewards-grid" id="rewards-grid" data-sk-itens="4" data-sk-altura="200px" data-sk-forma="cartao"></div>
           </div>
         </div>
 
         <!-- HISTÓRICO -->
         <div class="page" id="page-historico" role="tabpanel">
           <div class="history-page">
-            <h1>📋 Histórico de Pontos</h1>
-            <p class="subtitle" id="historico-subtitle">
+            <h2 class="titulo-aba">📋 Histórico de Pontos</h2>
+            <p class="subtitle sk sk-curto" id="historico-subtitle" style="--sk-w: 18ch">
               Carregando histórico…
             </p>
-            <div id="timeline-list"></div>
+            <div id="timeline-list" data-sk-itens="4" data-sk-altura="64px"></div>
           </div>
         </div>
       </div>
@@ -553,299 +563,69 @@
       <p>© 2026 EcoTech. Todos os direitos reservados.</p>
     </footer>
 
-    <div id="toast"></div>
+    <div id="toast" role="status" aria-live="polite"></div>
 
-    <script src="js/api.js"></script>
-    <script src="js/eco-session.js"></script>
+    <script src="js/config.js?v=6"></script>
+    <script src="js/api.js?v=6"></script>
+    <script src="js/eco-skeleton.js"></script>
+    <script src="js/eco-admin.js?v=3"></script>
     <script>
       requireAuth();
     </script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/eco-map-tiles.js"></script>
     <script src="https://unpkg.com/@zxing/library@latest"></script>
     <script>
       "use strict";
 
       /* ══════════════════════════════════════════════════
-         API CONFIG
+         SALDO — vem sempre da API (GET /me/coins).
+         userCoins é só o número devolvido, usado para habilitar
+         ou não os botões; o servidor valida cada resgate.
       ══════════════════════════════════════════════════ */
-
-      
-
-      /* ── Estado global do usuário ── */
-      let currentUser = null;
       let userCoins = 0;
+      let coinsTexto = "0";
 
-      async function fetchUser() {
-        const { usuario } = await obterSessao();
-        if (!usuario) throw new Error("Sem sessão");
-        const dados = ecoDados(usuario.id);
-        currentUser = {
-          ...usuario,
-          coins: usuario.coins != null ? usuario.coins : dados.coins,
-          reciclado: dados.reciclado,
-        };
-        userCoins = parseFloat(currentUser.coins) || 0;
-        return currentUser;
-      }
-
-      /* Guarda saldo e histórico da conta e envia as moedas para a API. */
-      async function persistirUsuario() {
-        if (!currentUser) return;
-        ecoSalvarDados(currentUser.id, {
-          coins: userCoins,
-          reciclado: currentUser.reciclado,
-        });
-        await ecoEnviarCoins(currentUser, userCoins);
-      }
-
-      async function saveUserCoins(newCoins) {
-        userCoins = newCoins;
-        if (currentUser) currentUser.coins = newCoins.toFixed(2);
-        await persistirUsuario();
-        return userCoins;
+      async function refreshCoins(opts) {
+        const r = await Me.coins(opts);
+        userCoins = Me.saldoNumero(r);
+        coinsTexto = Me.saldoTexto(r);
+        updateCoinsUI();
       }
 
       /* ══════════════════════════════════════════════════
-         MAPA — categorias e helpers
+         MAPA — categorias e ecopontos vêm da API
       ══════════════════════════════════════════════════ */
-      const CATEGORIES = [
-        { key: "metal", label: "Metal", color: "#f9a825" },
-        { key: "papel", label: "Papel", color: "#66bb6a" },
-        { key: "vidro", label: "Vidro", color: "#42a5f5" },
-        { key: "plastico", label: "Plástico", color: "#ef5350" },
-        { key: "eletronicos", label: "Eletrônicos", color: "#ab47bc" },
-        { key: "madeira", label: "Madeira", color: "#8d6e63" },
-      ];
+      let CATEGORIES = [];
       const catByKey = (key) => CATEGORIES.find((c) => c.key === key);
 
-      const CAT_FALLBACK_ORDER = [
-        "metal",
-        "papel",
-        "vidro",
-        "plastico",
-        "eletronicos",
-        "madeira",
-      ];
-
-      // Combinações fixas de múltiplos materiais usadas no fallback.
-      // Quando o campo "cats" da API for uma string livre (Faker.js word.noun),
-      // tentamos match por palavra-chave — se não bater, usamos o id do ponto
-      // para escolher aleatoriamente uma combinação com 1–3 materiais.
-      // Assim o mapa sempre exibe pontos mistos como na primeira versão.
-      const CAT_COMBOS = [
-        ["plastico"],
-        ["metal", "plastico"],
-        ["papel", "madeira"],
-        ["vidro", "plastico"],
-        ["eletronicos", "metal"],
-        ["papel", "madeira", "plastico"],
-        ["metal", "vidro"],
-        ["plastico", "vidro", "metal"],
-        ["madeira", "metal"],
-        ["papel", "plastico"],
-        ["eletronicos", "vidro"],
-        ["vidro", "madeira"],
-      ];
-
-      /**
-       * Converte o campo "cats" do MockAPI em array de chaves válidas.
-       * - Se vier como "plastico,vidro" (com vírgula): divide e valida cada parte.
-       * - Se tiver palavra-chave reconhecível: retorna a categoria correspondente.
-       * - Fallback: usa o id numérico do ponto para escolher uma combinação
-       *   de CAT_COMBOS, garantindo pontos com múltiplos materiais.
-       */
-      function mapApiCat(catStr, pointId) {
-        if (!catStr) return pickCombo(pointId);
-
-        // Suporte a formato "plastico,vidro" quando o MockAPI for configurado assim
-        if (catStr.includes(",")) {
-          const parts = catStr.split(",").map((s) => s.trim().toLowerCase());
-          const valid = parts.filter((p) => CAT_FALLBACK_ORDER.includes(p));
-          if (valid.length > 0) return valid;
-        }
-
-        const s = catStr.toLowerCase();
-        if (s.includes("metal") || s.includes("ferro") || s.includes("iron"))
-          return pickComboStartingWith("metal", pointId);
-        if (s.includes("papel") || s.includes("paper") || s.includes("card"))
-          return pickComboStartingWith("papel", pointId);
-        if (s.includes("vidro") || s.includes("glass"))
-          return pickComboStartingWith("vidro", pointId);
-        if (s.includes("plast") || s.includes("pet"))
-          return pickComboStartingWith("plastico", pointId);
-        if (s.includes("eletr") || s.includes("tech") || s.includes("printer"))
-          return pickComboStartingWith("eletronicos", pointId);
-        if (s.includes("mad") || s.includes("wood") || s.includes("timber"))
-          return pickComboStartingWith("madeira", pointId);
-
-        // Fallback completo: determina combinação pelo id
-        return pickCombo(pointId);
-      }
-
-      function pickCombo(pointId) {
-        const idx = (parseInt(pointId) || 0) % CAT_COMBOS.length;
-        return CAT_COMBOS[idx];
-      }
-
-      function pickComboStartingWith(firstCat, pointId) {
-        // Filtra combos que começam com firstCat; se não achar, usa pickCombo
-        const filtered = CAT_COMBOS.filter((c) => c[0] === firstCat);
-        if (filtered.length === 0) return [firstCat];
-        const idx = (parseInt(pointId) || 0) % filtered.length;
-        return filtered[idx];
-      }
-
-      /**
-       * Busca todos os ecopontos da API:
-       * 1. GET /empresa → lista de empresas
-       * 2. GET /empresa/:id/ecopontos para cada empresa (paralelo)
-       * 3. Normaliza para o formato interno do mapa
-       */
+      /* GET /categorias + GET /ecopontos → formato interno do mapa */
       async function loadEcopontos() {
-        const pontos = await ecoListarEcopontos();
-        if (!pontos) throw new Error("Não foi possível carregar os ecopontos");
-
-        return pontos
+        const [cats, ecopontos] = await Promise.all([
+          Publico.categorias(),
+          Publico.ecopontos(),
+        ]);
+        CATEGORIES = cats.map((c) => ({
+          key: c.chave,
+          label: c.rotulo,
+          color: c.cor_hex,
+        }));
+        return ecopontos
           .filter((p) => p.lat != null && p.lng != null)
-          .map((p) => {
-            const id = ecoId(p, "eco_id");
-            return {
-              lat: parseFloat(p.lat),
-              lng: parseFloat(p.lng),
-              code: p.code || `ECO-${String(id).padStart(2, "0")}`,
-              name: p.name || `Ecoponto ${id}`,
-              cats: mapApiCat(p.cats, id),
-              desc: [p.adress, p.city, p.state].filter(Boolean).join(", "),
-              status: ecoAtivo(p.status),
-              coletado: p.collected,
-            };
-          });
+          .map((p) => ({
+            lat: Number(p.lat),
+            lng: Number(p.lng),
+            code: p.codigo,
+            name: p.nome,
+            cats: (p.categorias || [])
+              .map((c) => (typeof c === "string" ? c : c.chave))
+              .filter((k) => catByKey(k)),
+            desc: [p.endereco, p.cidade, p.estado].filter(Boolean).join(", "),
+            ativo: p.status === "ativo",
+            statusRotulo: p.status_rotulo || (p.status === "ativo" ? "Ativo" : "Inativo"),
+            coletado: p.kg_coletado_formatado || "",
+          }));
       }
-
-      /* ══════════════════════════════════════════════════
-         CATÁLOGO DE RECOMPENSAS
-      ══════════════════════════════════════════════════ */
-      const rewardsCatalog = [
-        {
-          cat: "food",
-          icon: "🍔",
-          name: "Cupom McDonald's",
-          desc: "20% OFF em combos",
-          cost: 200,
-        },
-        {
-          cat: "food",
-          icon: "☕",
-          name: "Café Grátis",
-          desc: "Starbucks ou cafeteria parceira",
-          cost: 80,
-        },
-        {
-          cat: "transport",
-          icon: "🎫",
-          name: "Passe Metrô Rio",
-          desc: "1 viagem gratuita",
-          cost: 150,
-        },
-        {
-          cat: "food",
-          icon: "🥤",
-          name: "Eco Garrafa",
-          desc: "Starbucks ou cafeteria parceira",
-          cost: 120,
-        },
-        {
-          cat: "health",
-          icon: "🌱",
-          name: "Kit Sementes",
-          desc: "Sementes de Árvores Nativas",
-          cost: 100,
-        },
-        {
-          cat: "shop",
-          icon: "🛍️",
-          name: "Bolsa EcoTech",
-          desc: "Sacola Sustentável da EcoTech",
-          cost: 180,
-        },
-        {
-          cat: "transport",
-          icon: "🚲",
-          name: "Bike Itaú 1h",
-          desc: "1 hora de uso grátis",
-          cost: 90,
-        },
-        {
-          cat: "shop",
-          icon: "🛍️",
-          name: "Vale Compras R$30",
-          desc: "Lojas parceiras EcoTech",
-          cost: 300,
-        },
-        {
-          cat: "shop",
-          icon: "👕",
-          name: "Camiseta Sustentável",
-          desc: "Algodão orgânico reciclado",
-          cost: 220,
-        },
-        {
-          cat: "health",
-          icon: "💊",
-          name: "Desconto Farmácia",
-          desc: "15% OFF em medicamentos",
-          cost: 120,
-        },
-        {
-          cat: "leisure",
-          icon: "🎭",
-          name: "Ingresso de Cinema",
-          desc: "Meia-entrada em qualquer sessão",
-          cost: 250,
-        },
-      ];
-
-      /* ══════════════════════════════════════════════════
-         DATABASE DE PRODUTOS (scanner)
-      ══════════════════════════════════════════════════ */
-      const productDB = {
-        7896004004777: {
-          name: "Garrafa PET 500ml",
-          pts: 30,
-          icon: "🧴",
-          mat: "Plástico PET",
-        },
-        7891234567890: {
-          name: "Lata de Alumínio 350ml",
-          pts: 40,
-          icon: "🥫",
-          mat: "Alumínio",
-        },
-        7896666000014: {
-          name: "Caixa de Papelão",
-          pts: 20,
-          icon: "📦",
-          mat: "Papelão",
-        },
-        7899000001234: {
-          name: "Vidro de Conserva",
-          pts: 35,
-          icon: "🫙",
-          mat: "Vidro",
-        },
-        7891910000197: {
-          name: "Pilha Alcalina AA",
-          pts: 80,
-          icon: "🔋",
-          mat: "Pilha/Bateria",
-        },
-        7896000000001: {
-          name: "Embalagem Tetra Pak",
-          pts: 25,
-          icon: "🧃",
-          mat: "Tetra Pak",
-        },
-      };
 
       /* ══════════════════════════════════════════════════
          HELPERS DE UI
@@ -861,7 +641,7 @@
 
       function updateCoinsUI() {
         const el = document.getElementById("coins-display");
-        if (el) el.textContent = Math.floor(userCoins).toLocaleString("pt-BR");
+        if (el) el.textContent = coinsTexto;
         document.querySelectorAll(".reward-card[data-cost]").forEach((card) => {
           const cost = parseInt(card.dataset.cost);
           const btn = card.querySelector(".reward-redeem-btn");
@@ -875,28 +655,31 @@
       }
 
       /* ══════════════════════════════════════════════════
-         RECOMPENSAS — render e resgate
+         RECOMPENSAS — GET /recompensas e POST /resgates
       ══════════════════════════════════════════════════ */
       let currentFilter = "todos";
 
-      function renderRewardsGrid(filter = currentFilter) {
+      async function renderRewardsGrid(filter = currentFilter) {
         currentFilter = filter;
         const el = document.getElementById("rewards-grid");
         if (!el) return;
-        const items =
-          filter === "todos"
-            ? rewardsCatalog
-            : rewardsCatalog.filter((r) => r.cat === filter);
+        let items = [];
+        try {
+          items = await Recompensas.listar(filter);
+        } catch (err) {
+          Api.showError(err, "❌ Não foi possível carregar as recompensas.");
+        }
+        if (filter !== currentFilter) return; // outro filtro foi clicado enquanto carregava
+        const esc = Api.escapeHtml;
         el.innerHTML = items
           .map(
             (r) => `
-          <div class="reward-card" data-cost="${r.cost}">
-            <div class="reward-icon">${r.icon}</div>
-            <h4>${r.name}</h4>
-            <p>${r.desc}</p>
-            <p class="reward-cost">${r.cost} 🪙</p>
-            <button class="reward-redeem-btn btn-primary" data-name="${r.name}" data-cost="${r.cost}"
-              onclick="redeemReward(this,'${r.name}',${r.cost})">Resgatar</button>
+          <div class="reward-card" data-cost="${esc(r.custo_coins)}">
+            <div class="reward-icon">${esc(r.icone)}</div>
+            <h4>${esc(r.nome)}</h4>
+            <p>${esc(r.descricao)}</p>
+            <p class="reward-cost">${esc(r.custo_coins)} 🪙</p>
+            <button class="reward-redeem-btn btn-primary" data-id="${esc(r.id)}" data-name="${esc(r.nome)}" data-cost="${esc(r.custo_coins)}">Resgatar</button>
           </div>`,
           )
           .join("");
@@ -911,7 +694,12 @@
         renderRewardsGrid(cat);
       }
 
-      async function redeemReward(btn, name, cost) {
+      document.addEventListener("click", (e) => {
+        const btn = e.target.closest(".reward-redeem-btn");
+        if (btn) redeemReward(btn, btn.dataset.id, btn.dataset.name, Number(btn.dataset.cost));
+      });
+
+      async function redeemReward(btn, id, name, cost) {
         if (userCoins < cost) {
           showToast(`❌ Saldo insuficiente para ${name}. Recicle mais!`);
           return;
@@ -919,22 +707,13 @@
         btn.disabled = true;
         btn.textContent = "Aguarde…";
         try {
-          const newCoins = userCoins - cost;
-          await saveUserCoins(newCoins);
-          updateCoinsUI();
-          showToast(
-            `🎉 Resgatado: ${name}! Saldo: ${Math.floor(userCoins)} coins`,
-          );
-          addTimelineEntry({
-            type: "redeem",
-            icon: "🎁",
-            desc: `${name} resgatado`,
-            pts: `-${cost}`,
-            time: "Agora",
-          });
+          const r = await Recompensas.resgatar(id); // o servidor debita e registra
+          await refreshCoins();
+          const cupom = r && r.codigo_cupom ? ` Cupom: ${r.codigo_cupom}.` : "";
+          showToast(`🎉 Resgatado: ${name}! Saldo: ${coinsTexto} coins.${cupom}`);
+          refreshTimeline().catch(() => {});
         } catch (err) {
-          showToast("❌ Erro ao resgatar. Tente novamente.");
-          console.error(err);
+          Api.showError(err, "❌ Erro ao resgatar. Tente novamente.");
         } finally {
           btn.textContent = "Resgatar";
           updateCoinsUI();
@@ -942,25 +721,18 @@
       }
 
       /* ══════════════════════════════════════════════════
-         HISTÓRICO
+         HISTÓRICO — GET /me/movimentos (já formatado pela API)
       ══════════════════════════════════════════════════ */
       let timelineEntries = [];
 
-      function buildTimelineFromUser(user) {
-        const reciclado = Array.isArray(user.reciclado) ? user.reciclado : [];
-        return reciclado.map((item) => ({
-          type: "earn",
-          icon: item.icon || "♻️",
-          desc: item.name || "Item reciclado",
-          pts: `+${item.pts || 0}`,
-          time: item.time || "—",
-        }));
+      async function refreshTimeline() {
+        const mov = await Me.movimentos();
+        timelineEntries = mov.itens;
+        renderTimeline();
+        renderScanHistory();
       }
 
-      function addTimelineEntry(entry) {
-        timelineEntries.unshift(entry);
-        renderTimeline();
-      }
+      const isResgate = (t) => Number(t.valor) < 0;
 
       function renderTimeline() {
         const el = document.getElementById("timeline-list");
@@ -976,13 +748,14 @@
         }
         if (sub)
           sub.textContent = `${timelineEntries.length} registro(s) encontrado(s)`;
+        const esc = Api.escapeHtml;
         el.innerHTML = timelineEntries
           .map(
             (t) => `
-          <div class="timeline-item ${t.type === "redeem" ? "redeem" : ""}">
-            <div class="timeline-icon">${t.icon}</div>
-            <div class="timeline-info"><strong>${t.desc}</strong><small>${t.time}</small></div>
-            <div class="timeline-pts ${t.type === "redeem" ? "redeem" : ""}">${t.pts}🪙</div>
+          <div class="timeline-item ${isResgate(t) ? "redeem" : ""}">
+            <div class="timeline-icon">${esc(t.icone || "♻️")}</div>
+            <div class="timeline-info"><strong>${esc(t.titulo)}</strong><small>${esc(t.data_formatada)}</small></div>
+            <div class="timeline-pts ${isResgate(t) ? "redeem" : ""}">${esc(t.valor_formatado)}🪙</div>
           </div>`,
           )
           .join("");
@@ -1032,223 +805,89 @@
         document.getElementById("btn-start").style.display = "flex";
         document.getElementById("btn-stop").style.display = "none";
       }
+      /* Mostra o resultado da leitura (textos prontos vindos da API). */
+      function mostrarResultado({ icone, titulo, pontos, desc }) {
+        document.getElementById("result-icon").textContent = icone;
+        document.getElementById("result-title").textContent = titulo;
+        document.getElementById("result-points").textContent = pontos;
+        document.getElementById("result-desc").textContent = desc;
+        document.getElementById("scan-result").classList.add("show");
+      }
+
+      /* A pessoa só lê o QR da placa do Ecoponto (POST /ecopontos/conectar).
+         Os produtos são lidos pelo próprio Ecoponto, que credita as moedas
+         na conta da pessoa conectada. */
       async function validateCode(code) {
         if (!code || code.trim().length < 3) {
           showToast("❌ Código inválido");
           return;
         }
-
         const raw = code.trim();
-
-        // ── Detecta QR de Ecoponto: "ECO-ECO-104|emp=1|ep=3" ou "ECO-104|emp=1|ep=3"
-        if (raw.startsWith("ECO-")) {
-          await validateEcoponto(raw);
+        if (!raw.startsWith("ECO-")) {
+          showToast("❌ Esse não é o QR de um Ecoponto. Os produtos são lidos pelo próprio Ecoponto.");
           return;
         }
-
-        // ── Código de produto (barras / manual)
-        if (raw.length < 8) {
-          showToast("❌ Código muito curto");
-          return;
-        }
-
-        const product = productDB[raw] || {
-          name: "Embalagem Reciclável",
-          pts: 30,
-          icon: "♻️",
-          mat: "Reciclável",
-        };
-
-        // Salva na API
-        try {
-          const newCoins = userCoins + product.pts;
-          const novoItem = {
-            name: product.name,
-            pts: product.pts,
-            icon: product.icon,
-            codigo: raw,
-            time: new Date().toLocaleTimeString("pt-BR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          };
-          const reciclado = Array.isArray(currentUser?.reciclado)
-            ? [novoItem, ...currentUser.reciclado]
-            : [novoItem];
-
-          userCoins = newCoins;
-          if (currentUser) {
-            currentUser.coins = newCoins.toFixed(2);
-            currentUser.reciclado = reciclado;
-          }
-          await persistirUsuario();
-          updateCoinsUI();
-        } catch (err) {
-          console.warn("Não foi possível salvar na API:", err);
-        }
-
-        document.getElementById("result-icon").textContent = product.icon;
-        document.getElementById("result-title").textContent =
-          product.name + " — Validado!";
-        document.getElementById("result-points").textContent =
-          "🪙 +" + product.pts + " EcoCoins ganhos!";
-        document.getElementById("result-desc").textContent =
-          "Material: " +
-          product.mat +
-          ". Descarte no Ecoponto mais próximo para confirmar.";
-        document.getElementById("scan-result").classList.add("show");
-        addTimelineEntry({
-          type: "earn",
-          icon: product.icon,
-          desc: product.name + " escaneado",
-          pts: "+" + product.pts,
-          time: "Agora",
-        });
-        renderScanHistory(raw, product);
-        document.getElementById("manual-code").value = "";
-        stopScanner();
+        await validateEcoponto(raw);
       }
 
-      /* ── Valida QR de Ecoponto e registra a coleta ── */
+      /* ── POST /ecopontos/conectar cria a sessão e POST /checkins registra
+         o check-in (moedas e kg calculados na API) ── */
       async function validateEcoponto(raw) {
-        // Parse do payload: "ECO-ECO-104|emp=1|ep=3"
-        // (o gerador adiciona "ECO-" antes de p.code que já começa com "ECO-")
-        const parts = raw.split("|");
-        const codeRaw = parts[0]; // "ECO-ECO-104" ou "ECO-104"
-        const empPart = parts.find((p) => p.startsWith("emp=")) || "";
-        const epPart = parts.find((p) => p.startsWith("ep=")) || "";
-        const empresaId = empPart.replace("emp=", "").trim();
-        const ecopontoId = epPart.replace("ep=", "").trim();
-
-        // Normaliza o code removendo "ECO-ECO-" duplicado
-        const displayCode = codeRaw.replace(/^ECO-ECO-/, "ECO-");
-
-        if (!empresaId || !ecopontoId) {
-          showToast("❌ QR inválido — escaneie a placa do Ecoponto.");
-          return;
-        }
-
-        // Busca dados atuais do ecoponto
-        const buscaPonto = await api(`/ecopontos/${encodeURIComponent(ecopontoId)}`);
-        if (!buscaPonto.sucesso) {
-          showToast("❌ Ecoponto não encontrado na API.");
-          return;
-        }
-        const ecoponto = buscaPonto.dados;
-
-        const KG_POR_SCAN = 0.5; // kg registrado por validação
-        const COINS_ECOPONTO = 50; // EcoCoins ganhos por check-in em ecoponto
-
-        const coletadoAtual = parseFloat(ecoponto.collected || 0);
-        const novoColetado = (coletadoAtual + KG_POR_SCAN).toFixed(2);
-
-        // Atualiza ecoponto na API (o id vai na URL)
-        const atualizacao = await api(`/ecopontos/${encodeURIComponent(ecopontoId)}`, {
-          metodo: "PUT",
-          corpo: { collected: novoColetado },
-        });
-        if (!atualizacao.sucesso) {
-          showToast("⚠️ Não foi possível registrar no ecoponto. Tente novamente.");
-          return;
-        }
-
-        // Adiciona EcoCoins ao usuário
+        let r;
         try {
-          const newCoins = userCoins + COINS_ECOPONTO;
-          const novoItem = {
-            name: ecoponto.name || displayCode,
-            pts: COINS_ECOPONTO,
-            icon: "♻️",
-            codigo: displayCode,
-            time: new Date().toLocaleTimeString("pt-BR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          };
-          const reciclado = Array.isArray(currentUser?.reciclado)
-            ? [novoItem, ...currentUser.reciclado]
-            : [novoItem];
-
-          userCoins = newCoins;
-          if (currentUser) {
-            currentUser.coins = newCoins.toFixed(2);
-            currentUser.reciclado = reciclado;
-          }
-          await persistirUsuario();
-          updateCoinsUI();
+          r = await Coleta.conectar(raw);
         } catch (err) {
-          console.warn("Não foi possível salvar coins do usuário:", err);
+          Api.showError(err, "❌ QR inválido — escaneie a placa do Ecoponto.");
+          return;
+        }
+        const sessao = Coleta.sessaoAtiva();
+        const ponto = (r && r.ecoponto) || {};
+        const nomePonto = ponto.nome || ponto.codigo || "Ecoponto";
+
+        let checkin = null;
+        if (sessao) {
+          try {
+            checkin = await Coleta.checkin(sessao.sessao_id);
+          } catch (err) {
+            Api.showError(err, "⚠️ Conectado, mas o check-in não foi registrado.");
+          }
         }
 
-        // UI de sucesso
-        const nomePonto = ecoponto.name || displayCode;
-        document.getElementById("result-icon").textContent = "♻️";
-        document.getElementById("result-title").textContent =
-          `Check-in em ${nomePonto}!`;
-        document.getElementById("result-points").textContent =
-          `🪙 +${COINS_ECOPONTO} EcoCoins ganhos!`;
-        document.getElementById("result-desc").textContent =
-          `✅ ${KG_POR_SCAN} kg registrado em ${displayCode}. Total no ponto: ${novoColetado} kg.`;
-        document.getElementById("scan-result").classList.add("show");
-
-        addTimelineEntry({
-          type: "earn",
-          icon: "♻️",
-          desc: `Check-in: ${nomePonto}`,
-          pts: `+${COINS_ECOPONTO}`,
-          time: "Agora",
-        });
-        renderScanHistory(displayCode, {
-          name: nomePonto,
-          pts: COINS_ECOPONTO,
-          icon: "♻️",
+        const ganhou = Number(checkin && checkin.coinsAwarded) || 0;
+        mostrarResultado({
+          icone: "♻️",
+          titulo: checkin ? `Check-in em ${nomePonto}!` : `Conectado a ${nomePonto}`,
+          pontos: ganhou > 0 ? `🪙 +${ganhou} EcoCoins ganhos!` : "",
+          desc: (checkin && checkin.message) || (r && r.message) || "",
         });
         document.getElementById("manual-code").value = "";
         stopScanner();
-        showToast(
-          `✅ +${COINS_ECOPONTO} coins — ${novoColetado} kg registrado em ${displayCode}`,
-        );
+        if (checkin && checkin.message) showToast(`✅ ${checkin.message}`);
+        refreshCoins().catch(() => {});
+        refreshTimeline().catch(() => {});
       }
 
       function clearScan() {
         document.getElementById("scan-result").classList.remove("show");
       }
 
-      let scanHistoryLocal = [];
-
-      function renderScanHistory(code, product) {
-        if (code && product)
-          scanHistoryLocal.unshift({
-            code,
-            name: product.name,
-            pts: product.pts,
-            icon: product.icon,
-            time: "Agora",
-          });
+      /* "Últimos validados": os créditos mais recentes de /me/movimentos */
+      function renderScanHistory() {
         const el = document.getElementById("scan-history");
         if (!el) return;
-        const apiItems =
-          currentUser && Array.isArray(currentUser.reciclado)
-            ? currentUser.reciclado.map((r) => ({
-                code: r.codigo,
-                name: r.name,
-                pts: r.pts,
-                icon: r.icon,
-                time: "Histórico",
-              }))
-            : [];
-        const merged = [...scanHistoryLocal, ...apiItems].slice(0, 8);
-        if (merged.length === 0) {
+        const creditos = timelineEntries.filter((t) => !isResgate(t)).slice(0, 8);
+        if (creditos.length === 0) {
           el.innerHTML = `<p style="color:var(--ink-3); font-size:14px; text-align:center; padding:16px;">Nenhuma validação ainda.</p>`;
           return;
         }
-        el.innerHTML = merged
+        const esc = Api.escapeHtml;
+        el.innerHTML = creditos
           .map(
             (h) => `
           <div class="history-item">
-            <div class="history-icon">${h.icon}</div>
-            <div class="history-info"><strong>${h.name}</strong><small>${h.code} • ${h.time}</small></div>
-            <div class="history-pts">+${h.pts}🪙</div>
+            <div class="history-icon">${esc(h.icone || "♻️")}</div>
+            <div class="history-info"><strong>${esc(h.titulo)}</strong><small>${esc([h.subtitulo, h.data_formatada].filter(Boolean).join(" • "))}</small></div>
+            <div class="history-pts">${esc(h.valor_formatado)}🪙</div>
           </div>`,
           )
           .join("");
@@ -1260,9 +899,7 @@
           const saved = localStorage.getItem("eco-theme");
           const pref =
             saved ||
-            (window.matchMedia("(prefers-color-scheme: dark)").matches
-              ? "dark"
-              : "light");
+            "light";
           document.documentElement.setAttribute("data-theme", pref);
         })();
 
@@ -1312,22 +949,41 @@
           });
         });
 
-        /* ── BUSCA USUÁRIO DA API ── */
+        /* Aviso deixado pelo leitor quando não há sessão de ecoponto */
+        const aviso = sessionStorage.getItem("ecotech_aviso");
+        if (aviso) {
+          sessionStorage.removeItem("ecotech_aviso");
+          showToast(aviso);
+        }
+
+        /* ── SALDO E HISTÓRICO (API) ── */
         const coinsLoading = document.getElementById("coins-loading");
         try {
-          if (coinsLoading) coinsLoading.textContent = "Carregando…";
-          await fetchUser();
-          timelineEntries = buildTimelineFromUser(currentUser);
-          renderTimeline();
-          renderScanHistory();
-          updateCoinsUI();
+          // (enquanto carrega, o saldo aparece como skeleton)
+          await Promise.all([refreshCoins(), refreshTimeline()]);
           if (coinsLoading) coinsLoading.textContent = "";
         } catch (err) {
-          console.warn("[EcoTech] Não foi possível carregar usuário:", err);
+          console.warn("[EcoTech] Não foi possível carregar o usuário:", err);
           if (coinsLoading) coinsLoading.textContent = "Offline";
           renderTimeline();
           renderScanHistory();
         }
+
+        /* Com sessão de ecoponto ativa, o Ecoponto pode creditar moedas
+           a qualquer momento: confere o saldo a cada 5 s. */
+        let ultimoSaldo = userCoins;
+        setInterval(async () => {
+          if (document.hidden || !Coleta.sessaoAtiva()) return;
+          try {
+            await refreshCoins({ silent: true });
+            if (userCoins !== ultimoSaldo) {
+              ultimoSaldo = userCoins;
+              refreshTimeline().catch(() => {});
+            }
+          } catch (_) {
+            /* silencioso: tenta de novo no próximo ciclo */
+          }
+        }, 5000);
 
         /* ── RECOMPENSAS ── */
         renderRewardsGrid("todos");
@@ -1339,14 +995,7 @@
         const statusEl = document.getElementById("map-status");
 
         const map = L.map("eco-map").setView([-22.9, -43.6], 9);
-        const TILE_LIGHT = L.tileLayer(
-          "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-          { attribution: "© OpenStreetMap" },
-        );
-        const TILE_DARK = L.tileLayer(
-          "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-          { attribution: "© OpenStreetMap" },
-        );
+        const { light: TILE_LIGHT, dark: TILE_DARK } = EcoMapTiles.criar();
 
         function updateMapTile() {
           if (htmlEl.getAttribute("data-theme") === "dark") {
@@ -1362,6 +1011,15 @@
           attributes: true,
           attributeFilter: ["data-theme"],
         });
+
+        /* Categorias e ecopontos da API, antes de montar legenda e marcadores */
+        let pontosCarregados = [];
+        let erroMapa = null;
+        try {
+          pontosCarregados = await loadEcopontos();
+        } catch (err) {
+          erroMapa = err;
+        }
 
         function buildIcon(cats) {
           const colors = cats.map((k) => catByKey(k).color);
@@ -1386,7 +1044,7 @@
           const item = document.createElement("div");
           item.style.cssText =
             "display:flex; align-items:center; gap:8px; margin-top:8px; cursor:pointer; font-size:0.9rem; font-weight:500; color:var(--ink-2); transition:opacity 0.2s;";
-          item.innerHTML = `<span style="background:${cat.color}; width:14px; height:14px; border-radius:50%; display:inline-block;"></span>${cat.label}`;
+          item.innerHTML = `<span style="background:${Api.escapeHtml(cat.color)}; width:14px; height:14px; border-radius:50%; display:inline-block;"></span>${Api.escapeHtml(cat.label)}`;
           item.onclick = () => {
             if (visibleCats.has(cat.key)) {
               visibleCats.delete(cat.key);
@@ -1413,35 +1071,37 @@
         }
 
         function addMarkers(POINTS) {
+          const esc = Api.escapeHtml;
           POINTS.forEach((p) => {
+            if (!p.cats.length) return;
             const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
             const catBadges = p.cats
               .map((k) => {
                 const c = catByKey(k);
                 return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-2);margin:0 8px 4px 0;">
-                <span style="width:8px;height:8px;border-radius:50%;background:${c.color};display:inline-block;"></span>${c.label}
+                <span style="width:8px;height:8px;border-radius:50%;background:${esc(c.color)};display:inline-block;"></span>${esc(c.label)}
               </span>`;
               })
               .join("");
             const accentColor = catByKey(p.cats[0]).color;
-            const statusBadge = p.status
-              ? `<span style="font-size:11px;color:#3E5A3F;font-weight:600;">● Ativo</span>`
-              : `<span style="font-size:11px;color:#e53935;font-weight:600;">● Inativo</span>`;
+            const statusBadge = p.ativo
+              ? `<span style="font-size:11px;color:#3E5A3F;font-weight:600;">● ${esc(p.statusRotulo)}</span>`
+              : `<span style="font-size:11px;color:#e53935;font-weight:600;">● ${esc(p.statusRotulo)}</span>`;
             const coletadoBadge = p.coletado
-              ? `<p style="font-size:11px;color:var(--ink-3);margin:4px 0 8px;">📦 ${parseFloat(p.coletado).toFixed(1)} kg coletados</p>`
+              ? `<p style="font-size:11px;color:var(--ink-3);margin:4px 0 8px;">📦 ${esc(p.coletado)} coletados</p>`
               : "";
             const popup = `
               <div style="min-width:200px; font-family:'Plus Jakarta Sans',sans-serif;">
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-                  <p style="margin:0; font-size:14px; font-weight:700; color:var(--ink);">${p.name}</p>
+                  <p style="margin:0; font-size:14px; font-weight:700; color:var(--ink);">${esc(p.name)}</p>
                   ${statusBadge}
                 </div>
-                <p style="margin:0 0 4px; font-size:11px; letter-spacing:0.5px; color:var(--ink-3);">CÓDIGO: ${p.code}</p>
-                <p style="margin:0 0 4px; font-size:12px; color:var(--ink-3);">${p.desc}</p>
+                <p style="margin:0 0 4px; font-size:11px; letter-spacing:0.5px; color:var(--ink-3);">CÓDIGO: ${esc(p.code)}</p>
+                <p style="margin:0 0 4px; font-size:12px; color:var(--ink-3);">${esc(p.desc)}</p>
                 ${coletadoBadge}
                 <div style="margin-bottom:12px;">${catBadges}</div>
                 <a href="${gmapsUrl}" target="_blank" rel="noopener"
-                  style="display:inline-flex;align-items:center;gap:6px;background:${accentColor};color:white;padding:7px 14px;border-radius:20px;text-decoration:none;font-size:12px;font-weight:600;">🗺️ Abrir Rota</a>
+                  style="display:inline-flex;align-items:center;gap:6px;background:${esc(accentColor)};color:white;padding:7px 14px;border-radius:20px;text-decoration:none;font-size:12px;font-weight:600;">🗺️ Abrir Rota</a>
               </div>`;
             const marker = L.marker([p.lat, p.lng], {
               icon: buildIcon(p.cats),
@@ -1451,15 +1111,14 @@
           });
         }
 
-        /* ── Carrega ecopontos da API ── */
-        try {
-          const pontos = await loadEcopontos();
-          addMarkers(pontos);
+        /* ── Ecopontos já carregados da API ── */
+        if (!erroMapa) {
+          addMarkers(pontosCarregados);
           if (statusEl) {
-            statusEl.textContent = `📍 ${pontos.length} ecopontos carregados | Clique nos marcadores para ver detalhes | Filtre por categoria na legenda`;
+            statusEl.textContent = `📍 ${pontosCarregados.length} ecopontos carregados | Clique nos marcadores para ver detalhes | Filtre por categoria na legenda`;
           }
-        } catch (err) {
-          console.error("[EcoTech] Erro ao carregar ecopontos:", err);
+        } else {
+          console.error("[EcoTech] Erro ao carregar ecopontos:", erroMapa);
           if (statusEl) {
             statusEl.innerHTML = `⚠️ Não foi possível carregar os ecopontos da API. <button onclick="location.reload()" style="border:none;background:none;color:var(--sage-600);cursor:pointer;font-weight:600;text-decoration:underline;">Tentar novamente</button>`;
           }
@@ -1486,7 +1145,7 @@
             balloonEl.innerHTML = `<span>📍 Geolocalização não suportada</span>`;
             return;
           }
-          balloonEl.innerHTML = `<span>📡 Localizando você...</span>`;
+          balloonEl.innerHTML = `<span>📡 Localizando você…</span>`;
           navigator.geolocation.getCurrentPosition(
             (pos) => {
               const { latitude, longitude } = pos.coords;
@@ -1569,7 +1228,8 @@
     </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
-    <script src="js/eco-voltar.js"></script>
-    <script src="js/eco-arte-fundo.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
+      <script src="js/eco-acessibilidade.js"></script>
   </body>
 </html>
