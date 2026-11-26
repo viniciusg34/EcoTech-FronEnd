@@ -531,6 +531,7 @@
   padding: 3px 8px;
   color: var(--sage-600);
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .dash-cats {
@@ -561,6 +562,7 @@
 .dash-status-pill {
   display: inline-flex;
   align-items: center;
+  white-space: nowrap;
   gap: 6px;
   font-size: 0.78rem;
   font-weight: 700;
@@ -580,12 +582,14 @@
   color: var(--sage-600);
 }
 .status-ativo::before {
-  background: var(--sage-500);
+  background: var(--sage-400);
 }
 
 .status-manutencao {
   background: var(--sun-light);
-  color: #7A5C30;
+  /* --sun-text muda com o container: claro no verde, marrom no creme */
+  color: var(--sun-text, #7A5C30);
+  border: 1px solid var(--sun);
 }
 .status-manutencao::before {
   background: var(--sun);

@@ -11,16 +11,14 @@
     />
     <link rel="stylesheet" href="css/cadastro_empresarial.css" />
     <link rel="stylesheet" href="css/eco-animate.css" />
-    <link rel="stylesheet" href="css/eco-interacoes.css" />
+    <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
     <title>Cadastro Empresarial — EcoTech</title>
     <script>
       (function () {
         const saved = localStorage.getItem("eco-theme");
         const pref =
           saved ||
-          (window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light");
+          "light";
         document.documentElement.setAttribute("data-theme", pref);
       })();
     </script>
@@ -59,7 +57,7 @@
                 <label for="cnpj">CNPJ</label>
                 <input
                   type="text"
-                  id="cnpj" name="cnpj"
+                  id="cnpj"
                   name="cnpj"
                   placeholder="00.000.000/0000-00"
                   required
@@ -71,7 +69,7 @@
                 <label for="nome_empresa">Nome Completo da Empresa</label>
                 <input
                   type="text"
-                  id="nome_empresa" name="name"
+                  id="nome_empresa"
                   name="nome_empresa"
                   placeholder="Digite o nome completo da empresa"
                   required
@@ -79,28 +77,31 @@
                 />
               </div>
               <div class="input-group">
-                <label for="endereco">Endereço <span class="eco-opcional">(opcional)</span></label>
+                <label for="endereco">Endereço</label>
                 <input
                   type="text"
-                  id="endereco" name="adress"
+                  id="endereco"
+                  name="endereco"
                   placeholder="Rua, número, bairro, cidade, Estado, CEP"
+                  required
                   autocomplete="street-address"
                 />
               </div>
               <div class="input-group">
-                <label for="razao_social">Razão Social <span class="eco-opcional">(opcional)</span></label>
+                <label for="razao_social">Razão Social</label>
                 <input
                   type="text"
                   id="razao_social"
                   name="razao_social"
                   placeholder="Digite a razão social da empresa"
+                  required
                 />
               </div>
               <div class="input-group">
                 <label for="email">E-mail</label>
                 <input
                   type="email"
-                  id="email" name="email"
+                  id="email"
                   name="email"
                   placeholder="exemplo@empresa.com.br"
                   required
@@ -112,7 +113,7 @@
                 <div class="password-field-wrapper">
                   <input
                     type="password"
-                    id="password" name="password"
+                    id="password"
                     name="password"
                     placeholder="Crie uma senha segura"
                     required
@@ -158,7 +159,7 @@
       </div>
     </main>
 
-    <div class="toast" id="toast"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <script>
       "use strict";
@@ -232,8 +233,7 @@
         );
       }
 
-      /* 6. ENVIO PARA A API */
-
+      /* 6. SUBMIT — POST /empresas */
       document
         .getElementById("cadastroEmpresarialForm")
         .addEventListener("submit", async (e) => {
@@ -254,7 +254,14 @@
           const senha = passwordInput.value;
 
           /* Validações */
-          if (!cnpj || !nomeEmpresa || !email || !senha) {
+          if (
+            !cnpj ||
+            !nomeEmpresa ||
+            !endereco ||
+            !razaoSocial ||
+            !email ||
+            !senha
+          ) {
             showToast("Preencha todos os campos.");
             return;
           }
@@ -273,32 +280,39 @@
             return;
           }
 
-          limparErrosCampos();
-          const r = await api("/empresas", {
-            metodo: "POST",
-            corpo: {
-              name: nomeEmpresa,
-              cnpj,
-              ...(endereco ? { adress: endereco } : {}),
-              email,
-              password: senha,
-              colected: 0,
-            },
-          });
+          const btn = document.querySelector(".btn-submit-account");
+          btn.disabled = true;
 
-          if (r.sucesso) {
+          try {
+            /* A API valida CNPJ e e-mail único (409 se já existir) */
+            await Empresas.cadastrar({
+              cnpj,
+              nomeEmpresa,
+              endereco,
+              razaoSocial,
+              email,
+              senha,
+            });
+
             if (typeof window.ecoConfete === "function") window.ecoConfete();
-            showToast("✅ Cadastro realizado com sucesso! Bem-vinda à EcoTech 🌿", true);
-            setTimeout(() => (window.location.href = "login.html"), 2200);
-            return;
+            showToast(
+              "✅ Cadastro realizado com sucesso! Bem-vinda à EcoTech 🌿",
+              true,
+            );
+            setTimeout(() => {
+              window.location.href = "login.html";
+            }, 2200);
+          } catch (err) {
+            Api.showError(err, "Erro ao cadastrar empresa. Tente novamente.");
+            btn.disabled = false;
           }
-          if (r.status >= 500) return irParaErro(r.erro);
-          showToast(r.erro || "Erro ao cadastrar empresa. Tente novamente.");
-          if (r.campos) mostrarErrosCampos(r.campos);
         });
     </script>
-    <script src="js/api.js"></script>
+    <script src="js/config.js?v=6"></script>
+    <script src="js/api.js?v=6"></script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+      <script src="js/eco-acessibilidade.js"></script>
   </body>
 </html>

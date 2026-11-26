@@ -1,87 +1,102 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="shortcut icon" href="assets/fivecom.png" type="image/x-icon" />
-    <title>Quadrado Girando</title>
-
+    <meta name="robots" content="noindex" />
+    <link rel="shortcut icon" href="./assets/fivecom.png" type="image/x-icon" />
+    <title>Algo deu errado — EcoTech</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/admin-shared.css" />
+    <link rel="stylesheet" href="./css/eco-interacoes.css?v=2" />
+    <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
     <style>
-      body {
-        background: #1F2A1F;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-      }
-      .containerheadStonks {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      a {
-        color: #D9C7A3;
-      }
-      h1{
-        color: white;
-      }
-      .containerStonks {
-        margin: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      /* A imagem gira; sem isto, a rotação cria rolagem lateral no celular. */
-      html,
-      body {
-        overflow-x: hidden;
-      }
-      .quadrado {
-        width: 320px;
-        height: 320px;
-        animation: girar 4s linear infinite;
-        max-width: 90vw;
-        height: auto;
-      }
-
-      .notStonks {
-        margin-top: 50px;
-        width: 520px;
-        height: 520px;
-        max-width: 90vw;
-        object-fit: contain;
-      }
-
-      @keyframes girar {
-        from {
-          transform: rotate(0deg);
-        }
-        to {
-          transform: rotate(360deg);
-        }
-      }
+      .erro-card { max-width: 560px; margin: 40px auto; text-align: center; padding: 40px 28px; }
+      .erro-icone { font-size: 3.2rem; line-height: 1; margin-bottom: 14px; }
+      .erro-codigo { display: inline-block; font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; color: var(--ink); background: var(--sage-50, #EDF0E8); padding: 4px 12px; border-radius: 99px; margin-bottom: 14px; }
+      .erro-titulo { font-family: "Lora", serif; font-size: 1.6rem; margin: 0 0 10px; color: var(--ink); }
+      .erro-msg { color: var(--ink-2, var(--ink)); margin: 0 auto 26px; max-width: 42ch; line-height: 1.55; }
+      .erro-acoes { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+      .erro-acoes .btn { text-decoration: none; }
     </style>
-      <link rel="stylesheet" href="css/eco-animate.css" />
-      <link rel="stylesheet" href="css/eco-interacoes.css" />
   </head>
-
   <body>
-    <div>
-      <img src="assets/prof.webp" alt="error" class="quadrado" />
-    </div>
-    <h1 id="textoErro">estamos trabalhando nisso ok? 👍</h1>
-    <div class="containerStonks">
-      <img src="assets/notStonks.png" alt="error" class="notStonks" />
-    </div>
-    <h2><a href="index.html">VOLTAR</a></h2>
+    <header class="admin-header">
+      <a href="index.html" class="brand">
+        <img src="./assets/logo.svg" alt="" />
+        <span><em>Eco</em>Tech</span>
+      </a>
+      <div class="header-actions">
+        <a href="login.html" class="icon-btn" aria-label="Perfil">👤</a>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Alternar tema">
+          <span id="theme-icon">☀️</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="admin-main secao-arte-tela" data-arte-fundo="caminho">
+      <div class="card erro-card" role="alert">
+        <div class="erro-icone" id="erroIcone" aria-hidden="true">⚠️</div>
+        <span class="erro-codigo" id="erroCodigo" hidden></span>
+        <h1 class="erro-titulo" id="erroTitulo">Algo deu errado</h1>
+        <p class="erro-msg" id="erroMsg">Aconteceu algo inesperado. Tente novamente em instantes.</p>
+        <div class="erro-acoes">
+          <button class="btn btn-primary" id="erroVoltar" type="button">← Voltar</button>
+          <a class="btn btn-ghost" href="index.html">Ir para o início</a>
+          <a class="btn btn-ghost" href="login.html" id="erroLogin" hidden>Entrar</a>
+        </div>
+      </div>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="js/ui-theme.js"></script>
+    <script src="js/config.js?v=6"></script>
+    <script src="js/api.js?v=6"></script>
     <script>
-      const textoErro = new URLSearchParams(location.search).get("erro");
-      if (textoErro) document.getElementById("textoErro").textContent = textoErro;
+      initTheme();
+      initThemeToggle();
+
+      /* Tela de erro: o título e a mensagem vêm da query string
+         (?codigo=403&mensagem=...&voltar=perfil.html) e são escritos como
+         TEXTO, nunca como HTML. */
+      const params = new URLSearchParams(location.search);
+      const codigo = parseInt(params.get("codigo"), 10) || 0;
+
+      const PADRAO = {
+        0: ["⚠️", "Algo deu errado", "Aconteceu algo inesperado. Tente novamente em instantes."],
+        401: ["🔒", "Sessão expirada", "Sua sessão terminou ou o login não foi confirmado. Entre novamente para continuar."],
+        403: ["⛔", "Acesso negado", "Você não tem permissão para acessar esta área."],
+        404: ["🧭", "Página não encontrada", "O endereço que você tentou abrir não existe ou foi movido."],
+        500: ["🛠️", "Algo inesperado aconteceu", "O servidor não conseguiu concluir o pedido. Tente novamente em instantes."],
+      };
+      const chave = PADRAO[codigo] ? codigo : codigo >= 500 ? 500 : 0;
+      const [icone, titulo, mensagemPadrao] = PADRAO[chave];
+
+      document.getElementById("erroIcone").textContent = icone;
+      document.getElementById("erroTitulo").textContent = titulo;
+      document.getElementById("erroMsg").textContent =
+        (params.get("mensagem") || "").slice(0, 300) || mensagemPadrao;
+      document.title = `${titulo} — EcoTech`;
+      if (codigo) {
+        const c = document.getElementById("erroCodigo");
+        c.textContent = `Erro ${codigo}`;
+        c.hidden = false;
+      }
+      if (codigo === 401 || codigo === 403) document.getElementById("erroLogin").hidden = false;
+
+      /* "voltar" só aceita uma página do próprio site (ex.: perfil.html) */
+      const voltar = params.get("voltar") || "";
+      document.getElementById("erroVoltar").addEventListener("click", () => {
+        if (/^[\w-]+\.html$/.test(voltar)) location.href = voltar;
+        else if (history.length > 1) history.back();
+        else location.href = "index.html";
+      });
     </script>
-    <script src="js/eco-animate.js"></script>
-    <script src="js/eco-interacoes.js"></script>
-    <script src="js/eco-voltar.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
+    <script src="js/eco-acessibilidade.js"></script>
   </body>
 </html>

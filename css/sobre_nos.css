@@ -1542,6 +1542,16 @@ main { display: block; }
   background: linear-gradient(180deg, rgba(11, 15, 13, 0.45) 0%, rgba(11, 15, 13, 0.75) 100%);
   z-index: 1;
 }
+/* Banner desenhado (assets/arte/banner-floresta.webp): a arte já é
+   escura, então a película por cima é mais leve que a da foto, e o
+   enquadramento desce um pouco pra mostrar a floresta, não só o céu. */
+.topo-arte .imagem-topo {
+  object-position: center 72%;
+}
+.topo-arte::after {
+  background: linear-gradient(180deg, rgba(11, 15, 13, 0.1) 0%, rgba(11, 15, 13, 0.35) 100%);
+}
+
 .container-imagem-topo .hero-leaves {
   z-index: 2;
 }
@@ -1784,6 +1794,18 @@ main { display: block; }
   transition: background 0.2s;
 }
 .inputs-group .btn-submit:hover { background: var(--sage-400); }
+.btn-assinar {
+  align-self: flex-start;
+  padding: 12px 22px;
+  border-radius: var(--br-sm);
+  background: var(--sage-500);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.btn-assinar:hover { background: var(--sage-400); }
+.news-nota { font-size: 0.82rem; opacity: 0.85; margin: 0; max-width: 52ch; }
 .checkbox-group { display: flex; flex-direction: column; gap: 8px; }
 .check-item {
   display: flex;

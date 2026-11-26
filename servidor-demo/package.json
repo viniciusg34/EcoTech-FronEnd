@@ -1,0 +1,14 @@
+{
+  "name": "ecotech-servidor-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Servidor de DEMONSTRAÇÃO da API EcoTech (dados simulados em memória). Não é o backend do projeto.",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "demo": "node iniciar.mjs",
+    "front": "node iniciar.mjs --so-front",
+    "api": "node iniciar.mjs --so-api",
+    "teste": "node teste-api.mjs"
+  }
+}

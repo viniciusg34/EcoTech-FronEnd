@@ -17,9 +17,10 @@
     <link rel="shortcut icon" href="assets/fivecom.png" type="image/x-icon" />
     <link rel="stylesheet" href="css/coleta.css" />
     <link rel="stylesheet" href="css/empresa.css" />
-      <link rel="stylesheet" href="css/eco-arte-fundo.css" />
+      <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
       <link rel="stylesheet" href="css/eco-animate.css" />
-      <link rel="stylesheet" href="css/eco-interacoes.css" />
+      <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
+      <link rel="stylesheet" href="css/eco-skeleton.css" />
   </head>
   <body>
     <header class="header">
@@ -59,7 +60,7 @@
     <main>
       <!-- HERO -->
       <section class="dash-hero secao-arte-fundo" data-arte-fundo="predio-verde">
-        <div class="dash-eyebrow" id="dashCompanyBadge">🏢 Empresa</div>
+        <div class="dash-eyebrow sk sk-curto" id="dashCompanyBadge" style="--sk-w: 12ch; --sk-raio: 99px">🏢 Empresa</div>
         <h1 id="dashCompanyName">Painel de Acompanhamento</h1>
         <p>
           Acompanhe o desempenho dos seus Ecopontos cadastrados e gere QR codes
@@ -73,16 +74,16 @@
           <div class="dash-stat-top">
             <div class="dash-stat-icon">📍</div>
           </div>
-          <div class="dash-stat-number" id="statPoints">0</div>
+          <div class="dash-stat-number sk sk-curto" id="statPoints" style="--sk-w: 3ch">0</div>
           <div class="dash-stat-label">Ecopontos cadastrados</div>
         </div>
         <div class="dash-stat-card reveal">
           <div class="dash-stat-top">
             <div class="dash-stat-icon">♻️</div>
           </div>
-          <div class="dash-stat-number" id="statKg">0</div>
+          <div class="dash-stat-number sk sk-curto" id="statKg" style="--sk-w: 4ch">0</div>
           <div class="dash-stat-label">Kg coletados este mês</div>
-          <div class="dash-stat-delta" id="statKgDelta">
+          <div class="dash-stat-delta sk sk-curto" id="statKgDelta" style="--sk-w: 16ch">
             ↑ 0% vs mês anterior
           </div>
         </div>
@@ -90,14 +91,14 @@
           <div class="dash-stat-top">
             <div class="dash-stat-icon">✅</div>
           </div>
-          <div class="dash-stat-number" id="statValidations">0</div>
+          <div class="dash-stat-number sk sk-curto" id="statValidations" style="--sk-w: 3ch">0</div>
           <div class="dash-stat-label">Validações este mês</div>
         </div>
         <div class="dash-stat-card reveal">
           <div class="dash-stat-top">
             <div class="dash-stat-icon">⚙️</div>
           </div>
-          <div class="dash-stat-number" id="statActive">0</div>
+          <div class="dash-stat-number sk sk-curto" id="statActive" style="--sk-w: 3ch">0</div>
           <div class="dash-stat-label">Pontos ativos agora</div>
         </div>
       </div>
@@ -115,14 +116,14 @@
           <div class="dash-chart-card reveal">
             <div class="dash-chart-head">
               <h3>Kg coletados por mês</h3>
-              <span id="chartTotalLabel">Total: 0 kg</span>
+              <span id="chartTotalLabel" class="sk" style="--sk-w: 10ch">Total: 0 kg</span>
             </div>
-            <div class="dash-chart-bars" id="chartBars"></div>
+            <div class="dash-chart-bars sk" id="chartBars" style="--sk-raio: 12px"></div>
           </div>
 
           <div class="dash-breakdown-card reveal">
             <h3>📦 Coleta por material</h3>
-            <div id="breakdownList"></div>
+            <div id="breakdownList" data-sk-itens="4" data-sk-altura="44px"></div>
           </div>
         </div>
       </div>
@@ -138,7 +139,7 @@
         </div>
         <div class="dash-table-card">
           <div class="dash-table-head">
-            <h3 id="tableCount">0 Ecopontos</h3>
+            <h3 id="tableCount" class="sk sk-curto" style="--sk-w: 11ch">0 Ecopontos</h3>
           </div>
           <table class="dash-table">
             <thead>
@@ -152,7 +153,7 @@
                 <th></th>
               </tr>
             </thead>
-            <tbody id="pointsTableBody"></tbody>
+            <tbody id="pointsTableBody" data-sk-linhas="4"></tbody>
           </table>
         </div>
       </div>
@@ -170,8 +171,8 @@
           <div class="qr-form-card">
             <h3>Selecionar Ecoponto</h3>
             <p>
-              O QR code gerado aponta para o código do Ecoponto, o mesmo lido
-              pelos usuários na busca do mapa de coleta.
+              O QR code é gerado e assinado pelo servidor; as pessoas o leem na
+              coleta para se conectar ao Ecoponto.
             </p>
 
             <label for="qrPointSelect">Ecoponto cadastrado</label>
@@ -196,6 +197,19 @@
               <div class="qr-code-box" id="qrCodeBox"></div>
               <div class="qr-preview-title" id="qrResultName"></div>
               <div class="qr-preview-code" id="qrResultCode"></div>
+              <div class="qr-point-meta visible" id="qrCodeTextWrap" hidden style="width: 100%">
+                <strong>Código do QR</strong> (para colar na coleta se a câmera
+                falhar)
+                <input
+                  id="qrCodeText"
+                  readonly
+                  aria-label="Código do QR do ecoponto"
+                  style="width: 100%; margin: 8px 0; padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--border, #d5e3d5); background: var(--surface, #fff); color: inherit; font: 12px monospace"
+                />
+                <button class="btn-secondary" id="qrCopyBtn" type="button">
+                  📋 Copiar código
+                </button>
+              </div>
               <div class="qr-preview-actions">
                 <button class="btn-secondary" id="qrDownloadBtn">
                   ⬇️ Baixar PNG
@@ -205,6 +219,98 @@
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPORTAR DADOS -->
+      <div class="content-section">
+        <div class="section-header">
+          <h2>📥 Exportar dados dos ecopontos</h2>
+          <p>
+            Baixe os dados em CSV (abre no Excel e no Google Planilhas). Os
+            arquivos não trazem nenhum dado pessoal de quem reciclou.
+          </p>
+        </div>
+        <div class="qr-section-grid">
+          <div class="qr-form-card">
+            <h3>Resumo dos ecopontos</h3>
+            <p style="margin: 0 0 14px">
+              Código, nome, endereço, status, materiais aceitos, quanto foi
+              coletado no mês e a última atividade de cada ecoponto, como na
+              tabela acima.
+            </p>
+            <button class="btn-primary qr-generate-btn" id="exportResumoBtn">
+              ⬇️ Baixar resumo (CSV)
+            </button>
+          </div>
+
+          <div class="qr-form-card">
+            <h3>Histórico de leituras</h3>
+            <label for="exportPontoSelect">Ecoponto</label>
+            <select id="exportPontoSelect">
+              <option value="">Todos os ecopontos</option>
+            </select>
+            <label for="exportPeriodoSelect">Período</label>
+            <select id="exportPeriodoSelect">
+              <option value="mes">Mês atual</option>
+              <option value="3m">Últimos 3 meses</option>
+              <option value="6m">Últimos 6 meses</option>
+              <option value="tudo">Todo o período</option>
+            </select>
+            <button class="btn-primary qr-generate-btn" id="exportLeiturasBtn">
+              ⬇️ Baixar histórico (CSV)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LEITOR DO ECOPONTO -->
+      <div class="content-section">
+        <div class="section-header">
+          <h2>📟 Leitor do Ecoponto</h2>
+          <p>
+            Leia os códigos de barras dos recicláveis entregues. As moedas vão
+            para a pessoa conectada ao Ecoponto pelo QR da placa.
+          </p>
+        </div>
+        <div class="qr-section-grid">
+          <div class="qr-form-card">
+            <h3>Ecoponto em operação</h3>
+            <label for="readerPointSelect">Ecoponto</label>
+            <select id="readerPointSelect">
+              <option value="" disabled selected>Selecione um Ecoponto</option>
+            </select>
+
+            <div class="qr-point-meta visible" id="readerSession">
+              Selecione um Ecoponto para ver quem está conectado.
+            </div>
+
+            <div id="reader" style="margin-top:14px;"></div>
+            <button class="btn-secondary qr-generate-btn" id="readerCamBtn">
+              📷 Ligar câmera
+            </button>
+
+            <label for="readerManual">Ou digite o código de barras</label>
+            <input
+              id="readerManual"
+              inputmode="numeric"
+              autocomplete="off"
+              maxlength="14"
+              placeholder="7891910000197"
+              style="width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--border,#d5e3d5);background:var(--surface,#fff);color:inherit;font:inherit;margin-bottom:10px;"
+            />
+            <button class="btn-primary qr-generate-btn" id="readerGo">
+              ✅ Registrar leitura
+            </button>
+          </div>
+
+          <div class="qr-preview-card">
+            <div class="qr-preview-empty" id="readerEmpty">
+              <span class="qr-preview-emoji">📟</span>
+              As leituras aparecem aqui.
+            </div>
+            <div id="readerList" style="width:100%;"></div>
           </div>
         </div>
       </div>
@@ -218,11 +324,12 @@
       <p>© 2026 EcoTech. Todos os direitos reservados.</p>
     </footer>
 
-    <div id="toast"></div>
+    <div id="toast" role="status" aria-live="polite"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/eco-session.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <script src="js/config.js?v=6"></script>
+    <script src="js/api.js?v=6"></script>
+    <script src="js/eco-skeleton.js"></script>
     <script src="js/empresa-data.js"></script>
     <script>
       "use strict";
@@ -232,9 +339,7 @@
         const saved = localStorage.getItem("eco-theme");
         const pref =
           saved ||
-          (window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light");
+          "light";
         document.documentElement.setAttribute("data-theme", pref);
       })();
 
@@ -263,7 +368,9 @@
         );
       }
 
-      /* ── QR CODE ── */
+      /* ── QR CODE (gerado e assinado pelo servidor) ── */
+      const esc = Api.escapeHtml;
+
       function findPoint(code) {
         return (
           (window.__empresaPoints || []).find((p) => p.code === code) || null
@@ -278,60 +385,67 @@
           qrMeta.classList.remove("visible");
           return;
         }
-        const sm = {
-          ativo: "Ativo",
-          manutencao: "Em manutenção",
-          inativo: "Inativo",
-        };
-        qrMeta.innerHTML = `<strong>${p.name}</strong><br>${p.address}<br>Status: ${sm[p.status] || p.status}`;
+        qrMeta.innerHTML = `<strong>${esc(p.name)}</strong><br>${esc(p.address)}<br>Status: ${esc(p.statusLabel)}`;
         qrMeta.classList.add("visible");
       }
 
-      function generateQrFor(code) {
+      /* GET /ecopontos/{id}/qr.svg — o <img> não envia o Bearer, então
+         o SVG é buscado com a API e mostrado como data URL. */
+      async function generateQrFor(code) {
         const p = findPoint(code);
         if (!p) {
           showToast("❌ Selecione um Ecoponto válido.");
           return;
         }
 
-        const qrSelect = document.getElementById("qrPointSelect");
-        const qrCodeBox = document.getElementById("qrCodeBox");
-        const qrEmptyState = document.getElementById("qrEmptyState");
-        const qrResult = document.getElementById("qrResult");
+        let svg;
+        try {
+          svg = await EmpresaApi.qrSvg(p.id);
+        } catch (err) {
+          Api.showError(err, "❌ Não foi possível gerar o QR code.");
+          return;
+        }
 
+        const qrSelect = document.getElementById("qrPointSelect");
         qrSelect.value = code;
         updateQrMeta();
-        qrCodeBox.innerHTML = "";
 
+        const img = new Image();
+        img.width = 200;
+        img.height = 200;
+        img.alt = `QR code do ecoponto ${p.code}`;
+        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+        const box = document.getElementById("qrCodeBox");
+        box.innerHTML = "";
+        box.appendChild(img);
+
+        document.getElementById("qrResultName").textContent = p.name;
+        document.getElementById("qrResultCode").textContent = "Código: " + p.code;
+        document.getElementById("qrEmptyState").style.display = "none";
+        document.getElementById("qrResult").classList.add("visible");
+        showToast(`✅ QR code gerado para ${p.code}`);
+
+        // texto do QR (opcional: se a rota não existir, o campo só não aparece)
+        const wrap = document.getElementById("qrCodeTextWrap");
+        wrap.hidden = true;
+        EmpresaApi.qrPayload(p.id)
+          .then((r) => {
+            if (!r || !r.payload) return;
+            document.getElementById("qrCodeText").value = r.payload;
+            wrap.hidden = false;
+          })
+          .catch(() => {});
+      }
+
+      /* PNG a partir do SVG já carregado (para baixar) */
+      function qrAsPng(img) {
         const canvas = document.createElement("canvas");
-        qrCodeBox.appendChild(canvas);
-
-        // Payload com tudo que coleta.html precisa para registrar
-        // formato: ECO-{code}|emp={empresaId}|ep={ecopontoId}
-        const empresaId = (getSession() || {}).id || "";
-        const payload = `ECO-${p.code}|emp=${empresaId}|ep=${p.ecopontoId}`;
-
-        QRCode.toCanvas(
-          canvas,
-          payload,
-          {
-            width: 200,
-            margin: 1,
-            color: { dark: "#1F2A1F", light: "#ffffff" },
-          },
-          (err) => {
-            if (err) {
-              showToast("❌ Não foi possível gerar o QR code.");
-              return;
-            }
-            document.getElementById("qrResultName").textContent = p.name;
-            document.getElementById("qrResultCode").textContent =
-              "Código: " + p.code;
-            qrEmptyState.style.display = "none";
-            qrResult.classList.add("visible");
-            showToast(`✅ QR code gerado para ${p.code}`);
-          },
-        );
+        canvas.width = canvas.height = 600;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, 600, 600);
+        ctx.drawImage(img, 0, 0, 600, 600);
+        return canvas.toDataURL("image/png");
       }
 
       /* Chamado pelo empresa-data.js após renderizar */
@@ -360,35 +474,307 @@
           });
         });
 
+        document.getElementById("qrCopyBtn").addEventListener("click", async () => {
+          const campo = document.getElementById("qrCodeText");
+          campo.select();
+          try {
+            await navigator.clipboard.writeText(campo.value);
+          } catch (_) {
+            document.execCommand("copy"); // navegadores sem a API de área de transferência
+          }
+          showToast("📋 Código copiado. Cole no campo da tela de coleta.");
+        });
+
         document
           .getElementById("qrDownloadBtn")
           .addEventListener("click", () => {
-            const canvas = document
-              .getElementById("qrCodeBox")
-              .querySelector("canvas");
-            if (!canvas) return;
+            const img = document.getElementById("qrCodeBox").querySelector("img");
+            if (!img) return;
             const link = document.createElement("a");
             link.download = `qrcode-${document.getElementById("qrPointSelect").value}.png`;
-            link.href = canvas.toDataURL("image/png");
+            link.href = qrAsPng(img);
             link.click();
           });
 
         document.getElementById("qrPrintBtn").addEventListener("click", () => {
-          const canvas = document
-            .getElementById("qrCodeBox")
-            .querySelector("canvas");
-          if (!canvas) return;
+          const img = document.getElementById("qrCodeBox").querySelector("img");
+          if (!img) return;
           const p = findPoint(document.getElementById("qrPointSelect").value);
           const win = window.open("", "_blank");
-          win.document.write(`<html><head><title>Placa ${p.code}</title></head>
+          win.document.write(`<html><head><title>Placa ${esc(p.code)}</title></head>
         <body style="font-family:sans-serif;text-align:center;padding:40px;">
-          <h2>${p.name}</h2><p>${p.address}</p>
-          <img src="${canvas.toDataURL("image/png")}" alt="QR Code do ecoponto ${p.code}" style="margin:24px 0;" />
-          <p style="font-size:20px;font-weight:700;">Código: ${p.code}</p>
+          <h2>${esc(p.name)}</h2><p>${esc(p.address)}</p>
+          <img src="${esc(img.src)}" alt="QR Code do ecoponto ${esc(p.code)}" width="320" style="margin:24px 0;" />
+          <p style="font-size:20px;font-weight:700;">Código: ${esc(p.code)}</p>
           <script>window.onload=()=>window.print();<\/script>
   </body></html>`);
           win.document.close();
         });
+      }
+
+      /* ── EXPORTAR DADOS (CSV) ──
+         Resumo: sai do painel já carregado. Histórico: GET /empresas/me/leituras
+         (a API filtra por período e ecoponto e não envia dado pessoal). */
+      const CSV_ENTRADA_FORMULA = /^[=+\-@\t\r]/;
+
+      function csvCelula(valor) {
+        let t = valor == null ? "" : String(valor);
+        // texto que começa com = + - @ viraria fórmula no Excel: neutraliza
+        if (typeof valor !== "number" && CSV_ENTRADA_FORMULA.test(t)) t = "'" + t;
+        return '"' + t.replace(/"/g, '""') + '"';
+      }
+
+      /* ";" como separador e BOM UTF-8: abre certo no Excel em português */
+      function montarCsv(cabecalho, linhas) {
+        return (
+          "\ufeff" +
+          [cabecalho, ...linhas]
+            .map((l) => l.map(csvCelula).join(";"))
+            .join("\r\n")
+        );
+      }
+
+      function baixarArquivo(nome, texto) {
+        const blob = new Blob([texto], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = nome;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      const hoje = () => new Date().toISOString().slice(0, 10);
+
+      function exportarResumo() {
+        const dash = window.__empresaDash;
+        const lista = (dash && dash.ecopontos) || [];
+        if (lista.length === 0) {
+          showToast("❌ Não há ecopontos para exportar.");
+          return;
+        }
+        const csv = montarCsv(
+          ["Código", "Ecoponto", "Endereço", "Status", "Materiais", "Coletado no mês", "Última atividade"],
+          lista.map((p) => [
+            p.codigo,
+            p.nome,
+            p.endereco,
+            p.status_rotulo || p.status,
+            (p.categorias || []).map((c) => c.rotulo).join(", "),
+            p.kg_mes_formatado,
+            p.ultima_atividade,
+          ]),
+        );
+        baixarArquivo(`ecopontos-resumo-${hoje()}.csv`, csv);
+        showToast(`✅ Resumo de ${lista.length} ecopontos baixado.`);
+      }
+
+      async function exportarLeituras() {
+        const btn = document.getElementById("exportLeiturasBtn");
+        const textoOriginal = btn.textContent;
+        const pontoId = document.getElementById("exportPontoSelect").value;
+        const periodo = document.getElementById("exportPeriodoSelect").value;
+        btn.disabled = true;
+        btn.textContent = "Preparando…";
+        try {
+          const itens = await EmpresaApi.leituras(periodo, pontoId);
+          if (itens.length === 0) {
+            showToast("Nenhuma leitura encontrada nesse período.");
+            return;
+          }
+          const csv = montarCsv(
+            ["Data e hora", "Código do ecoponto", "Ecoponto", "Produto", "Material", "Quantidade", "Moedas", "Resultado"],
+            itens.map((l) => [
+              l.data_formatada,
+              l.ecoponto_codigo,
+              l.ecoponto_nome,
+              l.produto,
+              l.categoria,
+              l.kg_formatado,
+              l.coins,
+              l.resultado_rotulo,
+            ]),
+          );
+          const alvo = pontoId ? findPoint(document.getElementById("exportPontoSelect").selectedOptions[0].dataset.code) : null;
+          baixarArquivo(`ecopontos-leituras-${alvo ? alvo.code + "-" : ""}${periodo}-${hoje()}.csv`, csv);
+          showToast(
+            itens.total > itens.length
+              ? `⚠️ Baixadas as ${itens.length} leituras mais recentes de ${itens.total}. Reduza o período para ver o resto.`
+              : `✅ ${itens.length} leituras baixadas.`,
+          );
+        } catch (err) {
+          Api.showError(err, "❌ Não foi possível baixar o histórico.");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = textoOriginal;
+        }
+      }
+
+      /* Chamado pelo empresa-data.js após renderizar */
+      function bindExport() {
+        const sel = document.getElementById("exportPontoSelect");
+        sel.innerHTML = '<option value="">Todos os ecopontos</option>';
+        (window.__empresaPoints || []).forEach((p) => {
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.dataset.code = p.code;
+          opt.textContent = `${p.code} — ${p.name}`;
+          sel.appendChild(opt);
+        });
+        document.getElementById("exportResumoBtn").addEventListener("click", exportarResumo);
+        document.getElementById("exportLeiturasBtn").addEventListener("click", exportarLeituras);
+      }
+
+      /* ── LEITOR DO ECOPONTO ──
+         O Ecoponto lê os códigos de barras e a API credita as moedas na
+         pessoa da sessão (POST /ecopontos/{id}/leituras, como empresa). */
+      let readerPoint = null; // ecoponto selecionado
+      let readerSessao = null; // { sessao_id, pessoa, expira_em } ou null
+      let readerScanner = null;
+      let readerRunning = false;
+      let readerLastCode = "";
+      let readerLastAt = 0;
+      const readerHist = []; // leituras desta tela (só enquanto aberta)
+
+      function renderReaderSession() {
+        const el = document.getElementById("readerSession");
+        if (!readerPoint) {
+          el.textContent = "Selecione um Ecoponto para ver quem está conectado.";
+        } else if (!readerSessao) {
+          el.innerHTML = `<strong>Aguardando</strong><br>Nenhuma pessoa conectada. Peça para ler o QR da placa.`;
+        } else {
+          el.innerHTML = `<strong>Conectado: ${esc((readerSessao.pessoa && readerSessao.pessoa.nome) || "Pessoa")}</strong><br>As moedas das leituras vão para esta pessoa.`;
+        }
+      }
+
+      async function pollReaderSession() {
+        if (!readerPoint || document.hidden) return;
+        try {
+          readerSessao = await EmpresaApi.sessaoAtiva(readerPoint.id);
+        } catch (err) {
+          if (err.status === 404) readerSessao = null;
+          else return; // falha momentânea: mantém o estado e tenta de novo
+        }
+        renderReaderSession();
+      }
+
+      function renderReaderList() {
+        document.getElementById("readerEmpty").style.display = readerHist.length ? "none" : "";
+        document.getElementById("readerList").innerHTML = readerHist
+          .map(
+            (h) => `<div class="qr-point-meta visible" style="margin-bottom:8px;">
+              <strong>${esc(h.titulo)}</strong><br>${esc(h.texto)}</div>`,
+          )
+          .join("");
+      }
+
+      async function registerReading(raw) {
+        const code = String(raw || "").trim();
+        if (!readerPoint) {
+          showToast("❌ Selecione o Ecoponto em operação.");
+          return;
+        }
+        if (!code) {
+          showToast("❌ Informe o código de barras.");
+          return;
+        }
+        const now = Date.now();
+        if (code === readerLastCode && now - readerLastAt < 2500) return;
+        readerLastCode = code;
+        readerLastAt = now;
+
+        if (!readerSessao) await pollReaderSession();
+        if (!readerSessao) {
+          showToast("❌ Nenhuma pessoa conectada a este Ecoponto.");
+          return;
+        }
+
+        let r;
+        try {
+          r = await EmpresaApi.registrarLeitura(readerPoint.id, readerSessao.sessao_id, code);
+        } catch (err) {
+          readerHist.unshift({ titulo: code, texto: err.message || "Não foi possível registrar." });
+          readerHist.splice(20);
+          renderReaderList();
+          Api.showError(err, "❌ Não foi possível registrar a leitura.");
+          return;
+        }
+        const ganhou = Number((r && r.coinsAwarded) || 0);
+        readerHist.unshift({
+          titulo: (r && r.produto && r.produto.nome) || code,
+          texto: (ganhou > 0 ? `+${ganhou} coins • ` : "") + ((r && r.message) || "Leitura registrada."),
+        });
+        readerHist.splice(20);
+        renderReaderList();
+        showToast(`✅ ${(r && r.message) || "Leitura registrada."}`);
+        document.getElementById("readerManual").value = "";
+      }
+
+      async function toggleReaderCamera() {
+        const btn = document.getElementById("readerCamBtn");
+        if (!window.Html5Qrcode) {
+          showToast("❌ Não foi possível carregar o leitor. Digite o código.");
+          return;
+        }
+        if (readerRunning) {
+          await readerScanner.stop().catch(() => {});
+          readerRunning = false;
+          btn.textContent = "📷 Ligar câmera";
+          return;
+        }
+        readerScanner =
+          readerScanner ||
+          new Html5Qrcode("reader", {
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.UPC_A,
+              Html5QrcodeSupportedFormats.UPC_E,
+            ],
+            verbose: false,
+          });
+        try {
+          await readerScanner.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: (w, h) => ({ width: Math.floor(w * 0.8), height: Math.floor(h * 0.4) }) },
+            registerReading,
+            () => {},
+          );
+          readerRunning = true;
+          btn.textContent = "⏹ Desligar câmera";
+        } catch (_) {
+          showToast("❌ Não foi possível abrir a câmera. Digite o código.");
+        }
+      }
+
+      /* Chamado pelo empresa-data.js após renderizar */
+      function bindReader() {
+        const sel = document.getElementById("readerPointSelect");
+        sel.innerHTML = `<option value="" disabled selected>Selecione um Ecoponto</option>`;
+        (window.__empresaPoints || [])
+          .filter((p) => p.status === "ativo")
+          .forEach((p) => {
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.textContent = `${p.code} — ${p.name}`;
+            sel.appendChild(opt);
+          });
+        sel.addEventListener("change", () => {
+          readerPoint = (window.__empresaPoints || []).find((p) => String(p.id) === sel.value) || null;
+          readerSessao = null;
+          renderReaderSession();
+          pollReaderSession();
+        });
+        document.getElementById("readerCamBtn").addEventListener("click", toggleReaderCamera);
+        document.getElementById("readerGo").addEventListener("click", () =>
+          registerReading(document.getElementById("readerManual").value),
+        );
+        document.getElementById("readerManual").addEventListener("keydown", (e) => {
+          if (e.key === "Enter") registerReading(e.target.value);
+        });
+        setInterval(pollReaderSession, 4000);
       }
 
       function showToast(msg) {
@@ -403,7 +789,8 @@
     </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
-    <script src="js/eco-voltar.js"></script>
-    <script src="js/eco-arte-fundo.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
+      <script src="js/eco-acessibilidade.js"></script>
   </body>
 </html>

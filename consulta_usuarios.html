@@ -21,9 +21,10 @@
       .search-row .btn { white-space: nowrap; }
       .count-tag { color: var(--ink-3); font-size: 0.82rem; margin-bottom: 14px; }
     </style>
-      <link rel="stylesheet" href="css/eco-arte-fundo.css" />
+      <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
       <link rel="stylesheet" href="css/eco-animate.css" />
-      <link rel="stylesheet" href="css/eco-interacoes.css" />
+      <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
+      <link rel="stylesheet" href="css/eco-skeleton.css" />
   </head>
   <body>
     <header class="admin-header">
@@ -58,26 +59,23 @@
             </div>
             <div style="display:flex;align-items:flex-end;gap:10px;">
               <button class="btn btn-ghost" id="btnLimpar" type="button">Limpar</button>
-              <a class="btn btn-primary" id="btnPdf" href="#" target="_blank" rel="noopener">⬇ Baixar lista em PDF</a>
+              <button class="btn btn-primary" id="btnPdf" type="button">⬇ Baixar lista em PDF</button>
             </div>
           </div>
 
-          <p class="count-tag" id="countTag"></p>
+          <p class="count-tag sk sk-curto" id="countTag" style="--sk-w: 18ch"></p>
 
           <div class="table-wrap">
             <table class="data-table" id="tabelaUsuarios">
               <thead>
                 <tr>
                   <th>Nome</th>
-                  <th>CPF</th>
                   <th>E-mail</th>
-                  <th>Login</th>
-                  <th>Celular</th>
+                  <th>CPF</th>
                   <th class="no-print">Ação</th>
                 </tr>
               </thead>
-              <tbody id="tbodyUsuarios">
-                <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-3);">Carregando usuários…</td></tr>
+              <tbody id="tbodyUsuarios" data-sk-linhas="6">
               </tbody>
             </table>
           </div>
@@ -102,61 +100,86 @@
       </div>
     </div>
 
-    <div class="toast" id="toast"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="./js/api.js"></script>
     <script src="./js/ui-theme.js"></script>
     <script src="./js/ui-toast.js"></script>
-    <script src="./js/eco-session.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="./js/config.js?v=6"></script>
+    <script src="./js/api.js?v=6"></script>
+    <script src="./js/eco-skeleton.js"></script>
     <script src="./js/eco-helpers.js"></script>
-    <script src="./js/eco-admin.js"></script>
+    <script src="./js/eco-admin.js?v=3"></script>
     <script>
       initTheme();
       initThemeToggle();
 
-      let usuarios = [];
-      let idPendenteExclusao = null;
-      const tbody = document.getElementById("tbodyUsuarios");
-      const campoBusca = document.getElementById("busca");
-      const linkPdf = document.getElementById("btnPdf");
-
-      function idDe(u) {
-        return ecoId(u, "user_id");
+      const sessao = getSession();
+      let acessoLiberado = true;
+      if (!sessao) {
+        window.location.replace("login.html");
+      } else if (!isMaster(sessao)) {
+        bloquearAcesso();
       }
 
-      async function pesquisar() {
-        const texto = campoBusca.value.trim();
-        linkPdf.href = `${API}/usuarios/pdf?busca=${encodeURIComponent(texto)}`;
-        const r = await api(
-          "/usuarios" + (texto ? `?busca=${encodeURIComponent(texto)}` : ""),
-        );
-        if (texto !== campoBusca.value.trim()) return;
-        if (!r.sucesso) {
-          tratarFalha(r);
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;">${escaparHtml(r.erro)}</td></tr>`;
-          return;
+      function bloquearAcesso() {
+        acessoLiberado = false;
+        document.getElementById("accessNote").style.display = "flex";
+        document.getElementById("content").style.display = "none";
+      }
+
+      let usuarios = [];
+      let totalEncontrado = 0;
+      let idPendenteExclusao = null;
+      let ultimaBusca = 0;
+      const esc = Api.escapeHtml;
+
+      /* GET /admin/pessoas?busca= — a busca por nome é feita no servidor;
+         o CPF já chega mascarado. */
+      async function carregarUsuarios(termo) {
+        if (!acessoLiberado) return;
+        const numero = ++ultimaBusca;
+        try {
+          const r = await Admin.pessoas((termo || "").trim());
+          if (numero !== ultimaBusca) return; // resposta antiga
+          usuarios = r.itens;
+          totalEncontrado = (r.meta && r.meta.total) || usuarios.length;
+          renderizar();
+        } catch (err) {
+          if (numero !== ultimaBusca) return;
+          if (err.status === 403) {
+            bloquearAcesso();
+            return;
+          }
+          console.error(err);
+          document.getElementById("tbodyUsuarios").innerHTML =
+            '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--danger);">Não foi possível carregar os usuários. Verifique sua conexão.</td></tr>';
         }
-        usuarios = r.dados || [];
-        renderizar();
       }
 
       function renderizar() {
+        const tbody = document.getElementById("tbodyUsuarios");
         document.getElementById("countTag").textContent =
-          `${usuarios.length} usuário(s) encontrado(s)`;
-        document.getElementById("emptyState").style.display =
-          usuarios.length === 0 ? "block" : "none";
+          `${totalEncontrado} usuário(s) encontrado(s)` +
+          (totalEncontrado > usuarios.length ? ` — mostrando ${usuarios.length}` : "");
+
+        if (usuarios.length === 0) {
+          tbody.innerHTML = "";
+          document.getElementById("emptyState").style.display = "block";
+          return;
+        }
+        document.getElementById("emptyState").style.display = "none";
 
         tbody.innerHTML = usuarios
           .map(
             (u) => `
-          <tr>
-            <td>${escaparHtml(u.nome)}</td>
-            <td>${escaparHtml(u.cpf)}</td>
-            <td>${escaparHtml(u.email)}</td>
-            <td>${escaparHtml(u.login)}</td>
-            <td>${escaparHtml(u.telefone_celular)}</td>
+          <tr data-id="${esc(u.id)}">
+            <td>${esc(u.nome || "—")}</td>
+            <td>${esc(u.email || "—")}</td>
+            <td>${esc(u.cpf_mascarado || u.cpf || "—")}</td>
             <td class="no-print">
-              <button class="btn btn-danger" style="padding:8px 14px;font-size:0.8rem;" data-excluir="${escaparHtml(idDe(u))}">
+              <button class="btn btn-danger" style="padding:8px 14px;font-size:0.8rem;" data-excluir="${esc(u.id)}">
                 Excluir
               </button>
             </td>
@@ -165,23 +188,72 @@
           .join("");
 
         tbody.querySelectorAll("[data-excluir]").forEach((btn) => {
-          btn.addEventListener("click", () => abrirModalExclusao(btn.dataset.excluir));
+          btn.addEventListener("click", () => abrirModalExclusao(btn.getAttribute("data-excluir")));
         });
       }
 
-      let esperaBusca;
-      campoBusca.addEventListener("input", () => {
-        clearTimeout(esperaBusca);
-        esperaBusca = setTimeout(pesquisar, 300);
-      });
+      let temporizadorBusca = null;
+      function buscarComAtraso(valor) {
+        clearTimeout(temporizadorBusca);
+        temporizadorBusca = setTimeout(() => carregarUsuarios(valor), 300);
+      }
+
+      document.getElementById("busca").addEventListener("input", (e) => buscarComAtraso(e.target.value));
       document.getElementById("btnLimpar").addEventListener("click", () => {
-        campoBusca.value = "";
-        pesquisar();
+        document.getElementById("busca").value = "";
+        carregarUsuarios("");
+      });
+      /* Baixar a lista em PDF (jsPDF): busca todas as páginas da pesquisa
+         atual no servidor; o CPF já vem mascarado da API. */
+      function montarPdf(lista, busca) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: "pt", format: "a4" });
+        doc.setFontSize(16);
+        doc.text("EcoTech — Lista de usuários", 40, 48);
+        doc.setFontSize(10);
+        doc.text(
+          `Gerado em ${new Date().toLocaleString("pt-BR")} • ${lista.length} usuário(s)` +
+            (busca ? ` • busca: "${busca}"` : ""),
+          40,
+          66,
+        );
+        doc.autoTable({
+          startY: 84,
+          head: [["Nome", "E-mail", "CPF"]],
+          body: lista.map((u) => [u.nome || "—", u.email || "—", u.cpf_mascarado || u.cpf || "—"]),
+          styles: { fontSize: 9 },
+          headStyles: { fillColor: [67, 160, 71] },
+          margin: { left: 40, right: 40 },
+        });
+        return doc;
+      }
+
+      document.getElementById("btnPdf").addEventListener("click", async () => {
+        if (!acessoLiberado) return;
+        const btn = document.getElementById("btnPdf");
+        const textoOriginal = btn.textContent;
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+          showToast("Não foi possível carregar o gerador de PDF. Verifique sua conexão.");
+          return;
+        }
+        btn.disabled = true;
+        btn.textContent = "Gerando PDF…";
+        try {
+          const busca = document.getElementById("busca").value.trim();
+          const lista = await Admin.todasPessoas(busca);
+          montarPdf(lista, busca).save("usuarios-ecotech.pdf");
+          showToast("PDF gerado com a lista de usuários.");
+        } catch (err) {
+          Api.showError(err, "Não foi possível gerar o PDF. Tente novamente.");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = textoOriginal;
+        }
       });
 
       function abrirModalExclusao(id) {
         idPendenteExclusao = id;
-        const u = usuarios.find((x) => String(idDe(x)) === String(id));
+        const u = usuarios.find((x) => String(x.id) === String(id));
         document.getElementById("modalExcluirTexto").textContent =
           `Tem certeza que deseja excluir "${u ? u.nome : "este usuário"}"? Esta ação não pode ser desfeita.`;
         document.getElementById("modalExcluir").classList.add("show");
@@ -199,24 +271,29 @@
         if (!idPendenteExclusao) return;
         const btn = document.getElementById("btnConfirmarExclusao");
         btn.disabled = true;
-        btn.textContent = "Excluindo...";
-        const r = await api(`/usuarios/${encodeURIComponent(idPendenteExclusao)}`, { metodo: "DELETE" });
-        btn.disabled = false;
-        btn.textContent = "Excluir";
-        fecharModalExclusao();
-        if (r.sucesso) {
-          mostrarMensagem(r.dados?.mensagem || "Usuário excluído com sucesso.", "sucesso");
-          pesquisar();
-        } else {
-          tratarFalha(r);
+        btn.textContent = "Excluindo…";
+        try {
+          await Admin.excluirPessoa(idPendenteExclusao); // DELETE /admin/pessoas/{id}
+          usuarios = usuarios.filter((u) => String(u.id) !== String(idPendenteExclusao));
+          totalEncontrado = Math.max(0, totalEncontrado - 1);
+          renderizar();
+          showToast("Usuário excluído com sucesso.");
+        } catch (err) {
+          console.error(err);
+          Api.showError(err, "Não foi possível excluir. Tente novamente.");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Excluir";
+          fecharModalExclusao();
         }
       });
 
-      protegerTela(["master"]).then(pesquisar);
+      carregarUsuarios("");
     </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
-    <script src="js/eco-voltar.js"></script>
-    <script src="js/eco-arte-fundo.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
+      <script src="js/eco-acessibilidade.js"></script>
   </body>
 </html>

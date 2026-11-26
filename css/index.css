@@ -517,7 +517,26 @@ body {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
+}
+/* Botão "Sessão no Ecoponto" (antes com estilo no próprio HTML).
+   Ritmo: formulário → 16px → botão → 24px → selos. */
+.btn-scan {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: #3E5A3F;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+}
+.btn-scan:hover {
+  background: #1F2A1F;
+  transform: translateY(-1px);
 }
 .hero-form input[type="email"] {
   flex: 1;
@@ -614,23 +633,15 @@ body {
     transform: translateY(-12px);
   }
 }
-.hero-card-visual svg {
+/* Ilustração do card (broto no vaso) — PNG com fundo
+   transparente em assets/arte/. A mesma imagem serve pros dois
+   temas: o card é verde no claro e creme no escuro, e a arte usa
+   tons médios que aparecem bem nos dois. Se o PNG ainda não
+   existir, o espaço só fica vazio. */
+.hero-card-visual .hero-ilustra {
   width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* Os elementos decorativos do SVG (linhas, bolinhas, base) usam
-   um tom bem claro por padrão, pensado pro fundo verde do card
-   no tema claro. No tema escuro o card vira branco (ver regra do
-   .hero-card-visual acima) — sem isso, esses elementos quase
-   desaparecem por ficarem claros demais sobre um fundo também
-   claro. */
-[data-theme="dark"] .hero-card-visual svg .ilustra-clara {
-  fill: #BCCDB9;
-}
-[data-theme="dark"] .hero-card-visual svg .ilustra-media {
-  fill: #8CA98C;
+  aspect-ratio: 9 / 5;
+  background: url("../assets/arte/hero-broto.png") center / contain no-repeat;
 }
 
 .mini-stats {

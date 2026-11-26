@@ -1,0 +1,333 @@
+<!doctype html>
+<html data-efeitos lang="pt-br" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="./assets/fivecom.png" type="image/x-icon" />
+    <title>Perfil da Empresa — EcoTech</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" />
+    <link rel="stylesheet" href="css/perfil.css" />
+    <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
+    <link rel="stylesheet" href="css/eco-animate.css" />
+    <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
+    <link rel="stylesheet" href="css/eco-skeleton.css" />
+    <style>
+      /* Detalhes só desta página (o resto vem do perfil.css) */
+      .dados-lista { display: grid; gap: 10px; }
+      .dado-linha {
+        display: flex; justify-content: space-between; gap: 16px; align-items: baseline;
+        padding: 10px 2px; border-bottom: 1px dashed rgba(107, 143, 108, 0.25); font-size: 0.92rem;
+      }
+      .dado-linha:last-child { border-bottom: 0; }
+      .dado-rotulo { opacity: 0.7; white-space: nowrap; }
+      .dado-valor { font-weight: 600; text-align: right; word-break: break-word; }
+      .status-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+      .ponto-sub { font-size: 0.8rem; opacity: 0.75; }
+      .variacao { margin-top: 12px; font-size: 0.85rem; opacity: 0.8; text-align: center; }
+      .avatar-empresa { cursor: default; }
+      .input-group textarea { resize: vertical; min-height: 70px; font: inherit; }
+    </style>
+  </head>
+  <body>
+    <!-- Botão Dark Mode -->
+    <button class="theme-toggle" id="theme-toggle" title="Alternar tema" aria-label="Alternar tema">🌙</button>
+
+    <main>
+      <h1 class="sr-only">Perfil da empresa</h1>
+      <div class="profile-page">
+        <!-- ── CABEÇALHO ── -->
+        <div class="profile-header secao-arte-fundo" data-arte-fundo="arvore-crescendo">
+          <div class="avatar-wrapper avatar-empresa">
+            <div class="avatar sk sk-herda-cor" id="avatar-display" style="--sk-raio: 50%">
+              <span id="avatar-initials">🏢</span>
+            </div>
+          </div>
+
+          <div class="profile-info">
+            <div class="profile-name sk sk-curto" id="nome-display" style="--sk-w: 14ch">Carregando...</div>
+            <div class="profile-email sk sk-curto" id="email-display" style="--sk-w: 20ch">carregando@ecotech.com</div>
+            <div class="profile-badges">
+              <span class="level-badge sk" id="status-badge" style="--sk-w: 14ch; --sk-raio: 99px">🏢 Empresa parceira</span>
+              <span class="coin-badge"><span>♻️</span><span id="header-kg" class="sk" style="--sk-w: 3ch">0</span> kg</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── DADOS DA EMPRESA ── -->
+        <div class="section-card reveal">
+          <h3>Dados da Empresa</h3>
+          <div class="dados-lista">
+            <div class="dado-linha"><span class="dado-rotulo">CNPJ</span><span class="dado-valor sk" id="d-cnpj" style="--sk-w: 16ch">—</span></div>
+            <div class="dado-linha"><span class="dado-rotulo">Razão social</span><span class="dado-valor sk" id="d-razao" style="--sk-w: 14ch">—</span></div>
+            <div class="dado-linha"><span class="dado-rotulo">Endereço</span><span class="dado-valor sk" id="d-endereco" style="--sk-w: 18ch">—</span></div>
+            <div class="dado-linha"><span class="dado-rotulo">Parceira desde</span><span class="dado-valor sk" id="d-desde" style="--sk-w: 9ch">—</span></div>
+          </div>
+        </div>
+
+        <!-- ── CONFIGURAÇÕES ── -->
+        <div class="section-card reveal">
+          <h3>Configurações da Conta</h3>
+          <div class="menu-row" id="btn-editar" role="button" tabindex="0">
+            <div class="menu-row-left"><span>✏️</span>Editar dados da empresa</div>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="menu-row" id="btn-senha" role="button" tabindex="0" style="margin-top: 8px">
+            <div class="menu-row-left"><span>🔒</span>Alterar Senha</div>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="menu-row" id="btn-painel" role="button" tabindex="0" style="margin-top: 8px">
+            <div class="menu-row-left"><span>📊</span>Abrir painel da empresa</div>
+            <span class="menu-arrow">›</span>
+          </div>
+        </div>
+
+        <!-- ── RESULTADOS ── -->
+        <div class="section-card reveal">
+          <h3>Resultados da Empresa</h3>
+          <div class="impact-grid">
+            <div class="impact-cell">
+              <div class="impact-icon">♻️</div>
+              <div class="impact-value sk sk-centro" id="r-kg" style="--sk-w: 4ch">0</div>
+              <div class="impact-label">kg coletados</div>
+            </div>
+            <div class="impact-cell">
+              <div class="impact-icon">📍</div>
+              <div class="impact-value sk sk-centro" id="r-pontos" style="--sk-w: 3ch">0</div>
+              <div class="impact-label">Ecopontos</div>
+            </div>
+            <div class="impact-cell">
+              <div class="impact-icon">✅</div>
+              <div class="impact-value sk sk-centro" id="r-ativos" style="--sk-w: 3ch">0</div>
+              <div class="impact-label">pontos ativos</div>
+            </div>
+            <div class="impact-cell">
+              <div class="impact-icon">🔖</div>
+              <div class="impact-value sk sk-centro" id="r-validacoes" style="--sk-w: 4ch">0</div>
+              <div class="impact-label">códigos validados</div>
+            </div>
+          </div>
+          <p class="variacao" id="r-variacao"></p>
+        </div>
+
+        <!-- ── ECOPONTOS ── -->
+        <div class="section-card reveal">
+          <h3>Meus Ecopontos</h3>
+          <div id="lista-pontos" class="historico-container" data-sk-itens="3" data-sk-altura="60px"></div>
+        </div>
+
+        <!-- ── SAIR ── -->
+        <div class="section-card reveal">
+          <h3>Opções da conta</h3>
+          <div class="menu-row" id="btn-logout" role="button" tabindex="0">
+            <div class="menu-row-left"><span>🚪</span>Sair da conta</div>
+            <span class="menu-arrow">›</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ══════════ MODAL — EDITAR DADOS ══════════ -->
+    <div class="modal-overlay" id="modal-editar" role="dialog" aria-modal="true" aria-label="Editar dados da empresa">
+      <div class="modal-box">
+        <button class="modal-close-x" id="close-editar" aria-label="Fechar">✕</button>
+        <div class="modal-title">🏢 Editar dados</div>
+        <div class="modal-subtitle">O CNPJ não pode ser alterado.</div>
+
+        <div class="input-group">
+          <label for="input-nome">Nome da empresa</label>
+          <input type="text" id="input-nome" maxlength="150" autocomplete="organization" />
+        </div>
+        <div class="input-group">
+          <label for="input-razao">Razão social</label>
+          <input type="text" id="input-razao" maxlength="150" />
+        </div>
+        <div class="input-group">
+          <label for="input-email">E-mail de acesso</label>
+          <input type="email" id="input-email" maxlength="255" autocomplete="email" />
+        </div>
+        <div class="input-group">
+          <label for="input-endereco">Endereço</label>
+          <textarea id="input-endereco" maxlength="255"></textarea>
+        </div>
+
+        <button class="btn-salvar" id="salvar-dados">Salvar alterações</button>
+      </div>
+    </div>
+
+    <div class="eco-toast" id="eco-toast" role="status" aria-live="polite"></div>
+
+    <script src="js/eco-helpers.js"></script>
+    <script src="js/config.js?v=6"></script>
+    <script src="js/api.js?v=6"></script>
+    <script src="js/eco-skeleton.js"></script>
+    <script>
+      "use strict";
+
+      const $ = (id) => document.getElementById(id);
+      const esc = Api.escapeHtml;
+      const THEME_KEY = "eco-theme";
+
+      /* Só conta de empresa: pessoa vai para o perfil normal */
+      const sessao = requireAuth();
+      if (sessao.tipo !== "empresa") {
+        window.location.replace("perfil.html");
+        throw new Error("Esta página é só para empresas.");
+      }
+
+      let empresa = null;
+
+      /* ── Utilitários ── */
+      let toastTimer;
+      function showToast(msg) {
+        const t = $("eco-toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove("show"), 3200);
+      }
+      const openModal = (id) => $(id).classList.add("show");
+      const closeModal = (id) => $(id).classList.remove("show");
+
+      function iniciais(nome) {
+        return (nome || "?").split(" ").filter(Boolean).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+      }
+
+      /* ── Tema ── */
+      const htmlEl = document.documentElement;
+      const themeBtn = $("theme-toggle");
+      function applyTheme(theme) {
+        htmlEl.setAttribute("data-theme", theme);
+        themeBtn.textContent = theme === "dark" ? "🌙" : "☀️";
+        localStorage.setItem(THEME_KEY, theme);
+      }
+      applyTheme(localStorage.getItem(THEME_KEY) || "light");
+      themeBtn.addEventListener("click", () =>
+        applyTheme(htmlEl.getAttribute("data-theme") === "dark" ? "light" : "dark"),
+      );
+
+      /* ── Dados da empresa — GET /empresas/me ── */
+      function mostrarEmpresa(e) {
+        empresa = e;
+        $("nome-display").textContent = e.nome_empresa || "—";
+        $("email-display").textContent = e.email || "—";
+        $("avatar-initials").textContent = iniciais(e.nome_empresa);
+        const ativa = e.status === "ativa";
+        $("status-badge").textContent = ativa ? "🏢 Empresa parceira" : "⛔ " + (e.status_rotulo || "Suspensa");
+        $("d-cnpj").textContent = e.cnpj_formatado || e.cnpj || "—";
+        $("d-razao").textContent = e.razao_social || "Não informada";
+        $("d-endereco").textContent = e.endereco || "Não informado";
+        $("d-desde").textContent = e.membro_desde || "—";
+        Session.update({ nome: e.nome_empresa, email: e.email });
+      }
+
+      /* ── Resultados e Ecopontos — GET /empresas/me/dashboard ── */
+      function mostrarPainel(p) {
+        const t = p.totais || {};
+        $("header-kg").textContent = t.kg_formatado || "0";
+        $("r-kg").textContent = t.kg_formatado || "0";
+        $("r-pontos").textContent = t.ecopontos ?? 0;
+        $("r-ativos").textContent = t.ativos ?? 0;
+        $("r-validacoes").textContent = t.validacoes_formatado || "0";
+        $("r-variacao").textContent = t.variacao_kg_texto || "";
+
+        const pontos = p.ecopontos || [];
+        const lista = $("lista-pontos");
+        if (!pontos.length) {
+          lista.innerHTML =
+            '<div style="text-align:center;padding:15px;opacity:0.7;">Nenhum Ecoponto cadastrado ainda. Cadastre pelo painel da empresa.</div>';
+          return;
+        }
+        lista.innerHTML = pontos
+          .map(
+            (e) => `
+            <div class="historico-item">
+              <div class="historico-item-left">
+                <span style="font-size:1.4rem;">📍</span>
+                <div>
+                  <strong>${esc(e.codigo)} — ${esc(e.nome)}</strong>
+                  <div class="ponto-sub">
+                    <span class="status-dot" style="background:${esc(e.status_cor || "#9e9e9e")}"></span>${esc(e.status_rotulo || e.status)}
+                    · ${esc(e.ultima_atividade || "Sem atividade ainda")}
+                  </div>
+                </div>
+              </div>
+              <div class="historico-pts" title="Total coletado neste ponto">${esc(e.kg_coletado_formatado || "0 kg")}</div>
+            </div>`,
+          )
+          .join("");
+      }
+
+      async function carregar() {
+        try {
+          const [e, painel] = await Promise.all([EmpresaApi.me(), EmpresaApi.dashboard()]);
+          mostrarEmpresa(e);
+          mostrarPainel(painel);
+        } catch (err) {
+          Api.showError(err, "Não foi possível carregar o perfil da empresa.");
+        }
+      }
+      carregar();
+
+      /* ── Editar dados — PUT /empresas/me ── */
+      $("btn-editar").addEventListener("click", () => {
+        if (!empresa) return showToast("Perfil ainda carregando. Tente de novo.");
+        $("input-nome").value = empresa.nome_empresa || "";
+        $("input-razao").value = empresa.razao_social || "";
+        $("input-email").value = empresa.email || "";
+        $("input-endereco").value = empresa.endereco || "";
+        openModal("modal-editar");
+      });
+
+      $("salvar-dados").addEventListener("click", async () => {
+        const dados = {
+          nome_empresa: $("input-nome").value.trim(),
+          razao_social: $("input-razao").value.trim() || null,
+          email: $("input-email").value.trim(),
+          endereco: $("input-endereco").value.trim() || null,
+        };
+        if (!dados.nome_empresa || !dados.email) {
+          showToast("Preencha o nome e o e-mail da empresa.");
+          return;
+        }
+        const btn = $("salvar-dados");
+        btn.disabled = true;
+        btn.textContent = "Salvando…";
+        try {
+          const atualizada = await EmpresaApi.atualizar(dados);
+          mostrarEmpresa(atualizada);
+          closeModal("modal-editar");
+          showToast("✅ " + (atualizada.message || "Dados da empresa atualizados."));
+        } catch (err) {
+          showToast("⚠️ " + (Api.primeiroCampo(err) || err.message || "Não foi possível salvar."));
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Salvar alterações";
+        }
+      });
+
+      /* ── Navegação ── */
+      $("btn-senha").addEventListener("click", () => (window.location.href = "alterar_senha.html"));
+      $("btn-painel").addEventListener("click", () => (window.location.href = "empresa.html"));
+      $("btn-logout").addEventListener("click", () => {
+        showToast("Até logo! 👋");
+        Auth.logout(1500);
+      });
+
+      $("close-editar").addEventListener("click", () => closeModal("modal-editar"));
+      document.querySelectorAll(".modal-overlay").forEach((ov) =>
+        ov.addEventListener("click", (e) => { if (e.target === ov) ov.classList.remove("show"); }),
+      );
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal("modal-editar"); });
+      document.querySelectorAll(".menu-row[tabindex]").forEach((row) =>
+        row.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); row.click(); }
+        }),
+      );
+    </script>
+    <script src="js/eco-animate.js"></script>
+    <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
+    <script src="js/eco-acessibilidade.js"></script>
+  </body>
+</html>

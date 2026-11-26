@@ -3,32 +3,175 @@
    página (skyline verde no início, árvore de raízes no sobre
    nós, ciclo de coleta, etc). Fica atrás de tudo, bem sutil,
    só pra dar identidade visual — nunca compete com o conteúdo.
+
+   As artes são PNGs com fundo transparente em assets/arte/.
+   A camada .eco-bg-arte é criada pelo js/eco-arte-fundo.js;
+   cada chave (eco-bg-arte--xxx) só diz QUAL imagem usar, ONDE
+   ela fica (--arte-pos) e de QUE tamanho (--arte-tam).
+   Se o PNG ainda não existir, a seção só fica sem arte —
+   nada quebra.
 ══════════════════════════════════════════════════════════ */
 
 .eco-bg-arte {
   position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-  opacity: 0.5;
-  transition: opacity 0.3s;
-}
-
-.eco-bg-arte svg {
-  position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
   left: 50%;
-  transform: translateX(-50%);
   width: 100%;
   max-width: 1600px;
-  height: 100%;
-  color: var(--sage-text);
+  transform: translateX(-50%);
+  z-index: 0;
+  pointer-events: none;
+  /* Os PNGs vêm com cor cheia (as artes antigas em SVG tinham
+     transparência por forma), por isso a opacidade geral é baixa. */
+  opacity: 0.2;
+  transition: opacity 0.3s;
+  background-image: var(--arte-img, none);
+  background-repeat: no-repeat;
+  background-position: var(--arte-pos, center bottom);
+  background-size: var(--arte-tam, contain);
 }
 
+/* As artes são em tons de verde-sálvia. No tema escuro elas
+   ficariam escuras demais sobre o fundo quase preto, então
+   clareiam um pouco (só a arte, não o conteúdo). */
 [data-theme="dark"] .eco-bg-arte {
-  opacity: 0.4;
+  opacity: 0.16;
+  filter: brightness(1.7) saturate(0.85);
 }
+
+/* ── Cada arte ────────────────────────────────────────────── */
+
+/* Início: horizonte de cidade verde, ocupando a largura toda,
+   apoiado no rodapé do topo da página. */
+.eco-bg-arte--cidade-verde {
+  --arte-img: url("../assets/arte/fundo-cidade-verde.png");
+  --arte-pos: center bottom;
+  --arte-tam: max(100%, 1100px) auto;
+}
+
+/* Leitor do Ecoponto: a mesma cidade da inicial (já fica em cache),
+   do tamanho da coluna, aparecendo por baixo dos painéis. */
+.leitor .eco-bg-arte--cidade-verde {
+  --arte-tam: 100% auto;
+}
+
+/* Sobre nós: árvore grande com raízes, centralizada. */
+.eco-bg-arte--arvore-raizes {
+  --arte-img: url("../assets/arte/fundo-arvore-raizes.png");
+  --arte-pos: center center;
+  --arte-tam: contain;
+}
+
+/* Coleta: ciclo de reaproveitamento, à direita do título. */
+.eco-bg-arte--ciclo-coleta {
+  --arte-img: url("../assets/arte/fundo-ciclo-coleta.png");
+  --arte-pos: right 10% center;
+  --arte-tam: auto 100%;
+}
+
+/* Perfil (pessoa e empresa): árvore crescendo no canto direito. */
+.eco-bg-arte--arvore-crescendo {
+  --arte-img: url("../assets/arte/fundo-arvore-crescendo.png");
+  --arte-pos: right 3% bottom;
+  --arte-tam: auto 100%;
+}
+
+/* Painel da empresa: prédio com trepadeiras, à direita do texto. */
+.eco-bg-arte--predio-verde {
+  --arte-img: url("../assets/arte/fundo-predio-verde.png");
+  --arte-pos: right 4% bottom;
+  --arte-tam: auto min(100%, 420px);
+}
+
+/* Afilie-se: mãos + broto ocupando o lado direito, ao lado do texto. */
+.eco-bg-arte--parceria-broto {
+  --arte-img: url("../assets/arte/fundo-parceria-broto.png");
+  --arte-pos: right 2% bottom;
+  --arte-tam: min(50%, 720px) auto;
+}
+
+/* Telas administrativas: o ícone do ciclo de coleta (o mesmo da
+   página de coleta, já em cache) no canto de cima à direita, ao lado
+   do título, e girado no canto de baixo à esquerda. O centro fica
+   livre pra tabela/cards.
+   Quando existir assets/arte/fundo-circuito-folha.png (prompt nº 7
+   do doc), é só trocar o arquivo nas duas linhas "background". */
+.eco-bg-arte--circuito-folha::before,
+.eco-bg-arte--circuito-folha::after {
+  content: "";
+  position: absolute;
+  width: min(24%, 230px);
+  aspect-ratio: 1;
+  background: url("../assets/arte/fundo-ciclo-coleta.png") center / contain no-repeat;
+}
+.eco-bg-arte--circuito-folha::before {
+  top: 8px;
+  right: 8px;
+}
+.eco-bg-arte--circuito-folha::after {
+  left: 8px;
+  bottom: 8px;
+  transform: rotate(180deg);
+}
+
+/* Senha (esqueci, 2FA, alterar): as mãos cuidando do broto (as
+   mesmas do afilie-se, já em cache), embaixo do cartão do meio.
+   Quando existir fundo-seguranca.png (prompt nº 8 do doc), troque
+   a imagem e use --arte-tam: 100% auto. */
+.eco-bg-arte--seguranca {
+  --arte-img: url("../assets/arte/fundo-parceria-broto.png");
+  --arte-pos: center bottom;
+  --arte-tam: min(100%, 1100px) auto;
+}
+
+/* Erro e 404: a cidade verde da página inicial (já em cache) no pé
+   da tela. Quando existir fundo-caminho.png (prompt nº 9 do doc),
+   troque a imagem e use --arte-tam: 100% auto. */
+.eco-bg-arte--caminho {
+  --arte-img: url("../assets/arte/fundo-cidade-verde.png");
+  --arte-pos: center bottom;
+  --arte-tam: 100% auto;
+}
+
+/* A cidade é bem mais cheia que as outras artes: aqui ela fica
+   um pouco mais clara pra não brigar com o cartão de erro. */
+.secao-arte-tela > .eco-bg-arte--caminho { opacity: 0.17; }
+[data-theme="dark"] .secao-arte-tela > .eco-bg-arte--caminho { opacity: 0.13; }
+
+/* ── Páginas de cartão no meio da tela ────────────────────────
+   (esqueci a senha, 2FA, alterar senha, erro)
+   A arte fica presa na janela inteira, e não só na coluna estreita
+   do cartão; o conteúdo fica sempre por cima dela. */
+.secao-arte-tela > .eco-bg-arte {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: auto;
+  max-width: none;
+  transform: none;
+  opacity: 0.26;
+}
+
+[data-theme="dark"] .secao-arte-tela > .eco-bg-arte {
+  opacity: 0.18;
+}
+
+/* Conteúdo sempre por cima da arte (cartões da tela e o leitor). */
+.secao-arte-tela > *:not(.eco-bg-arte),
+.secao-arte-acima > *:not(.eco-bg-arte) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 640px) {
+  .secao-arte-tela > .eco-bg-arte { opacity: 0.18; }
+  [data-theme="dark"] .secao-arte-tela > .eco-bg-arte { opacity: 0.12; }
+}
+
+/* ── Seções que recebem arte ──────────────────────────────── */
 
 /* Envolve seções específicas de cada página que recebem uma arte
    de fundo temática (ver eco-arte-fundo.js) — precisa de
@@ -51,13 +194,21 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .eco-bg-arte { opacity: 0.35; }
-  [data-theme="dark"] .eco-bg-arte { opacity: 0.14; }
+  .eco-bg-arte { opacity: 0.14; }
+  [data-theme="dark"] .eco-bg-arte { opacity: 0.07; }
 }
 
 @media (max-width: 640px) {
-  .eco-bg-arte { opacity: 0.3; }
-  [data-theme="dark"] .eco-bg-arte { opacity: 0.12; }
+  .eco-bg-arte { opacity: 0.13; }
+  [data-theme="dark"] .eco-bg-arte { opacity: 0.08; }
+
+  /* No celular as artes laterais encolhem pra não ficarem
+     inteiras atrás do texto. */
+  .eco-bg-arte--predio-verde { --arte-tam: auto min(55%, 240px); }
+  .eco-bg-arte--parceria-broto { --arte-tam: auto min(20%, 120px); }
+  .eco-bg-arte--arvore-crescendo { --arte-tam: auto 80%; }
+  .eco-bg-arte--circuito-folha::before,
+  .eco-bg-arte--circuito-folha::after { width: min(40%, 150px); }
 }
 
 /* Telas administrativas (consulta de usuários, logs, modelo de BD):
@@ -66,11 +217,11 @@
    tabelas) precisa sempre ficar por cima dela, sem exceção — essas
    telas não podem ficar poluídas nem correr risco de algo sumir. */
 .admin-main.secao-arte-fundo .eco-bg-arte {
-  opacity: 0.3;
+  opacity: 0.13;
 }
 
 [data-theme="dark"] .admin-main.secao-arte-fundo .eco-bg-arte {
-  opacity: 0.2;
+  opacity: 0.09;
 }
 
 .admin-main.secao-arte-fundo > *:not(.eco-bg-arte) {
@@ -79,6 +230,6 @@
 }
 
 @media (max-width: 640px) {
-  .admin-main.secao-arte-fundo .eco-bg-arte { opacity: 0.18; }
-  [data-theme="dark"] .admin-main.secao-arte-fundo .eco-bg-arte { opacity: 0.1; }
+  .admin-main.secao-arte-fundo .eco-bg-arte { opacity: 0.08; }
+  [data-theme="dark"] .admin-main.secao-arte-fundo .eco-bg-arte { opacity: 0.05; }
 }

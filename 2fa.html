@@ -45,7 +45,8 @@
       .attempts-note strong { color: var(--danger); }
     </style>
       <link rel="stylesheet" href="css/eco-animate.css" />
-      <link rel="stylesheet" href="css/eco-interacoes.css" />
+      <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
+      <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
   </head>
   <body>
     <header class="admin-header">
@@ -60,7 +61,7 @@
       </div>
     </header>
 
-    <main class="admin-main twofa-shell">
+    <main class="admin-main twofa-shell secao-arte-tela" data-arte-fundo="seguranca">
       <div class="card">
         <div class="twofa-icon">🔐</div>
         <h1 class="admin-title" style="margin-bottom:6px;">Confirme que é você</h1>
@@ -68,7 +69,7 @@
           Por segurança, pedimos uma segunda confirmação antes de liberar o acesso.
         </p>
 
-        <div class="question-box" id="question-text">Carregando pergunta...</div>
+        <div class="question-box" id="question-text">Carregando pergunta…</div>
 
         <form id="form2fa">
           <div class="field">
@@ -88,75 +89,125 @@
       </div>
     </main>
 
-    <div class="toast" id="toast"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="./js/api.js"></script>
     <script src="./js/ui-theme.js"></script>
     <script src="./js/ui-toast.js"></script>
-        <script src="./js/eco-helpers.js"></script>
-    <script src="./js/eco-admin.js"></script>
+    <script src="./js/eco-helpers.js"></script>
+    <script src="./js/config.js?v=6"></script>
+    <script src="./js/api.js?v=6"></script>
     <script>
       initTheme();
       initThemeToggle();
 
-      const caixaPergunta = document.getElementById("question-text");
+      /* Estado do desafio vem do login (id + pergunta); nenhum dado
+         pessoal é guardado no navegador. A conferência é no servidor. */
+      const pendente = Auth.ler2fa();
+      if (!pendente || !pendente.desafio_id) {
+        window.location.replace("login.html");
+        throw new Error("Sem 2FA pendente — redirecionando para o login.");
+      }
+
+      /* Só máscara/teclado de digitação; a resposta é validada pela API. */
+      const CONFIG_CAMPO = {
+        nome_mae: { placeholder: "Nome completo", maxlength: "80", inputmode: "text", mascara: null },
+        nascimento: { placeholder: "dd/mm/aaaa", maxlength: "10", inputmode: "numeric", mascara: formatarDataBR },
+        cep: { placeholder: "00000-000", maxlength: "9", inputmode: "numeric", mascara: formatarCEP },
+      };
+      const campo = CONFIG_CAMPO[Auth.tipoPergunta(pendente)] || {
+        placeholder: "",
+        maxlength: null,
+        inputmode: "text",
+        mascara: null,
+      };
+
       const inputResposta = document.getElementById("resposta");
-      const nota = document.getElementById("attemptsNote");
+      document.getElementById("question-text").textContent = pendente.pergunta || "";
+      inputResposta.placeholder = campo.placeholder;
+      if (campo.maxlength) inputResposta.setAttribute("maxlength", campo.maxlength);
+      inputResposta.setAttribute("inputmode", campo.inputmode);
 
-      function mostrarTentativas(restantes) {
-        nota.textContent =
-          restantes != null ? `Tentativas restantes: ${restantes}` : "";
-      }
+      /* ── Máscara no campo de resposta (preserva o cursor) ── */
+      inputResposta.addEventListener("input", () => {
+        if (!campo.mascara) return;
 
-      function voltarAoLogin(texto) {
-        if (texto) mostrarMensagem(texto);
-        setTimeout(() => window.location.replace("login.html"), texto ? 2000 : 0);
-      }
+        const posAntes = inputResposta.selectionStart || 0;
+        const digitosAntesCursor = inputResposta.value
+          .slice(0, posAntes)
+          .replace(/[^\d]/g, "").length;
 
-      /* Se a pessoa recarregar a tela, a API devolve a mesma pergunta. */
-      async function carregarPergunta() {
-        const r = await api("/2fa");
-        if (!r.sucesso) {
-          if (r.status >= 500) return irParaErro(r.erro);
-          return voltarAoLogin(r.semConexao ? r.erro : "");
+        const formatado = campo.mascara(inputResposta.value);
+        inputResposta.value = formatado;
+
+        let pos = 0;
+        let vistos = 0;
+        while (pos < formatado.length && vistos < digitosAntesCursor) {
+          if (/\d/.test(formatado[pos])) vistos++;
+          pos++;
         }
-        caixaPergunta.textContent = r.dados.pergunta;
-        mostrarTentativas(r.dados.tentativas_restantes);
+        inputResposta.setSelectionRange(pos, pos);
+      });
+
+      function atualizarNotaTentativas(restantes) {
+        document.getElementById("attemptsNote").innerHTML =
+          typeof restantes === "number"
+            ? `Tentativas restantes: <strong>${restantes}</strong>`
+            : "";
       }
 
-      document.getElementById("form2fa").addEventListener("submit", async (e) => {
+      function desafioEncerrado(err) {
+        const texto = `${err.erro || ""} ${err.message || ""}`;
+        const restantes = err.data && err.data.tentativas_restantes;
+        return (
+          err.status === 410 ||
+          err.status === 423 ||
+          restantes === 0 ||
+          /bloquead|expirad/i.test(texto)
+        );
+      }
+
+      document.getElementById("btnCancelar").addEventListener("click", () => {
+        Auth.limpar2fa();
+      });
+
+      /* ── Confirmar: POST /auth/2fa ── */
+      document.getElementById("form2fa").addEventListener("submit", async function (e) {
         e.preventDefault();
-        const resposta = inputResposta.value.trim();
-        if (!resposta) {
-          mostrarMensagem("Preencha a resposta.");
+        const resposta = inputResposta.value;
+        if (!resposta.trim()) {
+          showToast("Preencha a resposta.");
           return;
         }
 
         const btn = document.getElementById("btnConfirmar");
         btn.disabled = true;
-        const r = await api("/2fa", { metodo: "POST", corpo: { resposta } });
-        btn.disabled = false;
-
-        if (r.sucesso) {
-          mostrarMensagem("Identidade confirmada! Entrando...", "sucesso");
-          setTimeout(() => (window.location.href = "index.html"), 800);
-          return;
+        try {
+          const r = await Auth.verificar2fa(pendente.desafio_id, resposta, pendente.lembrar);
+          Session.save(r, pendente.lembrar);
+          Auth.limpar2fa();
+          showToast("Identidade confirmada! Entrando…");
+          setTimeout(() => {
+            window.location.href = Auth.destinoPosLogin(r.usuario);
+          }, 900);
+        } catch (err) {
+          if (err.name === "ApiError" && desafioEncerrado(err)) {
+            Auth.limpar2fa();
+            showToast("3 tentativas sem sucesso! Favor realizar Login novamente.");
+            setTimeout(() => (window.location.href = "login.html"), 1600);
+            return;
+          }
+          Api.showError(err, "Resposta incorreta. Tente novamente.");
+          const restantes = err.data && err.data.tentativas_restantes;
+          atualizarNotaTentativas(restantes);
+          inputResposta.value = "";
+          btn.disabled = false;
         }
-        if (r.voltar_login) {
-          btn.disabled = true;
-          voltarAoLogin(r.erro);
-          return;
-        }
-        if (r.status >= 500) return irParaErro(r.erro);
-        mostrarMensagem(r.erro || "Resposta incorreta");
-        mostrarTentativas(r.tentativas_restantes);
-        inputResposta.value = "";
       });
-
-      carregarPergunta();
     </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
-    <script src="js/eco-voltar.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
+      <script src="js/eco-acessibilidade.js"></script>
   </body>
 </html>

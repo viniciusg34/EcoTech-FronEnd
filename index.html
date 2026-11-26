@@ -13,10 +13,12 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
-    <link rel="stylesheet" href="css/index.css" />
-    <link rel="stylesheet" href="css/eco-arte-fundo.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" />
+    <link rel="stylesheet" href="css/index.css?v=2" />
+    <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
     <link rel="stylesheet" href="css/eco-animate.css" />
-    <link rel="stylesheet" href="css/eco-interacoes.css" />
+    <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
+    <link rel="stylesheet" href="css/eco-skeleton.css" />
     <title>ECOTECH</title>
   </head>
   <body>
@@ -29,7 +31,7 @@
         <nav class="nav" id="main-nav" aria-label="Navegação principal">
           <a href="index.html" class="active">Início</a>
           <a href="coleta.html">Coleta ecológica</a>
-          <a href="leitor.html">Escanear produto</a>
+          <a href="leitor.html">Sessão no Ecoponto</a>
           <a href="sobre_nos.html">Sobre nós</a>
           <a href="afilie_se.html" class="btn-nav">Afilie-se →</a>
         </nav>
@@ -86,132 +88,33 @@
                 />
                 <button type="submit">Seja Eco</button>
               </form>
-              <a
-                href="leitor.html"
-                class="btn-scan"
-                style="
-                  display: inline-flex;
-                  align-items: center;
-                  gap: 8px;
-                  margin-top: 12px;
-                  padding: 10px 20px;
-                  border-radius: 999px;
-                  background: #3d9140;
-                  color: #fff;
-                  font-weight: 600;
-                  text-decoration: none;
-                "
-              >
-                📷 Escanear um produto
+              <a href="leitor.html" class="btn-scan">
+                📷 Sessão no Ecoponto
               </a>
               <div class="hero-badges">
                 <span class="badge" id="badge-tons">
                   <span class="badge-icon">♻️</span>
-                  <span id="badge-tons-val">…</span>
+                  <span id="badge-tons-val" class="sk" style="--sk-w: 13ch">toneladas recicladas</span>
                 </span>
                 <span class="badge">
                   <span class="badge-icon">♻️</span> Sem spam
                 </span>
                 <span class="badge" id="badge-users">
                   <span class="badge-icon">🌱</span>
-                  <span id="badge-users-val">…</span>
+                  <span id="badge-users-val" class="sk" style="--sk-w: 12ch">usuários ativos</span>
                 </span>
               </div>
             </div>
             <div class="hero-visual">
               <div class="hero-card-visual">
-                <svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg">
-                  <ellipse cx="180" cy="182" rx="100" ry="12" class="ilustra-media" fill="#D9C7A3" />
-                  <path
-                    d="M180 180 Q178 140 175 110"
-                    stroke="#8CA98C"
-                    stroke-width="3"
-                    fill="none"
-                    stroke-linecap="round"
-                  />
-                  <path
-                    d="M175 130 Q130 90 120 55 Q155 75 165 120"
-                    fill="#B08D57"
-                    opacity=".9"
-                  />
-                  <path
-                    d="M175 115 Q225 78 238 44 Q205 68 180 108"
-                    fill="#8CA98C"
-                  />
-                  <path
-                    d="M175 110 Q145 75 148 48 Q168 70 175 105"
-                    fill="#BCCDB9"
-                  />
-                  <rect
-                    x="152"
-                    y="168"
-                    width="56"
-                    height="22"
-                    rx="6"
-                    fill="#BCCDB9"
-                    stroke="#BCCDB9"
-                    stroke-width="1.5"
-                  />
-                  <rect
-                    x="148"
-                    y="163"
-                    width="64"
-                    height="10"
-                    rx="5"
-                    fill="#BCCDB9"
-                  />
-                  <circle cx="240" cy="44" r="4" fill="#B08D57" opacity=".7" />
-                  <circle cx="118" cy="55" r="3" fill="#8CA98C" opacity=".5" />
-                  <circle cx="260" cy="110" r="6" class="ilustra-media" fill="#D9C7A3" opacity=".8" />
-                  <circle cx="90" cy="130" r="5" class="ilustra-clara" fill="#EDF0E8" opacity=".9" />
-                  <rect
-                    x="20"
-                    y="20"
-                    width="70"
-                    height="6"
-                    rx="3"
-                    class="ilustra-clara" fill="#EDF0E8"
-                  />
-                  <rect
-                    x="20"
-                    y="32"
-                    width="50"
-                    height="6"
-                    rx="3"
-                    class="ilustra-clara" fill="#EDF0E8"
-                  />
-                  <rect
-                    x="20"
-                    y="44"
-                    width="60"
-                    height="6"
-                    rx="3"
-                    class="ilustra-clara" fill="#EDF0E8"
-                  />
-                  <rect
-                    x="270"
-                    y="150"
-                    width="60"
-                    height="6"
-                    rx="3"
-                    class="ilustra-clara" fill="#EDF0E8"
-                  />
-                  <rect
-                    x="278"
-                    y="162"
-                    width="45"
-                    height="6"
-                    rx="3"
-                    class="ilustra-clara" fill="#EDF0E8"
-                  />
-                </svg>
+                <div class="hero-ilustra" aria-hidden="true"></div>
                 <div class="mini-stats">
                   <div class="mini-stat">
-                    <div class="mini-stat-num" id="mini-tons">…</div>
+                    <div class="mini-stat-num sk sk-centro" id="mini-tons" style="--sk-w: 4ch">—</div>
                     <div class="mini-stat-lbl">Recicladas</div>
                   </div>
                   <div class="mini-stat">
-                    <div class="mini-stat-num" id="mini-ecopontos">…</div>
+                    <div class="mini-stat-num sk sk-centro" id="mini-ecopontos" style="--sk-w: 3ch">—</div>
                     <div class="mini-stat-lbl">Ecopontos</div>
                   </div>
                   <div class="mini-stat">
@@ -270,7 +173,7 @@
               Acumule pontos EcoCredits e troque por benefícios, descontos em
               parceiros e experiências sustentáveis.
             </p>
-            <a href="leitor.html" class="svc-link">Escanear agora →</a>
+            <a href="leitor.html" class="svc-link">Ir para a sessão →</a>
           </div>
         </div>
       </section>
@@ -284,19 +187,19 @@
         <div class="stats-grid">
           <div class="stat-card reveal">
             <span class="stat-emoji">♻️</span>
-            <span class="stat-num" data-stat="tons" data-target="0">0</span>
+            <span class="stat-num sk sk-centro" data-stat="tons" data-target="0" style="--sk-w: 3ch">0</span>
             <div class="stat-label">toneladas recicladas</div>
             <div class="stat-sub">no estado do Rio</div>
           </div>
           <div class="stat-card reveal">
             <span class="stat-emoji">👥</span>
-            <span class="stat-num" data-stat="members" data-target="0">0</span>
+            <span class="stat-num sk sk-centro" data-stat="members" data-target="0" style="--sk-w: 3ch">0</span>
             <div class="stat-label">membros ativos</div>
             <div class="stat-sub">e crescendo todo dia</div>
           </div>
           <div class="stat-card reveal">
             <span class="stat-emoji">📍</span>
-            <span class="stat-num" data-stat="ecopontos" data-target="0"
+            <span class="stat-num sk sk-centro" data-stat="ecopontos" data-target="0" style="--sk-w: 3ch"
               >0</span
             >
             <div class="stat-label">ecopontos no mapa</div>
@@ -366,7 +269,7 @@
             </p>
           </div>
           <div class="map-wrapper">
-            <div id="eco-map"></div>
+            <div id="eco-map" class="sk" style="--sk-raio: 0"></div>
             <div
               id="distance-balloon"
               class="map-balloon"
@@ -530,38 +433,40 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/eco-session.js"></script>
-    <script>requireAuth();</script>
+    <script src="js/config.js?v=6"></script>
+    <script src="js/api.js?v=6"></script>
+    <script src="js/eco-skeleton.js"></script>
+    <script src="js/eco-admin.js?v=3"></script>
+    <script src="js/eco-map-tiles.js"></script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
-    <script src="js/eco-voltar.js"></script>
-    <script src="js/eco-arte-fundo.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
 
     <script>
       "use strict";
 
       /* ════════════════════════════════════════════════════
-         CONFIGURAÇÃO DA API
-      ════════════════════════════════════════════════════ */
-      /* ════════════════════════════════════════════════════
-         CARREGA ESTATÍSTICAS DA API E ATUALIZA O DOM
+         ESTATÍSTICAS DO HERO — GET /estatisticas
+         CONTRATO (a propor ao backend; o PDF não prevê este endpoint):
+         { toneladas, membros, ecopontos }. Sem ele, os números do
+         hero ficam em "—" e o total de ecopontos vem do próprio mapa.
       ════════════════════════════════════════════════════ */
       async function loadStats(ecopontosMapCount) {
         let tons = null;
-        const empresas = await api("/empresas");
-        if (empresas.sucesso && Array.isArray(empresas.dados)) {
-          const totalKg = empresas.dados.reduce(
-            (soma, e) => soma + (parseFloat(e.colected) || 0),
-            0,
-          );
-          tons = parseFloat((totalKg / 1000).toFixed(1));
+        let members = null;
+        let ecopontos = ecopontosMapCount;
+        try {
+          const e = await Publico.estatisticas();
+          if (e) {
+            if (e.toneladas != null) tons = Number(e.toneladas);
+            if (e.membros != null) members = Number(e.membros);
+            if (e.ecopontos != null) ecopontos = Number(e.ecopontos);
+          }
+        } catch (err) {
+          console.warn("[EcoTech] estatísticas indisponíveis:", err);
         }
-
-        // A lista de usuários é exclusiva do master: sem número público.
-        const members = null;
-
-        return { tons, members, ecopontos: ecopontosMapCount };
+        return { tons, members, ecopontos };
       }
 
       /* ════════════════════════════════════════════════════
@@ -623,9 +528,7 @@
           const saved = localStorage.getItem("eco-theme");
           const pref =
             saved ||
-            (window.matchMedia("(prefers-color-scheme: dark)").matches
-              ? "dark"
-              : "light");
+            "light";
           document.documentElement.setAttribute("data-theme", pref);
         })();
 
@@ -723,192 +626,32 @@
         /* ── MAPA ── */
         const htmlEl = document.documentElement;
 
-        const CATEGORIES = [
-          { key: "metal", label: "Metal", color: "#f9a825" },
-          { key: "papel", label: "Papel", color: "#66bb6a" },
-          { key: "vidro", label: "Vidro", color: "#42a5f5" },
-          { key: "plastico", label: "Plástico", color: "#ef5350" },
-          { key: "eletronicos", label: "Eletrônicos", color: "#ab47bc" },
-          { key: "madeira", label: "Madeira", color: "#8d6e63" },
-        ];
-
-        let POINTS = [
-          {
-            lat: -22.9597,
-            lng: -44.0406,
-            name: "Centro Recicla Mangaratiba",
-            cat: "papel",
-            desc: "Papelão e embalagens no centro",
-          },
-          {
-            lat: -22.9245,
-            lng: -43.9538,
-            name: "EcoPonto Vila Muriqui",
-            cat: "metal",
-            desc: "Latinhas e metais diversos",
-          },
-          {
-            lat: -22.9291,
-            lng: -43.886,
-            name: "Itacuruçá Plásticos",
-            cat: "plastico",
-            desc: "Garrafas PET e tampinhas",
-          },
-          {
-            lat: -23.0188,
-            lng: -44.2081,
-            name: "Jacareí Vidros",
-            cat: "vidro",
-            desc: "Potes e garrafas de vidro",
-          },
-          {
-            lat: -22.9068,
-            lng: -43.1729,
-            name: "EcoCentro Metal",
-            cat: "metal",
-            desc: "Coleta de metais e sucata",
-          },
-          {
-            lat: -22.9122,
-            lng: -43.1769,
-            name: "Vidro Lapa",
-            cat: "vidro",
-            desc: "Garrafas e frascos de vidro",
-          },
-          {
-            lat: -22.9519,
-            lng: -43.2105,
-            name: "EcoPapel Botafogo",
-            cat: "papel",
-            desc: "Papel, papelão e revistas",
-          },
-          {
-            lat: -22.9711,
-            lng: -43.1823,
-            name: "TechRecicla Copacabana",
-            cat: "eletronicos",
-            desc: "Eletrônicos e pilhas",
-          },
-          {
-            lat: -22.9836,
-            lng: -43.2044,
-            name: "Ipanema Plásticos",
-            cat: "plastico",
-            desc: "Ponto de coleta PET",
-          },
-          {
-            lat: -22.9329,
-            lng: -43.2372,
-            name: "Tijuca Sustentável",
-            cat: "papel",
-            desc: "Jornais e caixas",
-          },
-          {
-            lat: -22.9015,
-            lng: -43.2801,
-            name: "Méier Metais",
-            cat: "metal",
-            desc: "Latinhas e ferros",
-          },
-          {
-            lat: -22.876,
-            lng: -43.3364,
-            name: "Madureira Vidros",
-            cat: "vidro",
-            desc: "Cacos e garrafas",
-          },
-          {
-            lat: -22.8122,
-            lng: -43.2144,
-            name: "Ilha Eco-Tech",
-            cat: "eletronicos",
-            desc: "Descarte de eletroeletrônicos",
-          },
-          {
-            lat: -23.0003,
-            lng: -43.3658,
-            name: "Barra PET Coleta",
-            cat: "plastico",
-            desc: "Embalagens plásticas diversas",
-          },
-          {
-            lat: -23.0181,
-            lng: -43.4682,
-            name: "Recreio Vidros",
-            cat: "vidro",
-            desc: "Vidros e potes",
-          },
-          {
-            lat: -22.8752,
-            lng: -43.465,
-            name: "Bangu Eletrônicos",
-            cat: "eletronicos",
-            desc: "Cabos, pilhas e baterias",
-          },
-          {
-            lat: -22.8986,
-            lng: -43.5598,
-            name: "Campo Grande Plast",
-            cat: "plastico",
-            desc: "Reciclagem de plásticos",
-          },
-          {
-            lat: -22.9678,
-            lng: -43.3888,
-            name: "Jacarepaguá Papéis",
-            cat: "papel",
-            desc: "Papelão comercial",
-          },
-          {
-            lat: -22.9056,
-            lng: -43.1065,
-            name: "Icaraí Metais (Niterói)",
-            cat: "metal",
-            desc: "Alumínio e metais diversos",
-          },
-          {
-            lat: -22.8269,
-            lng: -43.0538,
-            name: "São Gonçalo Plásticos",
-            cat: "plastico",
-            desc: "Posto de coleta de PET",
-          },
-          {
-            lat: -22.7562,
-            lng: -43.4607,
-            name: "Nova Iguaçu Vidros",
-            cat: "vidro",
-            desc: "Potes e embalagens",
-          },
-          {
-            lat: -22.7856,
-            lng: -43.3117,
-            name: "Duque de Caxias Papel",
-            cat: "papel",
-            desc: "Cooperativa de papelão",
-          },
-        ];
-
-        /* ── ECOPONTOS DA API (sem conexão, o mapa usa a lista acima) ── */
-        const pontosApi = await ecoListarEcopontos();
-        if (pontosApi) {
-          const chaves = CATEGORIES.map((c) => c.key);
-          POINTS = pontosApi
+        /* Categorias e ecopontos vêm da API (GET /categorias e GET /ecopontos). */
+        let CATEGORIES = [];
+        let POINTS = [];
+        try {
+          const [cats, ecopontosApi] = await Promise.all([
+            Publico.categorias(),
+            Publico.ecopontos(),
+          ]);
+          CATEGORIES = cats.map((c) => ({
+            key: c.chave,
+            label: c.rotulo,
+            color: c.cor_hex,
+          }));
+          POINTS = ecopontosApi
             .filter((p) => p.lat != null && p.lng != null)
-            .map((p) => {
-              const cats = String(p.cats || "")
-                .toLowerCase()
-                .split(",")
-                .map((c) => c.trim());
-              return {
-                lat: parseFloat(p.lat),
-                lng: parseFloat(p.lng),
-                name: p.name || p.code || "Ecoponto",
-                cat: cats.find((c) => chaves.includes(c)) || "plastico",
-                desc: [p.adress, p.city, p.state].filter(Boolean).join(", "),
-              };
-            });
+            .map((p) => ({
+              lat: Number(p.lat),
+              lng: Number(p.lng),
+              name: p.nome,
+              desc: p.descricao || "",
+              cats: (p.categorias || []).map((c) => (typeof c === "string" ? c : c.chave)),
+            }));
+        } catch (err) {
+          Api.showError(err, "Não foi possível carregar os ecopontos.");
         }
+        const catByKey = (key) => CATEGORIES.find((c) => c.key === key);
 
         /* ── BUSCA DADOS E ATUALIZA DOM ── */
         try {
@@ -945,7 +688,6 @@
                     ? ecopontos
                     : null;
             if (value !== null) el.setAttribute("data-target", value);
-            else el.textContent = "—";
           });
         } catch (err) {
           console.error("[EcoTech API] Falha ao carregar stats:", err);
@@ -956,14 +698,7 @@
         /* ── MAPA LEAFLET ── */
         const map = L.map("eco-map").setView([-22.9, -43.6], 9);
 
-        const TILE_LIGHT = L.tileLayer(
-          "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-          { attribution: "© OpenStreetMap" },
-        );
-        const TILE_DARK = L.tileLayer(
-          "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-          { attribution: "© OpenStreetMap" },
-        );
+        const { light: TILE_LIGHT, dark: TILE_DARK } = EcoMapTiles.criar();
 
         function updateMapTile() {
           if (htmlEl.getAttribute("data-theme") === "dark") {
@@ -980,54 +715,62 @@
           attributeFilter: ["data-theme"],
         });
 
-        const layerGroups = {};
-        CATEGORIES.forEach((c) => {
-          layerGroups[c.key] = L.layerGroup().addTo(map);
-        });
-
-        CATEGORIES.forEach((cat) => {
+        /* Um marcador por ecoponto, na cor da 1ª categoria; some do mapa
+           quando nenhuma das categorias dele está marcada na legenda. */
+        const esc = Api.escapeHtml;
+        const markerRefs = [];
+        POINTS.forEach((p) => {
+          const cat = catByKey(p.cats[0]);
+          if (!cat) return;
           const icon = L.divIcon({
-            html: `<div style="background:${cat.color};width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);">${cat.label[0]}</div>`,
+            html: `<div style="background:${esc(cat.color)};width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);">${esc(cat.label[0])}</div>`,
             iconSize: [28, 28],
             className: "",
           });
-          POINTS.filter((p) => p.cat === cat.key).forEach((p) => {
-            const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
-            const popup = `<div style="min-width:180px;font-family:'Plus Jakarta Sans','Poppins',sans-serif;">
-              <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:var(--ink);">${p.name}</p>
-              <p style="margin:0 0 12px;font-size:12px;color:var(--ink-3);">${p.desc}</p>
+          const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
+          const popup = `<div style="min-width:180px;font-family:'Plus Jakarta Sans','Poppins',sans-serif;">
+              <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:var(--ink);">${esc(p.name)}</p>
+              <p style="margin:0 0 12px;font-size:12px;color:var(--ink-3);">${esc(p.desc)}</p>
               <a href="${gmapsUrl}" target="_blank" rel="noopener"
-                style="display:inline-flex;align-items:center;gap:6px;background:${cat.color};color:white;padding:7px 14px;border-radius:20px;text-decoration:none;font-size:12px;font-weight:600;">🗺️ Abrir Rota</a>
+                style="display:inline-flex;align-items:center;gap:6px;background:${esc(cat.color)};color:white;padding:7px 14px;border-radius:20px;text-decoration:none;font-size:12px;font-weight:600;">🗺️ Abrir Rota</a>
             </div>`;
-            L.marker([p.lat, p.lng], { icon })
-              .bindPopup(popup, { maxWidth: 240 })
-              .addTo(layerGroups[cat.key]);
-          });
+          const marker = L.marker([p.lat, p.lng], { icon })
+            .bindPopup(popup, { maxWidth: 240 })
+            .addTo(map);
+          markerRefs.push({ marker, point: p });
         });
 
         const legendEl = document.getElementById("map-legend");
-        let visibleCats = new Set(CATEGORIES.map((c) => c.key));
+        const visibleCats = new Set(CATEGORIES.map((c) => c.key));
+        function updateMarkerVisibility() {
+          markerRefs.forEach(({ marker, point }) => {
+            const visible = point.cats.some((k) => visibleCats.has(k));
+            const onMap = map.hasLayer(marker);
+            if (visible && !onMap) marker.addTo(map);
+            if (!visible && onMap) map.removeLayer(marker);
+          });
+        }
         legendEl.innerHTML =
           "<strong style='font-size:1rem;color:var(--ink);'>🗑️ Filtro</strong><br>";
         CATEGORIES.forEach((cat) => {
           const item = document.createElement("div");
           item.style.cssText =
             "display:flex;align-items:center;gap:8px;margin-top:8px;cursor:pointer;font-size:0.9rem;font-weight:500;color:var(--ink-2);transition:opacity 0.2s;";
-          item.innerHTML = `<span style="background:${cat.color};width:14px;height:14px;border-radius:50%;display:inline-block;"></span>${cat.label}`;
+          item.innerHTML = `<span style="background:${esc(cat.color)};width:14px;height:14px;border-radius:50%;display:inline-block;"></span>${esc(cat.label)}`;
           item.onclick = () => {
             if (visibleCats.has(cat.key)) {
               visibleCats.delete(cat.key);
-              map.removeLayer(layerGroups[cat.key]);
               item.style.opacity = "0.4";
             } else {
               visibleCats.add(cat.key);
-              map.addLayer(layerGroups[cat.key]);
               item.style.opacity = "1";
             }
+            updateMarkerVisibility();
           };
           legendEl.appendChild(item);
         });
       });
     </script>
+      <script src="js/eco-acessibilidade.js"></script>
   </body>
 </html>

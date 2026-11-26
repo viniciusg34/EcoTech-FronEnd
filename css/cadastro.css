@@ -291,7 +291,9 @@ body {
 
 .input-box:focus-within {
   border-color: var(--sage-400);
-  box-shadow: 0 0 0 4px rgba(62, 90, 63, 0.12);
+  /* Contorno de foco visível nos dois temas: --sage-400 é claro no
+     container verde e verde no container creme. */
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--sage-400) 35%, transparent);
   background: var(--white);
 }
 
@@ -365,6 +367,33 @@ body {
 .eye:hover {
   transform: scale(1.15);
 }
+/* Botão "mostrar senha": era <span>; virou <button> para funcionar no teclado.
+   Mesmo visual de antes; a área de toque cresce com padding + margem negativa. */
+button.eye {
+  background: none;
+  border: 0;
+  padding: 10px;
+  margin: -10px;
+  font-family: inherit;
+  line-height: 1;
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  font-weight: 400;
+  border-radius: 8px;
+  box-shadow: none;
+}
+button.eye:hover {
+  background: none;
+  box-shadow: none;
+}
+button.eye:focus-visible {
+  outline: 2px solid var(--sage-400);
+  outline-offset: -4px;
+  border-radius: 8px;
+}
+
 
 /* Remove o "olho" nativo do Edge/IE nos campos de senha — ele
    ficava sobreposto ao nosso ícone customizado, parecendo dois

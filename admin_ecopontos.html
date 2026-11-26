@@ -1,0 +1,414 @@
+<!doctype html>
+<html data-efeitos lang="pt-BR" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="./assets/fivecom.png" type="image/x-icon" />
+    <title>Ecopontos (master) — EcoTech</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/admin-shared.css" />
+    <style>
+      .search-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: flex-end; }
+      .search-row .field { flex: 1; min-width: 180px; margin-bottom: 0; }
+      .count-tag { color: var(--ink-3); font-size: 0.82rem; margin-bottom: 14px; }
+      td:first-child strong { white-space: nowrap; }
+      .acoes { display: flex; gap: 6px; flex-wrap: wrap; }
+      .acoes .btn { padding: 8px 12px; font-size: 0.8rem; }
+      .status-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+      .sub { display: block; color: var(--ink-3); font-size: 0.78rem; }
+      .modal-box.largo { max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; }
+      .grade { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+      .grade .inteiro { grid-column: 1 / -1; }
+      .cats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+      .cats label { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px;
+        border: 1px solid var(--sage-100); font-size: 0.82rem; cursor: pointer; }
+      .erro-form { color: var(--danger); font-size: 0.85rem; margin-bottom: 12px; display: none; }
+      @media (max-width: 560px) { .grade { grid-template-columns: 1fr; } }
+    </style>
+    <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
+    <link rel="stylesheet" href="css/eco-animate.css" />
+    <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
+    <link rel="stylesheet" href="css/eco-skeleton.css" />
+  </head>
+  <body>
+    <header class="admin-header">
+      <a href="index.html" class="brand">
+        <img src="./assets/logo.svg" alt="" />
+        <span><em>Eco</em>Tech</span>
+      </a>
+      <div class="header-actions">
+        <a href="perfil.html" class="icon-btn" aria-label="Perfil">👤</a>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Alternar tema">
+          <span id="theme-icon">☀️</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="admin-main secao-arte-fundo" data-arte-fundo="circuito-folha">
+      <h1 class="admin-title">Ecopontos</h1>
+      <p class="admin-subtitle">
+        Todos os Ecopontos de todas as empresas. Edite os dados ou exclua um ponto.
+      </p>
+
+      <div class="access-note" id="accessNote" style="display:none;">
+        ⚠️ Esta tela é exclusiva do perfil <strong>master</strong>.
+      </div>
+
+      <div id="content">
+        <div class="card">
+          <div class="search-row">
+            <div class="field">
+              <label for="busca">Buscar</label>
+              <input id="busca" type="text" placeholder="Nome, código, endereço ou cidade…" autocomplete="off" />
+            </div>
+            <div class="field" style="max-width:220px;">
+              <label for="filtroEmpresa">Empresa</label>
+              <select id="filtroEmpresa"><option value="">Todas</option></select>
+            </div>
+            <div class="field" style="max-width:180px;">
+              <label for="filtroStatus">Status</label>
+              <select id="filtroStatus">
+                <option value="">Todos</option>
+                <option value="ativo">Ativo</option>
+                <option value="manutencao">Em manutenção</option>
+                <option value="inativo">Inativo</option>
+              </select>
+            </div>
+            <button class="btn btn-ghost" id="btnLimpar" type="button">Limpar</button>
+          </div>
+
+          <p class="count-tag sk sk-curto" id="countTag" style="--sk-w: 14ch"></p>
+
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Nome / endereço</th>
+                  <th>Empresa</th>
+                  <th>Status</th>
+                  <th>Coletado</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbody" data-sk-linhas="5">
+              </tbody>
+            </table>
+          </div>
+
+          <div class="empty-state" id="emptyState" style="display:none;">
+            <span class="emoji">♻️</span>
+            Nenhum Ecoponto encontrado.
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal de edição -->
+    <div class="modal-overlay" id="modalEditar">
+      <form class="modal-box largo" id="formEditar" novalidate>
+        <h3 id="tituloEditar">Editar Ecoponto</h3>
+        <p class="erro-form" id="erroForm"></p>
+        <div class="grade">
+          <div class="field inteiro">
+            <label for="fNome">Nome</label>
+            <input id="fNome" maxlength="150" required />
+          </div>
+          <div class="field inteiro">
+            <label for="fEndereco">Endereço</label>
+            <input id="fEndereco" maxlength="255" />
+          </div>
+          <div class="field">
+            <label for="fCidade">Cidade</label>
+            <input id="fCidade" maxlength="100" />
+          </div>
+          <div class="field">
+            <label for="fEstado">Estado (UF)</label>
+            <input id="fEstado" maxlength="2" placeholder="RJ" />
+          </div>
+          <div class="field">
+            <label for="fLat">Latitude</label>
+            <input id="fLat" type="number" step="0.000001" required />
+          </div>
+          <div class="field">
+            <label for="fLng">Longitude</label>
+            <input id="fLng" type="number" step="0.000001" required />
+          </div>
+          <div class="field inteiro">
+            <label for="fStatus">Status</label>
+            <select id="fStatus">
+              <option value="ativo">Ativo (aparece no mapa)</option>
+              <option value="manutencao">Em manutenção</option>
+              <option value="inativo">Inativo (some do mapa)</option>
+            </select>
+          </div>
+          <div class="field inteiro">
+            <label for="fDescricao">Descrição</label>
+            <input id="fDescricao" maxlength="255" />
+          </div>
+        </div>
+        <label style="font-weight:700;font-size:0.85rem;display:block;margin-bottom:8px;">Materiais aceitos</label>
+        <div class="cats" id="fCategorias"></div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" type="button" id="btnCancelarEdicao">Cancelar</button>
+          <button class="btn btn-primary" type="submit" id="btnSalvar">Salvar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Modal de exclusão -->
+    <div class="modal-overlay" id="modalExcluir">
+      <div class="modal-box">
+        <h3>Excluir Ecoponto?</h3>
+        <p id="modalExcluirTexto"></p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" id="btnCancelarExclusao">Cancelar</button>
+          <button class="btn btn-danger" id="btnConfirmarExclusao">Excluir</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="./js/ui-theme.js"></script>
+    <script src="./js/ui-toast.js"></script>
+    <script src="./js/config.js?v=6"></script>
+    <script src="./js/api.js?v=6"></script>
+    <script src="./js/eco-skeleton.js"></script>
+    <script src="./js/eco-helpers.js"></script>
+    <script src="./js/eco-admin.js?v=3"></script>
+    <script>
+      initTheme();
+      initThemeToggle();
+
+      const sessao = getSession();
+      let acessoLiberado = true;
+      if (!sessao) {
+        window.location.replace("login.html");
+      } else if (!isMaster(sessao)) {
+        bloquearAcesso();
+      }
+      function bloquearAcesso() {
+        acessoLiberado = false;
+        document.getElementById("accessNote").style.display = "flex";
+        document.getElementById("content").style.display = "none";
+      }
+
+      const esc = Api.escapeHtml;
+      const $ = (id) => document.getElementById(id);
+      let pontos = [];
+      let total = 0;
+      let categorias = [];
+      let emEdicao = null;
+      let emExclusao = null;
+      let ultimaBusca = 0;
+
+      /* GET /admin/ecopontos?busca=&empresa_id=&status= */
+      async function carregar() {
+        if (!acessoLiberado) return;
+        const numero = ++ultimaBusca;
+        try {
+          const r = await Admin.ecopontos({
+            busca: $("busca").value.trim() || undefined,
+            empresa_id: $("filtroEmpresa").value || undefined,
+            status: $("filtroStatus").value || undefined,
+          });
+          if (numero !== ultimaBusca) return;
+          pontos = r.itens;
+          total = (r.meta && r.meta.total) || pontos.length;
+          renderizar();
+        } catch (err) {
+          if (numero !== ultimaBusca) return;
+          if (err.status === 403) return bloquearAcesso();
+          console.error(err);
+          $("tbody").innerHTML =
+            '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--danger);">Não foi possível carregar os Ecopontos.</td></tr>';
+        }
+      }
+
+      function renderizar() {
+        $("countTag").textContent =
+          `${total} Ecoponto(s)` + (total > pontos.length ? ` — mostrando ${pontos.length}` : "");
+        $("emptyState").style.display = pontos.length ? "none" : "block";
+        $("tbody").innerHTML = pontos
+          .map(
+            (p) => `
+          <tr>
+            <td><strong>${esc(p.codigo)}</strong></td>
+            <td>${esc(p.nome)}<span class="sub">${esc([p.endereco, p.cidade].filter(Boolean).join(" — ") || "Sem endereço")}</span></td>
+            <td>${esc((p.empresa && p.empresa.nome) || "—")}</td>
+            <td><span class="status-dot" style="background:${esc(p.status_cor)}"></span>${esc(p.status_rotulo)}</td>
+            <td>${esc(p.kg_coletado_formatado)}</td>
+            <td>
+              <div class="acoes">
+                <button class="btn btn-ghost" data-editar="${esc(p.id)}">Editar</button>
+                <button class="btn btn-danger" data-excluir="${esc(p.id)}">Excluir</button>
+              </div>
+            </td>
+          </tr>`,
+          )
+          .join("");
+        $("tbody").querySelectorAll("[data-editar]").forEach((b) =>
+          b.addEventListener("click", () => abrirEdicao(b.dataset.editar)),
+        );
+        $("tbody").querySelectorAll("[data-excluir]").forEach((b) =>
+          b.addEventListener("click", () => abrirExclusao(b.dataset.excluir)),
+        );
+      }
+
+      const acharPonto = (id) => pontos.find((p) => String(p.id) === String(id));
+
+      /* ---------- Editar ---------- */
+      function abrirEdicao(id) {
+        const p = acharPonto(id);
+        if (!p) return;
+        emEdicao = p;
+        $("tituloEditar").textContent = `Editar ${p.codigo}`;
+        $("erroForm").style.display = "none";
+        $("fNome").value = p.nome || "";
+        $("fEndereco").value = p.endereco || "";
+        $("fCidade").value = p.cidade || "";
+        $("fEstado").value = p.estado || "";
+        $("fLat").value = p.lat;
+        $("fLng").value = p.lng;
+        $("fStatus").value = p.status;
+        $("fDescricao").value = p.descricao || "";
+        const marcadas = (p.categorias || []).map((c) => c.chave);
+        $("fCategorias").innerHTML = categorias
+          .map(
+            (c) => `<label><input type="checkbox" value="${esc(c.chave)}" ${marcadas.includes(c.chave) ? "checked" : ""} />
+              <span class="status-dot" style="background:${esc(c.cor_hex)};margin:0"></span>${esc(c.rotulo)}</label>`,
+          )
+          .join("");
+        $("modalEditar").classList.add("show");
+        $("fNome").focus();
+      }
+      function fecharEdicao() {
+        $("modalEditar").classList.remove("show");
+        emEdicao = null;
+      }
+
+      $("formEditar").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!emEdicao) return;
+        const escolhidas = [...$("fCategorias").querySelectorAll("input:checked")].map((i) => i.value);
+        if (!$("fNome").value.trim()) return mostrarErro("Informe o nome do Ecoponto.");
+        if (!escolhidas.length) return mostrarErro("Marque pelo menos um material aceito.");
+
+        const dados = {
+          nome: $("fNome").value.trim(),
+          endereco: $("fEndereco").value.trim() || null,
+          cidade: $("fCidade").value.trim() || null,
+          estado: $("fEstado").value.trim().toUpperCase() || null,
+          lat: Number($("fLat").value),
+          lng: Number($("fLng").value),
+          status: $("fStatus").value,
+          descricao: $("fDescricao").value.trim() || null,
+          categorias: escolhidas,
+        };
+        const btn = $("btnSalvar");
+        btn.disabled = true;
+        btn.textContent = "Salvando…";
+        try {
+          const atualizado = await Admin.editarEcoponto(emEdicao.id, dados); // PATCH /admin/ecopontos/{id}
+          const i = pontos.findIndex((p) => p.id === atualizado.id);
+          if (i >= 0) pontos[i] = atualizado;
+          renderizar();
+          fecharEdicao();
+          showToast(atualizado.message || "Ecoponto atualizado.");
+        } catch (err) {
+          // 422: mostra a primeira mensagem de validação dentro do formulário
+          mostrarErro((Api.primeiroCampo && Api.primeiroCampo(err)) || err.message || "Não foi possível salvar.");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Salvar";
+        }
+      });
+      function mostrarErro(msg) {
+        $("erroForm").textContent = msg;
+        $("erroForm").style.display = "block";
+      }
+
+      /* ---------- Excluir ---------- */
+      function abrirExclusao(id) {
+        const p = acharPonto(id);
+        if (!p) return;
+        emExclusao = p;
+        $("modalExcluirTexto").textContent =
+          `Excluir "${p.codigo} — ${p.nome}"? Se ele já recebeu coletas, não é apagado: ` +
+          `fica inativo e sai do mapa, para não perder o histórico das pessoas.`;
+        $("modalExcluir").classList.add("show");
+      }
+      function fecharExclusao() {
+        $("modalExcluir").classList.remove("show");
+        emExclusao = null;
+      }
+      $("btnConfirmarExclusao").addEventListener("click", async () => {
+        if (!emExclusao) return;
+        const btn = $("btnConfirmarExclusao");
+        btn.disabled = true;
+        btn.textContent = "Excluindo…";
+        try {
+          const r = await Admin.excluirEcoponto(emExclusao.id); // DELETE /admin/ecopontos/{id}
+          fecharExclusao();
+          showToast((r && r.message) || "Ecoponto excluído.");
+          carregar();
+        } catch (err) {
+          Api.showError(err, "Não foi possível excluir. Tente novamente.");
+          fecharExclusao();
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Excluir";
+        }
+      });
+
+      /* ---------- Eventos ---------- */
+      $("btnCancelarEdicao").addEventListener("click", fecharEdicao);
+      $("btnCancelarExclusao").addEventListener("click", fecharExclusao);
+      $("modalEditar").addEventListener("click", (e) => { if (e.target.id === "modalEditar") fecharEdicao(); });
+      $("modalExcluir").addEventListener("click", (e) => { if (e.target.id === "modalExcluir") fecharExclusao(); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape") { fecharEdicao(); fecharExclusao(); } });
+
+      let temporizador = null;
+      $("busca").addEventListener("input", () => {
+        clearTimeout(temporizador);
+        temporizador = setTimeout(carregar, 300);
+      });
+      $("filtroEmpresa").addEventListener("change", carregar);
+      $("filtroStatus").addEventListener("change", carregar);
+      $("btnLimpar").addEventListener("click", () => {
+        $("busca").value = "";
+        $("filtroEmpresa").value = "";
+        $("filtroStatus").value = "";
+        carregar();
+      });
+
+      /* ?empresa=ID vindo da tela de empresas já abre filtrado */
+      const empresaDaUrl = new URLSearchParams(location.search).get("empresa");
+
+      async function iniciar() {
+        if (!acessoLiberado) return;
+        try {
+          const [cats, emps] = await Promise.all([Publico.categorias(), Admin.empresas()]);
+          categorias = cats;
+          $("filtroEmpresa").innerHTML +=
+            emps.itens.map((e) => `<option value="${esc(e.id)}">${esc(e.nome_empresa)}</option>`).join("");
+          if (empresaDaUrl) $("filtroEmpresa").value = empresaDaUrl;
+        } catch (err) {
+          if (err.status === 403) return bloquearAcesso();
+          console.error(err);
+        }
+        carregar();
+      }
+      iniciar();
+    </script>
+    <script src="js/eco-animate.js"></script>
+    <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js?v=3"></script>
+    <script src="js/eco-arte-fundo.js?v=2"></script>
+    <script src="js/eco-acessibilidade.js"></script>
+  </body>
+</html>
