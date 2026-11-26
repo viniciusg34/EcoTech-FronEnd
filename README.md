@@ -9,7 +9,7 @@ HTML, CSS e JavaScript puro, sem build. Hospedado na Vercel. **Todos os dados v�
 | Chave | O que é |
 |---|---|
 | `AMBIENTES` e `ORDEM` | Onde está a API: cada ambiente tem `nome` e `BASE_URL` (**com** `/api/v1`, sem barra final). Em produção precisa ser HTTPS (a Vercel bloqueia HTTP). A API oficial (Railway) é o ambiente `servidor`, primeiro da `ORDEM`; as locais só entram se ela não responder. |
-| `MOSTRAR_STATUS` | `false` (padrão): o usuário não vê selo de conexão nem nome de servidor. A equipe vê abrindo o site com `?status=1` (só naquela aba; `?status=0` esconde). Escondido, o ambiente em uso aparece no console (F12). |
+| `MOSTRAR_STATUS` | `true` mostra o selo de conexão. |
 | `CARTO_KEY` | Chave gratuita dos tiles do mapa (https://carto.com/basemaps/apikey). Sem ela o mapa usa o OpenStreetMap e avisa no console. A chave fica visível no navegador: peça uma para o domínio da Vercel e outra para `localhost`. |
 | `GOOGLE_CLIENT_ID` | ID público do OAuth do "Entrar com Google". |
 
@@ -36,7 +36,7 @@ Com a API Laravel de verdade, os logins são os do seed da API (`php artisan mig
 
 ## Ambientes (local e servidor) e apresentação
 
-`js/config.js` lista os ambientes (`local`, `servidor`) e a ordem de tentativa. O front consulta `GET /saude` de cada um, usa o primeiro que responder e, se ele cair, passa para o próximo (se havia alguém logado, pede novo login). Com `?status=1`, um selo no canto inferior esquerdo mostra a conexão (verde = real, amarelo = demonstração, vermelho = sem conexão) e permite trocar à mão (o usuário comum não vê o selo); `?ambiente=local|servidor|auto` fixa a escolha. **`servidor-demo/`** é uma API **simulada** (plano B, dados fictícios, sem MySQL) que roda só com Node. Guia completo, roteiro e lista de conferência: `docs/APRESENTACAO-LOCAL.md`.
+`js/config.js` lista os ambientes (`local`, `servidor`) e a ordem de tentativa. O front consulta `GET /saude` de cada um, usa o primeiro que responder e, se ele cair, passa para o próximo (pedindo novo login). Um selo no canto inferior esquerdo mostra a conexão (verde = real, amarelo = demonstração, vermelho = sem conexão) e permite trocar à mão; `?ambiente=local|servidor|auto` fixa a escolha. **`servidor-demo/`** é uma API **simulada** (plano B, dados fictícios, sem MySQL) que roda só com Node. Guia completo, roteiro e lista de conferência: `docs/APRESENTACAO-LOCAL.md`.
 
 ## Como rodar
 

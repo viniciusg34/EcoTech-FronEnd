@@ -12,7 +12,7 @@ Conferido no código do front. Backend, responsividade em aparelhos reais e os e
 | Cadastro de usuário | ⚠️ 🔒 | só comum se cadastra; ver "Cadastro" abaixo |
 | Login | ⚠️ 🔒 | campo "E-mail" (aceita e-mail ou login) e sem botão Limpar |
 | Erro | ✅ | `error_page.html` real + `404.html`; aberta em acesso negado (403) e falha do servidor (5xx) |
-| 2FA | ⚠️ 🔒 | Google e empresa entram sem 2FA |
+| 2FA | ✅ | pessoa: pergunta + código de 6 dígitos no e-mail (`codigo.html`); empresa: código no e-mail |
 | Consulta de usuário (busca por parte do nome, exclusão com confirmação) | ✅ | busca no servidor; só master |
 | Alteração de senha (só comum, a própria) | ✅ | master vê aviso; a API deve responder 403 |
 | Modelo do BD (imagem) | ✅ | `assets/modelo-bd.svg` e `.png`, para master e comum |
@@ -47,6 +47,7 @@ Conferido no código do front. Backend, responsividade em aparelhos reais e os e
 | Pergunta aleatória (mãe, nascimento, CEP), resposta conferida no banco | ✅ |
 | Resposta obrigatória | ✅ |
 | 3 erros: "3 tentativas sem sucesso! Favor realizar Login novamente." e volta ao login | ✅ |
+| Extra: código de 6 dígitos por e-mail no login, na confirmação do cadastro e no "esqueci a senha" | ✅ (`codigo.html`, `esqueci_senha.html`) |
 
 ## Desafio Plus
 | Item | Situação | Observação |
