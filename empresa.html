@@ -762,7 +762,7 @@
           .join("");
       }
 
-      async function registerReading(raw) {
+      async function registerReading(raw, daCamera = false) {
         const code = String(raw || "").trim();
         if (!readerPoint) {
           showToast("❌ Selecione o Ecoponto em operação.");
@@ -772,8 +772,11 @@
           showToast("❌ Informe o código de barras.");
           return;
         }
+        /* A câmera avisa várias vezes por segundo enquanto o produto está na
+           frente dela: o mesmo código só vale de novo depois de 10 s (antes,
+           a cada 2,5 s saía um pedido repetido e um aviso de "já foi lido"). */
         const now = Date.now();
-        if (code === readerLastCode && now - readerLastAt < 2500) return;
+        if (daCamera && code === readerLastCode && now - readerLastAt < 10000) return;
         readerLastCode = code;
         readerLastAt = now;
 
@@ -831,7 +834,7 @@
           await readerScanner.start(
             { facingMode: "environment" },
             { fps: 10, qrbox: (w, h) => ({ width: Math.floor(w * 0.8), height: Math.floor(h * 0.4) }) },
-            registerReading,
+            (texto) => registerReading(texto, true),
             () => {},
           );
           readerRunning = true;

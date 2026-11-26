@@ -335,7 +335,7 @@ export function criarApi({ agora = () => Date.now(), senhaMaster = process.env.D
   });
   rota("POST", "/checkins", "pessoa", ({ req, auth, body }) => idempotente(req, auth, "POST /checkins", () => {
     const s = db.sessoes.get(Number((body || {}).sessao_id));
-    if (!s || s.pessoaId !== auth.id || s.status !== "ativa" || s.expira <= agora()) throw new Erro(403, "sessao_invalida", "Sessão do Ecoponto inválida ou expirada. Leia o QR da placa de novo.");
+    if (!s || s.pessoaId !== auth.id || s.status !== "ativa" || s.expira <= agora()) throw new Erro(410, "sessao_expirada", "Sessão do Ecoponto inválida ou expirada. Leia o QR da placa de novo.");
     const e = ecoPorId(s.ecopontoId), p = soPessoa(auth);
     const ultimo = db.coletas.filter((c) => c.tipo === "checkin" && c.pessoaId === p.id && c.ecopontoId === e.id).sort((a, b) => b.em - a.em)[0];
     const espera = ultimo ? ultimo.em + db.config.checkin_cooldown_min * MIN - agora() : 0;
@@ -414,7 +414,7 @@ export function criarApi({ agora = () => Date.now(), senhaMaster = process.env.D
   rota("POST", "/ecopontos/(\\d+)/leituras", "empresa", ({ req, auth, m, body }) => idempotente(req, auth, `POST /ecopontos/${m[1]}/leituras`, () => {
     const e = ecoDaEmpresa(auth, m[1]), b = body || {};
     const s = db.sessoes.get(Number(b.sessao_id));
-    if (!s || s.ecopontoId !== e.id || s.status !== "ativa" || s.expira <= agora()) throw new Erro(403, "sessao_invalida", "Sessão inválida ou expirada. Peça para a pessoa ler o QR da placa de novo.");
+    if (!s || s.ecopontoId !== e.id || s.status !== "ativa" || s.expira <= agora()) throw new Erro(410, "sessao_expirada", "Sessão inválida ou expirada. Peça para a pessoa ler o QR da placa de novo.");
     const p = pessoaPorId(s.pessoaId);
     const code = String(b.code || "").replace(/\D/g, "");
     const registrar = (resultado, extra = {}) => db.leituras.push({ id: db.prox("leitura"), ecopontoId: e.id, pessoaId: p.id, codigo: code, produto: "", categoria: "", kg: 0, coins: 0, resultado, em: agora(), coletaId: null, ...extra });
