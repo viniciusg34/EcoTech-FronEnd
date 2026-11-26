@@ -8,7 +8,7 @@
 
     <style>
       body {
-        background: rgb(189, 0, 0);
+        background: #1F2A1F;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -20,6 +20,9 @@
         align-items: center;
         justify-content: center;
       }
+      a {
+        color: #D9C7A3;
+      }
       h1{
         color: white;
       }
@@ -30,16 +33,25 @@
         justify-content: center;
       }
 
+      /* A imagem gira; sem isto, a rotação cria rolagem lateral no celular. */
+      html,
+      body {
+        overflow-x: hidden;
+      }
       .quadrado {
         width: 320px;
         height: 320px;
         animation: girar 4s linear infinite;
+        max-width: 90vw;
+        height: auto;
       }
 
       .notStonks {
         margin-top: 50px;
         width: 520px;
         height: 520px;
+        max-width: 90vw;
+        object-fit: contain;
       }
 
       @keyframes girar {
@@ -59,12 +71,17 @@
     <div>
       <img src="assets/prof.webp" alt="error" class="quadrado" />
     </div>
-    <h1>estamos trabalhando nisso ok? 👍</h1>
+    <h1 id="textoErro">estamos trabalhando nisso ok? 👍</h1>
     <div class="containerStonks">
       <img src="assets/notStonks.png" alt="error" class="notStonks" />
     </div>
     <h2><a href="index.html">VOLTAR</a></h2>
+    <script>
+      const textoErro = new URLSearchParams(location.search).get("erro");
+      if (textoErro) document.getElementById("textoErro").textContent = textoErro;
+    </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js"></script>
   </body>
 </html>

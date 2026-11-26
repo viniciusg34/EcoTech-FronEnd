@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="light">
+<html data-efeitos lang="pt-BR" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -40,7 +40,6 @@
     </header>
 
     <main class="admin-main secao-arte-fundo" data-arte-fundo="circuito-folha">
-      <a href="perfil.html" class="btn-back-pill no-print" style="margin-bottom:20px;">← Voltar</a>
       <h1 class="admin-title">Consulta de Usuários</h1>
       <p class="admin-subtitle">
         Pesquise pelo nome (ou parte dele) para localizar usuários comuns cadastrados no sistema.
@@ -59,7 +58,7 @@
             </div>
             <div style="display:flex;align-items:flex-end;gap:10px;">
               <button class="btn btn-ghost" id="btnLimpar" type="button">Limpar</button>
-              <button class="btn btn-primary" id="btnPdf" type="button">⬇ Baixar lista em PDF</button>
+              <a class="btn btn-primary" id="btnPdf" href="#" target="_blank" rel="noopener">⬇ Baixar lista em PDF</a>
             </div>
           </div>
 
@@ -70,13 +69,15 @@
               <thead>
                 <tr>
                   <th>Nome</th>
-                  <th>E-mail</th>
                   <th>CPF</th>
+                  <th>E-mail</th>
+                  <th>Login</th>
+                  <th>Celular</th>
                   <th class="no-print">Ação</th>
                 </tr>
               </thead>
               <tbody id="tbodyUsuarios">
-                <tr><td colspan="4" style="text-align:center;padding:30px;color:var(--ink-3);">Carregando usuários…</td></tr>
+                <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-3);">Carregando usuários…</td></tr>
               </tbody>
             </table>
           </div>
@@ -103,6 +104,7 @@
 
     <div class="toast" id="toast"></div>
 
+    <script src="./js/api.js"></script>
     <script src="./js/ui-theme.js"></script>
     <script src="./js/ui-toast.js"></script>
     <script src="./js/eco-session.js"></script>
@@ -112,62 +114,49 @@
       initTheme();
       initThemeToggle();
 
-      const API_PESSOA = "https://6a38cde364a2d8269222d659.mockapi.io/pessoa";
-
-      const sessao = getSession();
-      let acessoLiberado = true;
-      if (!sessao) {
-        window.location.replace("login.html");
-      } else if (!isMaster(sessao)) {
-        acessoLiberado = false;
-        document.getElementById("accessNote").style.display = "flex";
-        document.getElementById("content").style.display = "none";
-      }
-
       let usuarios = [];
       let idPendenteExclusao = null;
+      const tbody = document.getElementById("tbodyUsuarios");
+      const campoBusca = document.getElementById("busca");
+      const linkPdf = document.getElementById("btnPdf");
 
-      async function carregarUsuarios() {
-        if (!acessoLiberado) return;
-        try {
-          const resp = await fetch(API_PESSOA);
-          if (!resp.ok) throw new Error("Falha ao consultar API.");
-          const lista = await resp.json();
-          usuarios = lista.filter((u) => (u.perfil || "comum") !== "master");
-          renderizar("");
-        } catch (err) {
-          console.error(err);
-          document.getElementById("tbodyUsuarios").innerHTML =
-            '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--danger);">Não foi possível carregar os usuários. Verifique sua conexão.</td></tr>';
-        }
+      function idDe(u) {
+        return ecoId(u, "user_id");
       }
 
-      function renderizar(filtro) {
-        const termo = (filtro || "").trim().toLowerCase();
-        const filtrados = termo
-          ? usuarios.filter((u) => (u.name || u.nome || "").toLowerCase().includes(termo))
-          : usuarios;
-
-        const tbody = document.getElementById("tbodyUsuarios");
-        document.getElementById("countTag").textContent =
-          `${filtrados.length} usuário(s) encontrado(s)`;
-
-        if (filtrados.length === 0) {
-          tbody.innerHTML = "";
-          document.getElementById("emptyState").style.display = "block";
+      async function pesquisar() {
+        const texto = campoBusca.value.trim();
+        linkPdf.href = `${API}/usuarios/pdf?busca=${encodeURIComponent(texto)}`;
+        const r = await api(
+          "/usuarios" + (texto ? `?busca=${encodeURIComponent(texto)}` : ""),
+        );
+        if (texto !== campoBusca.value.trim()) return;
+        if (!r.sucesso) {
+          tratarFalha(r);
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;">${escaparHtml(r.erro)}</td></tr>`;
           return;
         }
-        document.getElementById("emptyState").style.display = "none";
+        usuarios = r.dados || [];
+        renderizar();
+      }
 
-        tbody.innerHTML = filtrados
+      function renderizar() {
+        document.getElementById("countTag").textContent =
+          `${usuarios.length} usuário(s) encontrado(s)`;
+        document.getElementById("emptyState").style.display =
+          usuarios.length === 0 ? "block" : "none";
+
+        tbody.innerHTML = usuarios
           .map(
             (u) => `
-          <tr data-id="${u.id}">
-            <td>${(u.name || u.nome || "—")}</td>
-            <td>${u.email || "—"}</td>
-            <td>${u.cpf || "—"}</td>
+          <tr>
+            <td>${escaparHtml(u.nome)}</td>
+            <td>${escaparHtml(u.cpf)}</td>
+            <td>${escaparHtml(u.email)}</td>
+            <td>${escaparHtml(u.login)}</td>
+            <td>${escaparHtml(u.telefone_celular)}</td>
             <td class="no-print">
-              <button class="btn btn-danger" style="padding:8px 14px;font-size:0.8rem;" data-excluir="${u.id}">
+              <button class="btn btn-danger" style="padding:8px 14px;font-size:0.8rem;" data-excluir="${escaparHtml(idDe(u))}">
                 Excluir
               </button>
             </td>
@@ -176,22 +165,25 @@
           .join("");
 
         tbody.querySelectorAll("[data-excluir]").forEach((btn) => {
-          btn.addEventListener("click", () => abrirModalExclusao(btn.getAttribute("data-excluir")));
+          btn.addEventListener("click", () => abrirModalExclusao(btn.dataset.excluir));
         });
       }
 
-      document.getElementById("busca").addEventListener("input", (e) => renderizar(e.target.value));
-      document.getElementById("btnLimpar").addEventListener("click", () => {
-        document.getElementById("busca").value = "";
-        renderizar("");
+      let esperaBusca;
+      campoBusca.addEventListener("input", () => {
+        clearTimeout(esperaBusca);
+        esperaBusca = setTimeout(pesquisar, 300);
       });
-      document.getElementById("btnPdf").addEventListener("click", () => window.print());
+      document.getElementById("btnLimpar").addEventListener("click", () => {
+        campoBusca.value = "";
+        pesquisar();
+      });
 
       function abrirModalExclusao(id) {
         idPendenteExclusao = id;
-        const u = usuarios.find((x) => String(x.id) === String(id));
+        const u = usuarios.find((x) => String(idDe(x)) === String(id));
         document.getElementById("modalExcluirTexto").textContent =
-          `Tem certeza que deseja excluir "${u ? (u.name || u.nome) : "este usuário"}"? Esta ação não pode ser desfeita.`;
+          `Tem certeza que deseja excluir "${u ? u.nome : "este usuário"}"? Esta ação não pode ser desfeita.`;
         document.getElementById("modalExcluir").classList.add("show");
       }
       function fecharModalExclusao() {
@@ -208,26 +200,23 @@
         const btn = document.getElementById("btnConfirmarExclusao");
         btn.disabled = true;
         btn.textContent = "Excluindo...";
-        try {
-          const resp = await fetch(`${API_PESSOA}/${idPendenteExclusao}`, { method: "DELETE" });
-          if (!resp.ok) throw new Error("Falha ao excluir.");
-          usuarios = usuarios.filter((u) => String(u.id) !== String(idPendenteExclusao));
-          renderizar(document.getElementById("busca").value);
-          showToast("Usuário excluído com sucesso.");
-        } catch (err) {
-          console.error(err);
-          showToast("Não foi possível excluir. Tente novamente.");
-        } finally {
-          btn.disabled = false;
-          btn.textContent = "Excluir";
-          fecharModalExclusao();
+        const r = await api(`/usuarios/${encodeURIComponent(idPendenteExclusao)}`, { metodo: "DELETE" });
+        btn.disabled = false;
+        btn.textContent = "Excluir";
+        fecharModalExclusao();
+        if (r.sucesso) {
+          mostrarMensagem(r.dados?.mensagem || "Usuário excluído com sucesso.", "sucesso");
+          pesquisar();
+        } else {
+          tratarFalha(r);
         }
       });
 
-      carregarUsuarios();
+      protegerTela(["master"]).then(pesquisar);
     </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js"></script>
     <script src="js/eco-arte-fundo.js"></script>
   </body>
 </html>

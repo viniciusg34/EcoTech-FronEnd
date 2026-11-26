@@ -1,10 +1,11 @@
 <!doctype html>
-<html lang="pt-br" data-theme="light">
+<html data-efeitos lang="pt-br" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="shortcut icon" href="./assets/fivecom.png" type="image/x-icon" />
     <title>Perfil — EcoTech</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" />
     <link rel="stylesheet" href="css/perfil.css" />
     <link rel="stylesheet" href="css/eco-arte-fundo.css" />
     <link rel="stylesheet" href="css/eco-animate.css" />
@@ -390,6 +391,8 @@
       aria-live="polite"
     ></div>
 
+    <script src="js/api.js"></script>
+    <script src="js/eco-session.js"></script>
     <script src="js/eco-helpers.js"></script>
     <script src="js/eco-admin.js"></script>
     <script>
@@ -398,13 +401,10 @@
       /* ══════════════════════════════════════
          CONSTANTES E ENDPOINTS
       ══════════════════════════════════════ */
-      const SESSION_KEY = "ecotech_session";
-      const AVATAR_KEY = "ecotech_avatar";
+      // A foto fica guardada por conta, para uma conta não herdar a de outra.
+      let AVATAR_KEY = "ecotech_avatar_anon";
       const NOTIF_KEY = "eco_notif";
-      const THEME_KEY = "eco_theme";
-      const MOCK_API = "https://6a38cde364a2d8269222d659.mockapi.io/pessoa";
-
-      let apiUserId = null; // ID da conta na API para fazer o PUT
+      const THEME_KEY = "eco-theme";
       let currentProfile = null;
 
       /* ══════════════════════════════════════
@@ -412,23 +412,9 @@
       ══════════════════════════════════════ */
       const $ = (id) => document.getElementById(id);
 
-      function getSession() {
-        try {
-          return (
-            JSON.parse(sessionStorage.getItem(SESSION_KEY)) ||
-            JSON.parse(localStorage.getItem(SESSION_KEY)) ||
-            null
-          );
-        } catch (_) {
-          return null;
-        }
-      }
+      
 
-      function saveSession(s) {
-        const inLocal = !!localStorage.getItem(SESSION_KEY);
-        sessionStorage.setItem(SESSION_KEY, JSON.stringify(s));
-        if (inLocal) localStorage.setItem(SESSION_KEY, JSON.stringify(s));
-      }
+      
 
       function getInitials(name) {
         return (name || "?")
@@ -464,7 +450,7 @@
 
       function applyTheme(theme) {
         htmlEl.setAttribute("data-theme", theme);
-        themeBtn.textContent = theme === "dark" ? "☀️" : "🌙";
+        themeBtn.textContent = theme === "dark" ? "🌙" : "☀️";
         themeBtn.setAttribute(
           "aria-label",
           `Mudar para modo ${theme === "dark" ? "claro" : "escuro"}`,
@@ -526,7 +512,7 @@
         container.innerHTML = "";
 
         if (!dadosEstaticos || dadosEstaticos.length === 0) {
-          container.innerHTML = `<div style="text-align:center; padding:15px; color:var(--sage-500);">Nenhuma coleta registrada ainda.</div>`;
+          container.innerHTML = `<div style="text-align:center; padding:15px; color:var(--sage-text);">Nenhuma coleta registrada ainda.</div>`;
           return;
         }
 
@@ -562,99 +548,33 @@
          CARREGA PERFIL E API MockAPI
       ══════════════════════════════════════ */
       async function loadProfile() {
-        let perfil = {
-          nome: "Usuário Eco",
-          email: "carregando...",
-          nivel: "Iniciante Verde",
-          pontos: 0,
-          impacto: { arvores: 0, agua: "0L", energia: "0kWh", co2: "0kg" },
-          historico: [],
+        const usuario = await protegerTela(ECO_PERFIS);
+        AVATAR_KEY = "ecotech_avatar_" + usuario.id;
+        const dados = ecoDados(usuario.id);
+
+        const perfil = {
+          nome: dados.nome || usuario.nome || usuario.login,
+          email: dados.email || usuario.email || usuario.login,
+          pontos: parseFloat(usuario.coins != null ? usuario.coins : dados.coins) || 0,
+          historico: Array.isArray(dados.reciclado) ? dados.reciclado : [],
           avatar: null,
         };
 
-        const sessaoAtual = getSession();
+        if (usuario.perfil !== "comum") $("btn-alterar-senha").style.display = "none";
 
-        /* Conta local (sem back-end/API): lê direto do localStorage. */
-        if (sessaoAtual && sessaoAtual.local) {
-          const usuarioLocal = buscarUsuarioLocalPorId(sessaoAtual.id);
-          if (usuarioLocal) {
-            apiUserId = null; // sinaliza "não tem API" — salvarPerfil() usa o local
-            perfil.nome = usuarioLocal.name || usuarioLocal.nome || perfil.nome;
-            perfil.email = usuarioLocal.email || perfil.email;
-            perfil.pontos = parseFloat(usuarioLocal.coins) || 0;
-            perfil.avatar = usuarioLocal.avatar || null;
-            if (Array.isArray(usuarioLocal.reciclado)) {
-              perfil.historico = usuarioLocal.reciclado;
-            }
-
-            $("profile-name-display").textContent = perfil.nome;
-            $("profile-email-display").textContent = perfil.email;
-            $("profile-level-badge").textContent = `🌿 ${nomeNivelAtual(perfil.pontos)}`;
-            $("header-coins").textContent = Math.floor(perfil.pontos).toLocaleString("pt-BR");
-            $("input-nome").value = perfil.nome;
-            $("input-email").value = perfil.email;
-
-            renderHistory(perfil.historico);
-            renderProgressoNivel(perfil.pontos);
-            verificarSubidaDeNivel(perfil.pontos, sessaoAtual);
-            renderMiniChart(perfil.historico);
-            renderImpacto(perfil.pontos);
-
-            const savedPhoto = localStorage.getItem(AVATAR_KEY) || perfil.avatar;
-            renderAvatar(perfil.nome, savedPhoto || null);
-
-            return perfil;
-          }
-        }
-
-        try {
-          const res = await fetch(MOCK_API);
-          if (res.ok) {
-            const dataArray = await res.json();
-
-            if (dataArray && dataArray.length > 0) {
-              const apiUser = dataArray[0];
-              apiUserId = apiUser.id; // Guarda o ID para o PUT
-
-              // Mapeamento correto de acordo com o JSON real
-              perfil.nome = apiUser.name || perfil.nome;
-              perfil.email = apiUser.email || perfil.email;
-              perfil.pontos = parseFloat(apiUser.coins) || 0;
-              perfil.avatar = apiUser.avatar || null;
-
-              // Carrega o array de reciclagem
-              if (apiUser.reciclado && Array.isArray(apiUser.reciclado)) {
-                perfil.historico = apiUser.reciclado;
-              }
-            }
-          }
-        } catch (error) {
-          console.warn("MockAPI indisponível, usando fallback:", error);
-          showToast("Aviso: Trabalhando em modo offline (Sem API).");
-        }
-
-        // Atualiza o DOM
         $("profile-name-display").textContent = perfil.nome;
         $("profile-email-display").textContent = perfil.email;
         $("profile-level-badge").textContent = `🌿 ${nomeNivelAtual(perfil.pontos)}`;
-        $("header-coins").textContent = Math.floor(
-          perfil.pontos,
-        ).toLocaleString("pt-BR");
-
-        // Preenche campos do modal de edição
+        $("header-coins").textContent = Math.floor(perfil.pontos).toLocaleString("pt-BR");
         $("input-nome").value = perfil.nome;
         $("input-email").value = perfil.email;
 
-        // Renderiza o Histórico a partir dos dados do MOCK
         renderHistory(perfil.historico);
         renderProgressoNivel(perfil.pontos);
-        verificarSubidaDeNivel(perfil.pontos, sessaoAtual);
+        verificarSubidaDeNivel(perfil.pontos, usuario);
         renderMiniChart(perfil.historico);
         renderImpacto(perfil.pontos);
-
-        // Avatar Local (sobrescreve o da API se o usuário tiver alterado na máquina)
-        const savedPhoto = localStorage.getItem(AVATAR_KEY) || perfil.avatar;
-        renderAvatar(perfil.nome, savedPhoto || null);
+        renderAvatar(perfil.nome, localStorage.getItem(AVATAR_KEY) || null);
 
         return perfil;
       }
@@ -811,9 +731,14 @@
       /* ══════════════════════════════════════
          ABRIR E FECHAR MODAIS
       ══════════════════════════════════════ */
-      $("btn-editar-perfil").addEventListener("click", () =>
-        openModal("modal-editar"),
-      );
+      $("btn-editar-perfil").addEventListener("click", () => {
+        // A API ainda não tem rota para editar ou excluir a própria conta.
+        if (!(getSession() || {}).demo) {
+          showToast("Editar o perfil ainda não está disponível na API.");
+          return;
+        }
+        openModal("modal-editar");
+      });
       $("btn-notificacoes").addEventListener("click", () =>
         openModal("modal-notif"),
       );
@@ -900,32 +825,7 @@
         btn.textContent = "Salvando...";
         btn.disabled = true;
 
-        if (apiUserId) {
-          try {
-            const payload = {
-              name: currentProfile?.nome,
-              email: currentProfile?.email,
-              avatar: url,
-              coins: currentProfile?.pontos,
-              reciclado: currentProfile?.historico,
-            };
-
-            const response = await fetch(`${MOCK_API}/${apiUserId}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-
-            if (!response.ok) throw new Error("Falha no PUT");
-
-            if (currentProfile) currentProfile.avatar = url;
-          } catch (error) {
-            console.error(error);
-            showToast("⚠️ Erro ao salvar na nuvem. Foto salva localmente.");
-          }
-        }
-
-        btn.textContent = "Salvar foto";
+                btn.textContent = "Salvar foto";
         btn.disabled = false;
 
         localStorage.setItem(AVATAR_KEY, url);
@@ -973,77 +873,21 @@
       /* ══════════════════════════════════════
          EDITAR PERFIL E REQUISIÇÃO (PUT) MockAPI
       ══════════════════════════════════════ */
-      $("salvar-perfil").addEventListener("click", async () => {
+      $("salvar-perfil").addEventListener("click", () => {
         const novoNome = $("input-nome").value.trim();
         const novoEmail = $("input-email").value.trim();
-
         if (!novoNome || !novoEmail) {
           showToast("Preencha todos os campos corretamente.");
           return;
         }
-
-        const btnSalvar = $("salvar-perfil");
-        const textoOriginal = btnSalvar.textContent;
-        btnSalvar.textContent = "Salvando na Nuvem...";
-        btnSalvar.disabled = true;
-
-        if (apiUserId) {
-          try {
-            const payload = {
-              name: novoNome,
-              email: novoEmail,
-              avatar: currentProfile.avatar,
-              coins: currentProfile.pontos,
-              reciclado: currentProfile.historico,
-            };
-
-            const response = await fetch(`${MOCK_API}/${apiUserId}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-
-            if (!response.ok) throw new Error("Falha no PUT");
-          } catch (error) {
-            console.error(error);
-            showToast("⚠️ Erro de rede. Alterações feitas apenas localmente.");
-          }
-        } else {
-          // Conta local (sem back-end): salva a edição direto no
-          // "banco de dados" do navegador, senão a mudança se perderia
-          // ao recarregar a página.
-          const sessaoAtual = getSession();
-          if (sessaoAtual && sessaoAtual.local) {
-            atualizarUsuarioLocal(sessaoAtual.id, {
-              name: novoNome,
-              email: novoEmail,
-            });
-            sessaoAtual.nome = novoNome;
-            sessaoAtual.email = novoEmail;
-            const inLocalStorage = !!localStorage.getItem(SESSION_KEY);
-            sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessaoAtual));
-            if (inLocalStorage)
-              localStorage.setItem(SESSION_KEY, JSON.stringify(sessaoAtual));
-          }
-        }
-
-        btnSalvar.textContent = textoOriginal;
-        btnSalvar.disabled = false;
-
+        ecoSalvarDados(getSession().id, { nome: novoNome, email: novoEmail });
+        currentProfile.nome = novoNome;
+        currentProfile.email = novoEmail;
         $("profile-name-display").textContent = novoNome;
         $("profile-email-display").textContent = novoEmail;
-
-        const savedPhoto =
-          localStorage.getItem(AVATAR_KEY) || currentProfile?.avatar;
-        renderAvatar(novoNome, savedPhoto || null);
-
-        if (currentProfile) {
-          currentProfile.nome = novoNome;
-          currentProfile.email = novoEmail;
-        }
-
+        renderAvatar(novoNome, localStorage.getItem(AVATAR_KEY) || null);
         closeModal("modal-editar");
-        showToast("✅ Perfil atualizado com sucesso!");
+        showToast("Perfil atualizado ✓");
       });
 
       /* ══════════════════════════════════════
@@ -1054,41 +898,12 @@
         openModal("modal-confirm");
       });
 
-      $("confirmar-exclusao").addEventListener("click", async () => {
-        // Altera botão para feedback visual
-        const btnExcluir = $("confirmar-exclusao");
-        btnExcluir.textContent = "Excluindo...";
-        btnExcluir.disabled = true;
-
-        if (apiUserId) {
-          try {
-            await fetch(`${MOCK_API}/${apiUserId}`, { method: "DELETE" });
-          } catch (error) {
-            console.warn("Erro ao deletar na nuvem", error);
-          }
-        } else {
-          const sessaoAtual = getSession();
-          if (sessaoAtual && sessaoAtual.local) {
-            removerUsuarioLocal(sessaoAtual.id);
-          }
-        }
-
-        [
-          SESSION_KEY,
-          "ecotech_user_id",
-          "usuariosEcoTech",
-          AVATAR_KEY,
-          NOTIF_KEY,
-        ].forEach((k) => {
-          sessionStorage.removeItem(k);
-          localStorage.removeItem(k);
-        });
-
+      $("confirmar-exclusao").addEventListener("click", () => {
+        const usuario = getSession();
+        localStorage.removeItem("ecotech_dados_" + usuario.id);
+        localStorage.removeItem(AVATAR_KEY);
         closeModal("modal-confirm");
-        showToast("Conta excluída. Redirecionando…");
-        setTimeout(() => {
-          window.location.href = "login.html";
-        }, 1800);
+        sair();
       });
 
       /* ══════════════════════════════════════
@@ -1118,24 +933,12 @@
       });
 
       $("btn-logout").addEventListener("click", () => {
-        [
-          SESSION_KEY,
-          AVATAR_KEY,
-          NOTIF_KEY,
-          "ecotech_user_id",
-          "usuariosEcoTech",
-        ].forEach((k) => {
-          sessionStorage.removeItem(k);
-          localStorage.removeItem(k);
-        });
-        showToast("Até logo! 👋");
-        setTimeout(() => {
-          window.location.href = "login.html";
-        }, 1500);
+        sair();
       });
     </script>
       <script src="js/eco-animate.js"></script>
       <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js"></script>
       <script src="js/eco-arte-fundo.js"></script>
   </body>
 </html>

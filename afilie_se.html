@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="pt-BR">
+<html data-efeitos lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="shortcut icon" href="assets/fivecom.png" type="image/x-icon" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" />
     <link rel="stylesheet" href="css/afilie_se.css" />
     <link rel="stylesheet" href="css/eco-arte-fundo.css" />
     <link rel="stylesheet" href="css/eco-animate.css" />
@@ -206,39 +207,19 @@
       </div>
       <p>© 2026 EcoTech. Todos os direitos reservados.</p>
     </footer>
+    <script src="js/api.js"></script>
     <script src="js/eco-session.js"></script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js"></script>
     <script src="js/eco-arte-fundo.js"></script>
   </body>
   <script>
     "use strict";
 
-    const API_EMPRESA =
-      "https://6a386bef64a2d82692228142.mockapi.io/api/v1/empresa";
-
     async function carregarDadosAPI() {
-      try {
-        const res = await fetch(API_EMPRESA);
-        if (!res.ok) throw new Error("Falha ao buscar empresas");
-        const empresas = await res.json();
-
-        const todasPromises = empresas.map((e) =>
-          fetch(`${API_EMPRESA}/${e.id}/ecopontos`)
-            .then((r) => (r.ok ? r.json() : []))
-            .catch(() => []),
-        );
-        const todosEcopontos = await Promise.all(todasPromises);
-        const totalEcopontos = todosEcopontos.reduce(
-          (acc, lista) => acc + lista.length,
-          0,
-        );
-
-        return { totalEcopontos };
-      } catch (err) {
-        console.warn("API indisponível, usando fallback:", err);
-        return { totalEcopontos: 22 };
-      }
+      const ecopontos = (await ecoListarEcopontos()) || [];
+      return { totalEcopontos: ecopontos.length };
     }
 
     function animarContador(elementoId, valorAlvo, sufixo = "", prefixo = "") {

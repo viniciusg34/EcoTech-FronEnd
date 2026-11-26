@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="light">
+<html data-efeitos lang="pt-BR" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="./css/admin-shared.css" />
     <style>
       .der-wrap {
-        background: #ffffff;
+        background: #FAF6EC;
         border-radius: var(--br-md);
         border: 1.5px solid var(--sage-100);
         overflow: auto;
@@ -39,7 +39,6 @@
     </header>
 
     <main class="admin-main secao-arte-fundo" data-arte-fundo="circuito-folha">
-      <a href="perfil.html" class="btn-back-pill" style="margin-bottom:20px;">← Voltar</a>
       <h1 class="admin-title">Modelo do Banco de Dados</h1>
       <p class="admin-subtitle">
         Diagrama Entidade-Relacionamento (DER) utilizado pelo sistema EcoTech.
@@ -52,6 +51,7 @@
       </div>
     </main>
 
+    <script src="./js/api.js"></script>
     <script src="./js/ui-theme.js"></script>
     <script src="./js/eco-session.js"></script>
     <script>
@@ -61,6 +61,7 @@
     </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js"></script>
     <script src="js/eco-arte-fundo.js"></script>
   </body>
 </html>

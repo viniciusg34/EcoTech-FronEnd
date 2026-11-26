@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-br" data-theme="light">
+<html data-efeitos lang="pt-br" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -234,11 +234,11 @@
                 display: flex;
                 align-items: center;
                 gap: 12px;
-                background: var(--sage-100, #e8f5e9);
+                background: var(--sage-100, #E6EDE1);
                 border-radius: 16px;
                 padding: 16px 20px;
                 margin-bottom: 20px;
-                border: 1px solid var(--sage-200, #c8e6c9);
+                border: 1px solid var(--sage-200, #BCCDB9);
               "
             >
               <span style="font-size: 2rem">🪙</span>
@@ -258,7 +258,7 @@
                   style="
                     font-size: 1.6rem;
                     font-weight: 800;
-                    color: var(--sage-600, #43a047);
+                    color: var(--sage-600, #3E5A3F);
                   "
                 >
                   <span id="coins-display">…</span> EcoCoins
@@ -555,6 +555,7 @@
 
     <div id="toast"></div>
 
+    <script src="js/api.js"></script>
     <script src="js/eco-session.js"></script>
     <script>
       requireAuth();
@@ -567,37 +568,40 @@
       /* ══════════════════════════════════════════════════
          API CONFIG
       ══════════════════════════════════════════════════ */
-      const API_PESSOA = "https://6a38cde364a2d8269222d659.mockapi.io";
-      const API_EMPRESA = "https://6a386bef64a2d82692228142.mockapi.io/api/v1";
 
-      function getLoggedUserId() {
-        return localStorage.getItem("ecotech_user_id") || "1";
-      }
+      
 
       /* ── Estado global do usuário ── */
       let currentUser = null;
       let userCoins = 0;
 
       async function fetchUser() {
-        const id = getLoggedUserId();
-        const res = await fetch(`${API_PESSOA}/pessoa/${id}`);
-        if (!res.ok) throw new Error("Usuário não encontrado");
-        currentUser = await res.json();
-        userCoins = parseFloat(currentUser.coins || 0);
+        const { usuario } = await obterSessao();
+        if (!usuario) throw new Error("Sem sessão");
+        const dados = ecoDados(usuario.id);
+        currentUser = {
+          ...usuario,
+          coins: usuario.coins != null ? usuario.coins : dados.coins,
+          reciclado: dados.reciclado,
+        };
+        userCoins = parseFloat(currentUser.coins) || 0;
         return currentUser;
       }
 
-      async function saveUserCoins(newCoins) {
-        const id = getLoggedUserId();
-        const res = await fetch(`${API_PESSOA}/pessoa/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ coins: newCoins.toFixed(2) }),
+      /* Guarda saldo e histórico da conta e envia as moedas para a API. */
+      async function persistirUsuario() {
+        if (!currentUser) return;
+        ecoSalvarDados(currentUser.id, {
+          coins: userCoins,
+          reciclado: currentUser.reciclado,
         });
-        if (!res.ok) throw new Error("Falha ao salvar coins");
-        const updated = await res.json();
-        userCoins = parseFloat(updated.coins);
-        currentUser.coins = updated.coins;
+        await ecoEnviarCoins(currentUser, userCoins);
+      }
+
+      async function saveUserCoins(newCoins) {
+        userCoins = newCoins;
+        if (currentUser) currentUser.coins = newCoins.toFixed(2);
+        await persistirUsuario();
         return userCoins;
       }
 
@@ -698,42 +702,24 @@
        * 3. Normaliza para o formato interno do mapa
        */
       async function loadEcopontos() {
-        // 1. Descobre quais empresas existem
-        const empRes = await fetch(`${API_EMPRESA}/empresa`);
-        if (!empRes.ok)
-          throw new Error(`Erro ao buscar empresas: ${empRes.status}`);
-        const empresas = await empRes.json();
+        const pontos = await ecoListarEcopontos();
+        if (!pontos) throw new Error("Não foi possível carregar os ecopontos");
 
-        // 2. Busca ecopontos em paralelo com Promise.allSettled para
-        //    não quebrar mesmo quando algumas empresas retornam 404.
-        //    Nota: o browser sempre loga respostas 4xx no DevTools —
-        //    isso é comportamento normal ok?.
-        const settled = await Promise.allSettled(
-          empresas.map((emp) =>
-            fetch(`${API_EMPRESA}/empresa/${emp.id}/ecopontos`).then((r) =>
-              r.ok ? r.json() : [],
-            ),
-          ),
-        );
-
-        // 3. Pega apenas as promessas que resolveram com sucesso
-        const pontos = settled
-          .filter((r) => r.status === "fulfilled")
-          .flatMap((r) => (Array.isArray(r.value) ? r.value : []));
-
-        // 4. Normaliza para o formato interno do mapa
         return pontos
           .filter((p) => p.lat != null && p.lng != null)
-          .map((p) => ({
-            lat: parseFloat(p.lat),
-            lng: parseFloat(p.lng),
-            code: `ECO-${String(p.id).padStart(2, "0")}`,
-            name: p.nome || `Ecoponto ${p.id}`,
-            cats: mapApiCat(p.cats, p.id),
-            desc: [p.adress, p.city, p.state].filter(Boolean).join(", "),
-            status: p.status,
-            coletado: p.coletado,
-          }));
+          .map((p) => {
+            const id = ecoId(p, "eco_id");
+            return {
+              lat: parseFloat(p.lat),
+              lng: parseFloat(p.lng),
+              code: p.code || `ECO-${String(id).padStart(2, "0")}`,
+              name: p.name || `Ecoponto ${id}`,
+              cats: mapApiCat(p.cats, id),
+              desc: [p.adress, p.city, p.state].filter(Boolean).join(", "),
+              status: ecoAtivo(p.status),
+              coletado: p.collected,
+            };
+          });
       }
 
       /* ══════════════════════════════════════════════════
@@ -1090,17 +1076,12 @@
             ? [novoItem, ...currentUser.reciclado]
             : [novoItem];
 
-          await fetch(`${API_PESSOA}/pessoa/${getLoggedUserId()}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ coins: newCoins.toFixed(2), reciclado }),
-          });
-
           userCoins = newCoins;
           if (currentUser) {
             currentUser.coins = newCoins.toFixed(2);
             currentUser.reciclado = reciclado;
           }
+          await persistirUsuario();
           updateCoinsUI();
         } catch (err) {
           console.warn("Não foi possível salvar na API:", err);
@@ -1148,40 +1129,26 @@
         }
 
         // Busca dados atuais do ecoponto
-        let ecoponto;
-        try {
-          const res = await fetch(
-            `${API_EMPRESA}/empresa/${empresaId}/ecopontos/${ecopontoId}`,
-          );
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          ecoponto = await res.json();
-        } catch (err) {
-          console.error("Erro ao buscar ecoponto:", err);
+        const buscaPonto = await api(`/ecopontos/${encodeURIComponent(ecopontoId)}`);
+        if (!buscaPonto.sucesso) {
           showToast("❌ Ecoponto não encontrado na API.");
           return;
         }
+        const ecoponto = buscaPonto.dados;
 
         const KG_POR_SCAN = 0.5; // kg registrado por validação
         const COINS_ECOPONTO = 50; // EcoCoins ganhos por check-in em ecoponto
 
-        const coletadoAtual = parseFloat(ecoponto.coletado || 0);
+        const coletadoAtual = parseFloat(ecoponto.collected || 0);
         const novoColetado = (coletadoAtual + KG_POR_SCAN).toFixed(2);
 
-        // Atualiza ecoponto na API
-        try {
-          await fetch(
-            `${API_EMPRESA}/empresa/${empresaId}/ecopontos/${ecopontoId}`,
-            {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ coletado: novoColetado }),
-            },
-          );
-        } catch (err) {
-          console.error("Erro ao atualizar ecoponto:", err);
-          showToast(
-            "⚠️ Não foi possível registrar no ecoponto. Tente novamente.",
-          );
+        // Atualiza ecoponto na API (o id vai na URL)
+        const atualizacao = await api(`/ecopontos/${encodeURIComponent(ecopontoId)}`, {
+          metodo: "PUT",
+          corpo: { collected: novoColetado },
+        });
+        if (!atualizacao.sucesso) {
+          showToast("⚠️ Não foi possível registrar no ecoponto. Tente novamente.");
           return;
         }
 
@@ -1189,7 +1156,7 @@
         try {
           const newCoins = userCoins + COINS_ECOPONTO;
           const novoItem = {
-            name: ecoponto.nome || displayCode,
+            name: ecoponto.name || displayCode,
             pts: COINS_ECOPONTO,
             icon: "♻️",
             codigo: displayCode,
@@ -1202,24 +1169,19 @@
             ? [novoItem, ...currentUser.reciclado]
             : [novoItem];
 
-          await fetch(`${API_PESSOA}/pessoa/${getLoggedUserId()}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ coins: newCoins.toFixed(2), reciclado }),
-          });
-
           userCoins = newCoins;
           if (currentUser) {
             currentUser.coins = newCoins.toFixed(2);
             currentUser.reciclado = reciclado;
           }
+          await persistirUsuario();
           updateCoinsUI();
         } catch (err) {
           console.warn("Não foi possível salvar coins do usuário:", err);
         }
 
         // UI de sucesso
-        const nomePonto = ecoponto.nome || displayCode;
+        const nomePonto = ecoponto.name || displayCode;
         document.getElementById("result-icon").textContent = "♻️";
         document.getElementById("result-title").textContent =
           `Check-in em ${nomePonto}!`;
@@ -1463,7 +1425,7 @@
               .join("");
             const accentColor = catByKey(p.cats[0]).color;
             const statusBadge = p.status
-              ? `<span style="font-size:11px;color:#43a047;font-weight:600;">● Ativo</span>`
+              ? `<span style="font-size:11px;color:#3E5A3F;font-weight:600;">● Ativo</span>`
               : `<span style="font-size:11px;color:#e53935;font-weight:600;">● Inativo</span>`;
             const coletadoBadge = p.coletado
               ? `<p style="font-size:11px;color:var(--ink-3);margin:4px 0 8px;">📦 ${parseFloat(p.coletado).toFixed(1)} kg coletados</p>`
@@ -1607,6 +1569,7 @@
     </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
+    <script src="js/eco-voltar.js"></script>
     <script src="js/eco-arte-fundo.js"></script>
   </body>
 </html>

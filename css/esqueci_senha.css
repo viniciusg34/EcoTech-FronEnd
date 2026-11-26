@@ -10,7 +10,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #8FBC8F;
+    background-color: #8CA98C;
     width: 65%;
     height: 80px;
     padding: 0 40px;
@@ -19,7 +19,7 @@
 
 .links a {
     text-decoration: none;
-    color: #eafdece5;
+    color: #E6EDE1E5;
     font-weight: bold;
     margin: 0 15px;
 }
@@ -40,7 +40,7 @@
 }
 
 .card h1 {
-    color: #2E7D32;
+    color: #3E5A3F;
 }
 
 input {
@@ -48,7 +48,7 @@ input {
     padding: 12px;
     margin-top: 20px;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid #D9C7A3;
 }
 
 button {
@@ -56,14 +56,14 @@ button {
     margin-top: 20px;
     padding: 12px;
     border: none;
-    background-color: #2E7D32;
+    background-color: #3E5A3F;
     color: white;
     border-radius: 8px;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #1b5e20;
+    background-color: #1F2A1F;
 }
 
 .btn-back {
@@ -75,17 +75,17 @@ button:hover {
   justify-content: center;
   width: 44px;
   height: 44px;
-  background: #173d27; /* no cadastro_empresarial.css usei var(--brand-green-primary) p/ respeitar o dark mode */
+  background: #1F2A1F; /* no cadastro_empresarial.css usei var(--brand-green-primary) p/ respeitar o dark mode */
   color: #fff;
   border-radius: 50%;
   text-decoration: none;
-  box-shadow: 0 4px 14px rgba(23, 61, 39, 0.28);
+  box-shadow: 0 4px 14px rgba(31, 42, 31, 0.28);
   transition: 0.25s ease;
   z-index: 1000;
 }
 
 .btn-back:hover {
-  background: #0f2c1c; /* var(--brand-green-hover) no empresarial */
+  background: #0B0F0D; /* var(--brand-green-hover) no empresarial */
   transform: translateX(-3px);
 }
 

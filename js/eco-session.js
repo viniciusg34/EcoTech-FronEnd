@@ -9,34 +9,13 @@
      <script>requireAuth();</script>
 ══════════════════════════════════════════════════════════ */
 
-const SESSION_KEY = "ecotech_session";
-
-/* ── Lê sessão (sessionStorage tem prioridade) ── */
+/* Usuário logado, depois que obterSessao() respondeu. */
 function getSession() {
-  try {
-    return (
-      JSON.parse(sessionStorage.getItem(SESSION_KEY)) ||
-      JSON.parse(localStorage.getItem(SESSION_KEY))   ||
-      null
-    );
-  } catch (_) { return null; }
-}
-
-/* ── Destrói sessão ── */
-function clearSession() {
-  sessionStorage.removeItem(SESSION_KEY);
-  localStorage.removeItem(SESSION_KEY);
-  localStorage.removeItem("ecotech_user_id"); // ← garante que a API para de funcionar
+  return ecoUsuarioAtual;
 }
 
 function requireAuth() {
-  const s = getSession();
-  // s.id pode ser número (API) ou email (conta local) — ambos são truthy se existirem
-  if (!s || !s.id) {
-    window.location.replace("login.html");
-    throw new Error("Não autenticado.");
-  }
-  return s;
+  return protegerTela(ECO_PERFIS);
 }
 
 /* ── Estilo dos itens do dropdown ── */
@@ -65,9 +44,40 @@ function ddItemStyle(color) {
 /* ══════════════════════════════════════════════════════════
    Injeta avatar / dropdown no header
 ══════════════════════════════════════════════════════════ */
-function initHeader() {
-  const sessao  = getSession();
+function mostrarLoginNoTopo(sessao, iconBtn) {
+  if (!sessao) return;
+  const tag = document.createElement("span");
+  tag.className = "eco-login-tag";
+  tag.textContent = sessao.login || sessao.nome || "";
+  if (iconBtn) iconBtn.insertAdjacentElement("beforebegin", tag);
+  else {
+    tag.classList.add("eco-login-tag--fixa");
+    document.body.appendChild(tag);
+  }
+}
+
+function itensDoMenu(perfil) {
+  const itens = [["index.html", "🏠", "Tela principal"]];
+  if (perfil === "empresa") itens.push(["empresa.html", "🏢", "Painel da empresa"]);
+  else itens.push(["coleta.html", "♻️", "Coleta ecológica"]);
+  itens.push(["perfil.html", "👤", "Meu perfil"], ["modelo_bd.html", "🗂️", "Modelo do BD"]);
+  if (perfil === "master") {
+    itens.push(["consulta_usuarios.html", "🔍", "Consulta de usuários"], ["logs.html", "🧾", "Logs"]);
+  }
+  if (perfil === "comum") itens.push(["alterar_senha.html", "🔒", "Alterar senha"]);
+  return itens
+    .map(
+      ([href, icone, texto]) =>
+        '<a href="' + href + '" style="' + ddItemStyle() + '"><span style="font-size:16px;">' +
+        icone + "</span>" + texto + "</a>",
+    )
+    .join("");
+}
+
+async function initHeader() {
+  const sessao  = (await obterSessao()).usuario;
   const iconBtn = document.querySelector(".icon-btn[aria-label='Perfil']");
+  mostrarLoginNoTopo(sessao, iconBtn);
   if (!iconBtn) return;
 
   /* Não logado */
@@ -112,12 +122,12 @@ function initHeader() {
     if (dropdown) { dropdown.remove(); dropdown = null; return; }
 
     var isDark = document.documentElement.getAttribute("data-theme") === "dark";
-    var bg      = isDark ? "#1e251f"                : "#ffffff";
-    var border  = isDark ? "rgba(90,171,90,0.25)"   : "#e2ece2";
-    var divClr  = isDark ? "rgba(90,171,90,0.15)"   : "#eef5ee";
-    var metaClr = isDark ? "rgba(163,195,164,0.55)" : "#6b8f6c";
-    var nameClr = isDark ? "#f0f5f0"                : "#1a2e1b";
-    var hoverBg = isDark ? "rgba(90,171,90,0.12)"   : "#eef5ee";
+    var bg      = isDark ? "#1F2A1F"                : "#FAF6EC";
+    var border  = isDark ? "rgba(140, 169, 140,0.25)"   : "#D9C7A3";
+    var divClr  = isDark ? "rgba(140, 169, 140,0.15)"   : "#EDF0E8";
+    var metaClr = isDark ? "rgba(217, 199, 163,0.55)" : "#526E53";
+    var nameClr = isDark ? "#F3EADA"                : "#1F2A1F";
+    var hoverBg = isDark ? "rgba(140, 169, 140,0.12)"   : "#EDF0E8";
     var shadow  = isDark ? "0.55"                   : "0.13";
 
     dropdown = document.createElement("div");
@@ -139,11 +149,10 @@ function initHeader() {
         '<div style="width:36px;height:36px;border-radius:50%;background:var(--sage-500);color:#fff;font-size:14px;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:2px solid var(--sage-400);">' + initials + '</div>' +
         '<div>' +
           '<div style="font-weight:700;font-size:0.9rem;color:' + nameClr + ';line-height:1.2;">' + sessao.nome + '</div>' +
-          '<div style="font-size:0.72rem;color:' + metaClr + ';margin-top:2px;">' + sessao.email + '</div>' +
+          '<div style="font-size:0.72rem;color:' + metaClr + ';margin-top:2px;">' + escaparHtml(sessao.email || sessao.login || '') + '</div>' +
         '</div>' +
       '</div>' +
-      '<a href="coleta.html" id="dd-coleta" style="' + ddItemStyle() + '"><span style="font-size:16px;">🌿</span> Minha Coleta</a>' +
-      '<a href="perfil.html" id="dd-perfil" style="' + ddItemStyle() + '"><span style="font-size:16px;">👤</span> Meu Perfil</a>' +
+            itensDoMenu(sessao.perfil) +
       '<div style="height:1.5px;background:' + divClr + ';margin:6px 0;"></div>' +
       '<button id="eco-logout-btn" style="' + ddItemStyle("var(--sage-500)") + '"><span style="font-size:16px;">🚪</span> Sair da conta</button>';
 
@@ -158,8 +167,7 @@ function initHeader() {
 
     document.getElementById("eco-logout-btn").addEventListener("click", function(e) {
       e.stopPropagation();
-      clearSession();
-      window.location.href = "login.html";
+      sair();
     });
 
     /* Fecha ao clicar fora */

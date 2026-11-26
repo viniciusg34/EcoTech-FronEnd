@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="./css/eco-interacoes.css" />
   </head>
   <body>
-    <a href="index.html" class="btn-back" aria-label="Voltar para o início">
+    <a href="login.html" class="btn-back" aria-label="Voltar para o login">
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -81,7 +81,7 @@
               <div class="input-box">
                 <span>✉</span>
                 <input
-                  id="email"
+                  id="email" name="email"
                   type="email"
                   placeholder="seu@email.com"
                   maxlength="120"
@@ -93,7 +93,7 @@
               <div class="input-box">
                 <span>▣</span>
                 <input
-                  id="cpf"
+                  id="cpf" name="cpf"
                   type="text"
                   placeholder="000.000.000-00"
                   maxlength="14"
@@ -105,7 +105,7 @@
               <div class="input-box">
                 <span>👤</span>
                 <input
-                  id="nome"
+                  id="nome" name="nome"
                   type="text"
                   placeholder="Digite seu nome completo"
                   maxlength="80"
@@ -117,7 +117,7 @@
               <div class="input-box">
                 <span>👩</span>
                 <input
-                  id="nomeMae"
+                  id="nomeMae" name="nome_materno"
                   type="text"
                   placeholder="Digite o nome da sua mãe"
                   maxlength="80"
@@ -128,13 +128,13 @@
               <label for="nascimento">Sua data de nascimento</label>
               <div class="input-box">
                 <span>📅</span>
-                <input id="nascimento" type="date" required />
+                <input id="nascimento" name="data_nascimento" type="date" required />
               </div>
 
               <label for="sexo">Sexo</label>
               <div class="input-box">
                 <span>⚧</span>
-                <select id="sexo" required>
+                <select id="sexo" name="sexo" required>
                   <option value="">Selecione…</option>
                   <option value="feminino">Feminino</option>
                   <option value="masculino">Masculino</option>
@@ -147,7 +147,7 @@
               <div class="input-box">
                 <span>📱</span>
                 <input
-                  id="telefoneCelular"
+                  id="telefoneCelular" name="telefone_celular"
                   type="text"
                   placeholder="(XX) XXXXX-XXXX"
                   maxlength="15"
@@ -156,16 +156,15 @@
                 />
               </div>
 
-              <label for="telefoneFixo">Telefone Fixo</label>
+              <label for="telefoneFixo">Telefone Fixo <span class="eco-opcional">(opcional)</span></label>
               <div class="input-box">
                 <span>☎</span>
                 <input
-                  id="telefoneFixo"
+                  id="telefoneFixo" name="telefone_fixo"
                   type="text"
                   placeholder="(XX) XXXX-XXXX"
                   maxlength="14"
                   inputmode="tel"
-                  required
                 />
               </div>
 
@@ -175,7 +174,7 @@
               <div class="input-box">
                 <span>🆔</span>
                 <input
-                  id="login"
+                  id="login" name="login"
                   type="text"
                   placeholder="Ex: JOAOSV"
                   maxlength="6"
@@ -187,10 +186,10 @@
               <div class="input-box">
                 <span>🔒</span>
                 <input
-                  id="senha"
+                  id="senha" name="senha"
                   type="password"
-                  placeholder="Digite sua senha"
-                  maxlength="32"
+                  placeholder="Exatamente 8 letras"
+                  maxlength="8"
                   required
                 />
                 <span class="eye" onclick="togglePassword('senha')">◎</span>
@@ -200,10 +199,10 @@
               <div class="input-box">
                 <span>🔐</span>
                 <input
-                  id="confirmarSenha"
+                  id="confirmarSenha" name="confirmar_senha"
                   type="password"
                   placeholder="Digite novamente sua senha"
-                  maxlength="32"
+                  maxlength="8"
                   required
                 />
                 <span class="eye" onclick="togglePassword('confirmarSenha')"
@@ -222,7 +221,7 @@
               <div class="input-box">
                 <span>📍</span>
                 <input
-                  id="cep"
+                  id="cep" name="cep"
                   type="text"
                   placeholder="00000-000"
                   maxlength="9"
@@ -234,7 +233,7 @@
               <div class="input-box">
                 <span>🏠</span>
                 <input
-                  id="logradouro"
+                  id="logradouro" name="endereco"
                   type="text"
                   placeholder="Preenchido automaticamente pelo CEP"
                   required
@@ -243,10 +242,10 @@
 
               <div class="field-row">
                 <div style="flex: 1">
-                  <label for="numero">Número</label>
+                  <label for="numero">Número <span class="eco-opcional">(opcional)</span></label>
                   <div class="input-box">
                     <span>#</span>
-                    <input id="numero" type="text" placeholder="Nº" required />
+                    <input id="numero" type="text" placeholder="Ex.: 100" />
                   </div>
                 </div>
                 <div style="flex: 2">
@@ -314,6 +313,7 @@
 
     <div class="toast" id="toast"></div>
 
+    <script src="js/api.js"></script>
     <script src="js/ui-theme.js"></script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
@@ -404,7 +404,7 @@
 
         if (
           !nome || !email || !cpf || !nomeMae || !nascimento || !sexo ||
-          !telefoneCelular || !telefoneFixo || !login || !senha || !confirmarSenha
+          !telefoneCelular || !login || !senha || !confirmarSenha
         ) {
           return avisar("Preencha todos os campos de Dados Pessoais.");
         }
@@ -420,7 +420,7 @@
         if (!validarCPF(cpf)) {
           return avisar("CPF inválido.");
         }
-        if (!telefoneValido(telefoneCelular, 9) || !telefoneValido(telefoneFixo, 8)) {
+        if (!telefoneValido(telefoneCelular, 9) || (telefoneFixo && !telefoneValido(telefoneFixo, 8))) {
           return avisar("Telefones devem seguir o formato (XX) XXXXX-XXXX.");
         }
         if (!validarLoginField(login)) {
@@ -429,8 +429,8 @@
         if (calcularIdade(nascimento) < 13) {
           return avisar("Cadastro permitido apenas para maiores de 13 anos.");
         }
-        if (!senhaSegura(senha)) {
-          return avisar("Use 8 caracteres, letra maiúscula, minúscula e número.");
+        if (!senhaValidaApi(senha)) {
+          return avisar("A senha deve ter exatamente 8 letras.");
         }
         if (senha !== confirmarSenha) {
           return avisar("As senhas não coincidem.");
@@ -447,7 +447,7 @@
         const cidade = cleanText(document.getElementById("cidade").value);
         const uf = cleanText(document.getElementById("uf").value);
 
-        if (!cep || !logradouro || !numero || !bairro || !cidade || !uf) {
+        if (!cep || !logradouro || !bairro || !cidade || !uf) {
           showToast("Preencha todos os campos de Endereço.");
           return false;
         }
@@ -528,7 +528,7 @@
           msg: "Formato esperado: (XX) XXXXX-XXXX",
         }),
         telefoneFixo: (v) => ({
-          ok: telefoneValido(v, 8),
+          ok: !v.trim() || telefoneValido(v, 8),
           msg: "Formato esperado: (XX) XXXX-XXXX",
         }),
         login: (v) => ({
@@ -536,8 +536,8 @@
           msg: "Precisa ter exatamente 6 letras.",
         }),
         senha: (v) => ({
-          ok: senhaSegura(v),
-          msg: "Use 8+ caracteres com maiúscula, minúscula e número.",
+          ok: senhaValidaApi(v),
+          msg: "A senha deve ter exatamente 8 letras.",
         }),
         confirmarSenha: (v) => ({
           ok: v === document.getElementById("senha").value && v !== "",
@@ -547,7 +547,7 @@
           ok: v.replace(/[^\d]/g, "").length === 8,
           msg: "CEP incompleto.",
         }),
-        numero: (v) => ({ ok: cleanText(v).length > 0, msg: "" }),
+        numero: () => ({ ok: true, msg: "" }),
         bairro: (v) => ({ ok: cleanText(v).length > 1, msg: "" }),
         cidade: (v) => ({ ok: cleanText(v).length > 1, msg: "" }),
         uf: (v) => ({
@@ -596,141 +596,53 @@
         .getElementById("formCadastro")
         .addEventListener("submit", async function (e) {
           e.preventDefault();
+          limparErrosCampos();
 
-          // Revalida as duas abas por segurança (o usuário pode ter
-          // voltado e alterado algo depois de já ter avançado).
+          // Revalida as duas abas (a pessoa pode ter voltado e alterado algo).
           if (!validarAbaPessoal()) {
             irParaAba("pessoal");
             return;
           }
-          if (!validarAbaEndereco()) {
-            return;
-          }
+          if (!validarAbaEndereco()) return;
 
-          const nome = cleanText(document.getElementById("nome").value);
-          const email = cleanText(document.getElementById("email").value).toLowerCase();
-          const cpf = document.getElementById("cpf").value.trim();
-          const nomeMae = cleanText(document.getElementById("nomeMae").value);
-          const nascimento = document.getElementById("nascimento").value;
-          const sexo = document.getElementById("sexo").value;
-          const telefoneCelular = document.getElementById("telefoneCelular").value.trim();
-          const telefoneFixo = document.getElementById("telefoneFixo").value.trim();
-          const cep = document.getElementById("cep").value.trim();
-          const logradouro = cleanText(document.getElementById("logradouro").value);
-          const numero = cleanText(document.getElementById("numero").value);
-          const bairro = cleanText(document.getElementById("bairro").value);
-          const cidade = cleanText(document.getElementById("cidade").value);
-          const uf = cleanText(document.getElementById("uf").value).toUpperCase();
-          const login = document.getElementById("login").value.trim();
-          const senha = document.getElementById("senha").value;
+          const valor = (id) => document.getElementById(id).value.trim();
+          const sexo = { feminino: "F", masculino: "M" }[valor("sexo")] || "O";
+          const corpo = {
+            nome: cleanText(valor("nome")),
+            data_nascimento: valor("nascimento"),
+            sexo,
+            nome_materno: cleanText(valor("nomeMae")),
+            cpf: valor("cpf"),
+            email: valor("email").toLowerCase(),
+            telefone_celular: telefoneParaApi(valor("telefoneCelular")),
+            telefone_fixo: valor("telefoneFixo") ? telefoneParaApi(valor("telefoneFixo")) : "",
+            cep: valor("cep"),
+            endereco: `${cleanText(valor("logradouro"))}, ${cleanText(valor("numero")) || "s/n"} - ${cleanText(valor("bairro"))} - ${cleanText(valor("cidade"))}/${valor("uf").toUpperCase()}`,
+            login: valor("login"),
+            senha: document.getElementById("senha").value,
+            confirmar_senha: document.getElementById("confirmarSenha").value,
+          };
 
-          const MOCK_API = "https://6a38cde364a2d8269222d659.mockapi.io/pessoa";
           const btn = document.querySelector("#formCadastro button[type='submit']");
           btn.textContent = "Cadastrando...";
           btn.disabled = true;
+          const r = await api("/usuarios", { metodo: "POST", corpo });
+          btn.textContent = "Cadastrar";
+          btn.disabled = false;
 
-          const novoUsuario = {
-            nome,
-            name: nome,
-            email,
-            cpf,
-            nomeMae,
-            nascimento,
-            sexo,
-            telefoneCelular,
-            telefoneFixo,
-            cep,
-            endereco: `${logradouro}, ${numero} - ${bairro}, ${cidade}/${uf}`,
-            login,
-            perfil: "comum",
-            senha,
-            coins: 0,
-            avatar: "",
-            reciclado: [],
-          };
-
-          // E-mail já usado numa conta local? Verifica antes de mais nada,
-          // independente da API estar disponível ou não.
-          if (buscarUsuarioLocalPorEmail(email)) {
-            showToast("Este e-mail já está cadastrado.");
-            btn.textContent = "Cadastrar";
-            btn.disabled = false;
+          if (r.sucesso) {
+            if (typeof window.ecoConfete === "function") window.ecoConfete();
+            showToast(r.dados?.mensagem || "Cadastro realizado com sucesso!", true);
+            setTimeout(() => (window.location.href = "login.html"), 2000);
             return;
           }
+          if (r.status >= 500) return irParaErro(r.erro);
 
-          try {
-            const checkRes = await fetch(MOCK_API);
-            if (!checkRes.ok) throw new Error("Falha ao verificar e-mail.");
-            const usuarios = await checkRes.json();
-            const emailJaExiste = usuarios.some(
-              (u) => u.email.toLowerCase() === email,
-            );
-            if (emailJaExiste) {
-              showToast("Este e-mail já está cadastrado.");
-              btn.textContent = "Cadastrar";
-              btn.disabled = false;
-              return;
-            }
-
-            const postRes = await fetch(MOCK_API, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(novoUsuario),
-            });
-
-            if (!postRes.ok) throw new Error("Falha ao cadastrar na API.");
-
-            const usuarioCriado = await postRes.json();
-
-            const SESSION_KEY = "ecotech_session";
-            const sessao = {
-              id: usuarioCriado.id,
-              tipo: "pessoa",
-              nome: usuarioCriado.name || nome,
-              email: usuarioCriado.email || email,
-              coins: 0,
-              logadoEm: new Date().toISOString(),
-            };
-            sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
-            localStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
-
-            if (typeof window.ecoConfete === "function") window.ecoConfete();
-            showToast(
-              "✅ Cadastro realizado com sucesso! Bem-vindo(a) à EcoTech 🌿",
-              true,
-            );
-            setTimeout(() => {
-              window.location.href = "index.html";
-            }, 2000);
-          } catch (err) {
-            // Sem back-end disponível: salva o cadastro localmente no
-            // navegador mesmo assim, pra pessoa conseguir usar o site
-            // normalmente (o banco de dados de verdade é outra parte
-            // do projeto e pode não estar no ar ainda).
-            console.warn("API indisponível, salvando cadastro localmente:", err);
-
-            const usuarioLocal = criarUsuarioLocal(novoUsuario);
-            const SESSION_KEY = "ecotech_session";
-            const sessao = {
-              id: usuarioLocal.id,
-              tipo: "pessoa",
-              nome: usuarioLocal.name,
-              email: usuarioLocal.email,
-              coins: 0,
-              local: true,
-              logadoEm: new Date().toISOString(),
-            };
-            sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
-            localStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
-
-            if (typeof window.ecoConfete === "function") window.ecoConfete();
-            showToast(
-              "✅ Cadastro salvo neste navegador! Bem-vindo(a) à EcoTech 🌿",
-              true,
-            );
-            setTimeout(() => {
-              window.location.href = "index.html";
-            }, 2000);
+          showToast(r.erro || "Não foi possível cadastrar.");
+          if (r.campos) {
+            mostrarErrosCampos(r.campos);
+            const primeiro = document.querySelector(`[name="${Object.keys(r.campos)[0]}"]`);
+            if (primeiro) irParaAba(primeiro.closest(".tab-panel").dataset.panel);
           }
         });
     </script>

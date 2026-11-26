@@ -51,23 +51,6 @@ html {
   }
 }
 
-/* ── 3) TILT 3D NOS CARDS ── */
-.eco-tilt {
-  transition: transform 0.15s ease-out;
-  will-change: transform;
-}
-@media (hover: none) {
-  .eco-tilt {
-    transform: none !important;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .eco-tilt {
-    transition: none;
-    transform: none !important;
-  }
-}
-
 /* ── 4) TRANSIÇÃO SUAVE ENTRE TEMA CLARO/ESCURO ──
    Ligada só por ~350ms no clique do botão de tema (ver
    eco-interacoes.js) — não fica ativa o tempo todo. */
@@ -96,7 +79,7 @@ html.eco-trocando-tema *::after {
   left: 0;
   height: 3px;
   width: 0%;
-  background: var(--sage-400, #5aab5a);
+  background: var(--sage-400, #8CA98C);
   z-index: 10000;
   pointer-events: none;
   /* força uma camada de composição própria — sem isso, headers
@@ -107,7 +90,7 @@ html.eco-trocando-tema *::after {
   transform: translateZ(0);
 }
 [data-theme="dark"] .eco-progress-bar {
-  background: var(--sage-600, #82d182);
+  background: var(--btn-hover);
 }
 @media print {
   .eco-progress-bar {
@@ -161,6 +144,296 @@ html.eco-trocando-tema *::after {
 }
 @media (prefers-reduced-motion: reduce) {
   .eco-confete-pedaco {
+    display: none;
+  }
+}
+
+/* ── 8) CONTAINERS PADRONIZADOS ──
+   Tema claro: container verde com texto claro.
+   Tema escuro: container claro com texto escuro.
+   Trocar as variáveis aqui faz o conteúdo interno (textos, campos,
+   botões, tabelas) acompanhar sem regra extra em cada página.
+   Ao adicionar um container novo, inclua-o nesta lista e na lista
+   SELETOR_TILT de js/eco-interacoes.js. */
+@media screen {
+  :is(.hero-card-visual, .step-card, .stat-card, .svc-card, .testi-card, .faq-item,
+    .card, .numero-item, .doc-card, .interactive-card, .news-container,
+    .card-impacto, .card-beneficio, .passo, .chamada-acao, .cta-section,
+    .scanner-box, .scan-result, .history-item, #coins-banner, .reward-card,
+    .timeline-item, .info-card, .dash-stat-card, .dash-chart-card,
+    .dash-breakdown-card, .dash-table-card, .qr-form-card, .qr-preview-card,
+    .profile-header, .section-card, .hero-card, .app, .split-card,
+    .bottom-sheet, .modal-box, .scan-modal-content, .eco-modal-box) {
+    --white: #365037;
+    --cream: #344D35;
+    --cream2: #2F4530;
+    --sage-50: #365037;
+    --sage-100: #567558;
+    --sage-200: #8CA98C;
+    --sage-400: #BCCDB9;
+    --sage-500: #1F2A1F;
+    --sage-600: #D9C7A3;
+    --sage-700: #1F2A1F;
+    --sage-text: #D9C7A3;
+    --btn-hover: #0B0F0D;
+    --ink: #FAF6EC;
+    --ink-2: #F3EADA;
+    --ink-3: #E6EDE1;
+    --ink-4: #D3DED0;
+    --mint: #365037;
+    --mint-border: #567558;
+    --sun: #D9C7A3;
+    --sun-text: #F3EADA;
+    --sun-light: #2F4530;
+    /* afilie_se */
+    --danger: #B3261E;
+    --danger-light: #FBE4E1;
+    --card-bg: #3E5A3F;
+    --text-main: #FAF6EC;
+    --text-muted: #E6EDE1;
+    --primary-color: #1F2A1F;
+    --primary-hover: #0B0F0D;
+    /* cadastro_empresarial */
+    --text-color: #FAF6EC;
+    --panel-card-bg: #3E5A3F;
+    --input-bg-tint: #365037;
+    --input-border: #8CA98C;
+    --input-focus-border: #D9C7A3;
+    --input-placeholder: #BCCDB9;
+    --brand-green-primary: #1F2A1F;
+    --brand-green-hover: #0B0F0D;
+    --brand-green-text: #D9C7A3;
+    --organic-shape-color: rgba(250, 246, 236, 0.08);
+    color: var(--ink);
+    color-scheme: dark;
+    background: #3E5A3F !important;
+    border-color: #1F2A1F !important;
+  }
+
+  [data-theme="dark"] :is(.hero-card-visual, .step-card, .stat-card, .svc-card, .testi-card, .faq-item,
+    .card, .numero-item, .doc-card, .interactive-card, .news-container,
+    .card-impacto, .card-beneficio, .passo, .chamada-acao, .cta-section,
+    .scanner-box, .scan-result, .history-item, #coins-banner, .reward-card,
+    .timeline-item, .info-card, .dash-stat-card, .dash-chart-card,
+    .dash-breakdown-card, .dash-table-card, .qr-form-card, .qr-preview-card,
+    .profile-header, .section-card, .hero-card, .app, .split-card,
+    .bottom-sheet, .modal-box, .scan-modal-content, .eco-modal-box) {
+    --white: #F3EADA;
+    --cream: #F3EADA;
+    --cream2: #EFE6D3;
+    --sage-50: #EFE6D3;
+    --sage-100: #D9C7A3;
+    --sage-200: #BCCDB9;
+    --sage-400: #8CA98C;
+    --sage-500: #3E5A3F;
+    --sage-600: #1F2A1F;
+    --sage-700: #1F2A1F;
+    --sage-text: #3E5A3F;
+    --btn-hover: #1F2A1F;
+    --ink: #0B0F0D;
+    --ink-2: #1F2A1F;
+    --ink-3: #3E5A3F;
+    --ink-4: #526E53;
+    --mint: #E6EDE1;
+    --mint-border: #BCCDB9;
+    --sun: #B08D57;
+    --sun-text: #7A5C30;
+    --sun-light: #F3EADA;
+    --danger: #B3261E;
+    --danger-light: #FBE4E1;
+    --card-bg: #FAF6EC;
+    --text-main: #0B0F0D;
+    --text-muted: #3E5A3F;
+    --primary-color: #3E5A3F;
+    --primary-hover: #1F2A1F;
+    --text-color: #0B0F0D;
+    --panel-card-bg: #FAF6EC;
+    --input-bg-tint: #EFE6D3;
+    --input-border: #BCCDB9;
+    --input-focus-border: #3E5A3F;
+    --input-placeholder: #526E53;
+    --brand-green-primary: #3E5A3F;
+    --brand-green-hover: #1F2A1F;
+    --brand-green-text: #3E5A3F;
+    --organic-shape-color: rgba(62, 90, 63, 0.08);
+    color-scheme: light;
+    background: #FAF6EC !important;
+    border-color: #D9C7A3 !important;
+  }
+
+  /* Textos com cor fixa que precisam acompanhar o container claro. */
+  [data-theme="dark"] :is(.cta-section, .chamada-acao, .news-container)
+    :is(h1, h2, h3, h4, span, label) {
+    color: #1F2A1F !important;
+  }
+  [data-theme="dark"] :is(.cta-section, .chamada-acao, .news-container) p {
+    color: #3E5A3F !important;
+  }
+  [data-theme="dark"] .news-container a {
+    color: #3E5A3F !important;
+  }
+  [data-theme="dark"] .hero :is(.stat-card, .hero-card) :is(p, span, strong) {
+    color: #1F2A1F !important;
+  }
+  [data-theme="dark"] .btn-white {
+    background: #3E5A3F !important;
+    color: #fff !important;
+  }
+  [data-theme="dark"] .btn-outline-white {
+    color: #1F2A1F !important;
+    border-color: #3E5A3F !important;
+  }
+  .close-sheet {
+    color: #fff;
+  }
+  [data-theme="dark"] .close-sheet {
+    color: #1F2A1F;
+  }
+  /* Logo verde sobre o container verde do tema claro */
+  .login .eco-logo img {
+    padding: 10px;
+    background: #FAF6EC;
+    border-radius: 50%;
+  }
+  [data-theme="dark"] .login .eco-logo img {
+    padding: 0;
+    background: none;
+  }
+  .tab-btn:not(.active) .tab-num {
+    color: #1F2A1F;
+  }
+
+  /* ── 9) EFEITO DOS CONTAINERS ──
+     A inclinação só existe nas páginas com <html data-efeitos>.
+     Nas demais, os containers ficam parados. O !important cancela
+     os efeitos antigos de cada página e as animações de entrada. */
+  :is(.hero-card-visual, .step-card, .stat-card, .svc-card, .testi-card, .faq-item,
+    .card, .numero-item, .doc-card, .interactive-card, .news-container,
+    .card-impacto, .card-beneficio, .passo, .chamada-acao, .cta-section,
+    .scanner-box, .scan-result, .history-item, #coins-banner, .reward-card,
+    .timeline-item, .info-card, .dash-stat-card, .dash-chart-card,
+    .dash-breakdown-card, .dash-table-card, .qr-form-card, .qr-preview-card,
+    .profile-header, .section-card, .hero-card, .app, .split-card) {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    box-shadow: var(--sh-sm) !important;
+    transition:
+      transform 0.15s ease-out,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease !important;
+  }
+  [data-efeitos] :is(.hero-card-visual, .step-card, .stat-card, .svc-card, .testi-card, .faq-item,
+    .card, .numero-item, .doc-card, .interactive-card, .news-container,
+    .card-impacto, .card-beneficio, .passo, .chamada-acao, .cta-section,
+    .scanner-box, .scan-result, .history-item, #coins-banner, .reward-card,
+    .timeline-item, .info-card, .dash-stat-card, .dash-chart-card,
+    .dash-breakdown-card, .dash-table-card, .qr-form-card, .qr-preview-card,
+    .profile-header, .section-card, .hero-card, .app, .split-card):hover {
+    box-shadow: var(--sh-md) !important;
+  }
+  :is(.hero-card-visual, .step-card, .stat-card, .svc-card, .testi-card, .faq-item,
+    .card, .numero-item, .doc-card, .interactive-card, .news-container,
+    .card-impacto, .card-beneficio, .passo, .chamada-acao, .cta-section,
+    .scanner-box, .scan-result, .history-item, #coins-banner, .reward-card,
+    .timeline-item, .info-card, .dash-stat-card, .dash-chart-card,
+    .dash-breakdown-card, .dash-table-card, .qr-form-card, .qr-preview-card,
+    .profile-header, .section-card, .hero-card, .app, .split-card).eco-tilt-ativo {
+    transform: perspective(800px) translateY(-4px)
+      rotateX(var(--eco-tilt-x, 0deg)) rotateY(var(--eco-tilt-y, 0deg)) !important;
+  }
+}
+
+/* ── 10) INTEGRAÇÃO COM A API ── */
+.eco-erro-campo {
+  display: block;
+  margin: 4px 0 10px 2px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #fbe4e1;
+}
+[data-theme="dark"] .eco-erro-campo {
+  color: #b3261e;
+}
+.eco-login-tag {
+  align-self: center;
+  max-width: 120px;
+  overflow: hidden;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-2);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.eco-login-tag--fixa {
+  position: fixed;
+  top: 28px;
+  right: 80px;
+  z-index: 900;
+}
+
+/* ── 11) SETA DE VOLTAR (js/eco-voltar.js) ── mesmo visual do login */
+.eco-voltar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--ink, #0b0f0d);
+  color: var(--cream, #efe6d3);
+  box-shadow: var(--sh-sm);
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.eco-voltar:hover {
+  background: var(--sage-700, #1f2a1f);
+}
+.eco-voltar svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
+.eco-voltar--fixa {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 1000;
+  width: 44px;
+  height: 44px;
+}
+.eco-voltar--fixa svg {
+  width: 22px;
+  height: 22px;
+}
+@media (max-width: 480px) {
+  .eco-voltar {
+    width: 34px;
+    height: 34px;
+  }
+  .eco-voltar--fixa {
+    top: 16px;
+    left: 16px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Indicação de campo opcional nos formulários */
+.eco-opcional {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+  opacity: 0.75;
+}
+
+/* No cabeçalho das telas admin, a seta e a marca ficam juntas à esquerda. */
+.admin-header .eco-voltar + .brand {
+  margin-right: auto;
+}
+/* O login no canto não cobre o conteúdo em telas pequenas: o perfil já mostra. */
+@media (max-width: 600px) {
+  .eco-login-tag--fixa {
     display: none;
   }
 }

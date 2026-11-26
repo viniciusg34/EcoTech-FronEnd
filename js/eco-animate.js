@@ -4,7 +4,7 @@
    eco-animate.js — Animações leves (SVG + CSS puro, sem
    bibliotecas):
    1) Sistema de estações do ano (verão/outono/inverno/primavera)
-      com folhas/flocos/pétalas caindo APENAS no topo (hero)
+      definido pela data do computador do usuário, com folhas/flocos/pétalas caindo APENAS no topo (hero)
       da página inicial — nas outras abas fica desativado.
    2) Números que contam ao entrar na tela ([data-count-to])
    3) Anéis de progresso em SVG que "desenham" ao entrar na
@@ -13,37 +13,36 @@
    prefers-reduced-motion.
 ══════════════════════════════════════════════════════════ */
 
-const ECO_ESTACAO_KEY = "ecotech_estacao";
+/* Limpa a escolha manual salva por versões antigas (botão de estação). */
+try {
+  localStorage.removeItem("ecotech_estacao");
+} catch (_) {}
 
-/* ── Define as 4 estações: nome, emoji, formato do elemento
+/* ── Define as 4 estações: nome, formato do elemento
    caindo, e cor (clara/escura de cada tema). Hemisfério SUL
    (Brasil), por isso os meses batem diferente do hemisfério
    norte. ── */
 const ECO_ESTACOES = {
   verao: {
     nome: "Verão",
-    emoji: "☀️",
     forma: "folha",
     corClaro: "rgba(61, 145, 64, 0.4)",
     corEscuro: "rgba(120, 200, 120, 0.5)",
   },
   outono: {
     nome: "Outono",
-    emoji: "🍂",
     forma: "folhaOutono",
     corClaro: "rgba(191, 110, 34, 0.5)",
     corEscuro: "rgba(224, 150, 80, 0.55)",
   },
   inverno: {
     nome: "Inverno",
-    emoji: "❄️",
     forma: "floco",
     corClaro: "rgba(90, 140, 180, 0.45)",
     corEscuro: "rgba(190, 220, 240, 0.55)",
   },
   primavera: {
     nome: "Primavera",
-    emoji: "🌸",
     forma: "petala",
     corClaro: "rgba(214, 110, 150, 0.45)",
     corEscuro: "rgba(240, 170, 195, 0.55)",
@@ -60,18 +59,7 @@ function ecoEstacaoPorData() {
 }
 
 function ecoEstacaoAtual() {
-  const manual = localStorage.getItem(ECO_ESTACAO_KEY);
-  if (manual && ECO_ESTACOES[manual]) return manual;
   return ecoEstacaoPorData();
-}
-
-function ecoDefinirEstacao(chave) {
-  if (chave === "auto") {
-    localStorage.removeItem(ECO_ESTACAO_KEY);
-  } else if (ECO_ESTACOES[chave]) {
-    localStorage.setItem(ECO_ESTACAO_KEY, chave);
-  }
-  document.dispatchEvent(new CustomEvent("eco-estacao-mudou"));
 }
 
 (function () {
@@ -84,7 +72,7 @@ function ecoDefinirEstacao(chave) {
     folha: `<path d="M12 1.5C6.5 1.5 2 6.2 2 12c0 7 10 12 10 12s10-5 10-12c0-5.8-4.5-10.5-10-10.5z" fill="currentColor"/><path d="M12 4v18" stroke="rgba(0,0,0,0.15)" stroke-width="1" fill="none"/>`,
     folhaOutono: `<path d="M12 1.5C6.5 1.5 2 6.2 2 12c0 7 10 12 10 12s10-5 10-12c0-5.8-4.5-10.5-10-10.5z" fill="currentColor"/><path d="M12 4v18" stroke="rgba(0,0,0,0.18)" stroke-width="1" fill="none"/>`,
     floco: `<g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="1.5" x2="12" y2="22.5"/><line x1="3" y1="6.75" x2="21" y2="17.25"/><line x1="3" y1="17.25" x2="21" y2="6.75"/><line x1="12" y1="1.5" x2="9" y2="4.5"/><line x1="12" y1="1.5" x2="15" y2="4.5"/><line x1="12" y1="22.5" x2="9" y2="19.5"/><line x1="12" y1="22.5" x2="15" y2="19.5"/></g>`,
-    petala: `<g fill="currentColor"><ellipse cx="12" cy="6.5" rx="3.4" ry="5.5"/><ellipse cx="12" cy="17.5" rx="3.4" ry="5.5"/><ellipse cx="6.5" cy="12" rx="5.5" ry="3.4"/><ellipse cx="17.5" cy="12" rx="5.5" ry="3.4"/></g><circle cx="12" cy="12" r="2.6" fill="#f5a623"/>`,
+    petala: `<g fill="currentColor"><ellipse cx="12" cy="6.5" rx="3.4" ry="5.5"/><ellipse cx="12" cy="17.5" rx="3.4" ry="5.5"/><ellipse cx="6.5" cy="12" rx="5.5" ry="3.4"/><ellipse cx="17.5" cy="12" rx="5.5" ry="3.4"/></g><circle cx="12" cy="12" r="2.6" fill="#B08D57"/>`,
   };
 
   function corDaEstacao(dados) {
@@ -143,67 +131,6 @@ function ecoDefinirEstacao(chave) {
     new IntersectionObserver(([entrada]) => {
       container.classList.toggle("folhas-pausadas", !entrada.isIntersecting);
     }).observe(alvo);
-  }
-
-  function ecoRecriarFolhas() {
-    const container = containerFolhas();
-    if (!container) return;
-    container.querySelectorAll(".eco-leaf").forEach((el) => el.remove());
-    delete container.dataset.folhasProntas;
-    criarFolhas();
-  }
-
-  /* ── Botão flutuante pra escolher a estação (some no canto,
-     igual o botão de tema/acessibilidade) ── */
-  function ecoInjetarSeletorEstacao() {
-    // Sem folhas na página → sem botão de estação.
-    if (!containerFolhas() || SEM_MOVIMENTO) return;
-    if (document.getElementById("eco-estacao-btn")) return;
-    const btn = document.createElement("button");
-    btn.id = "eco-estacao-btn";
-    btn.type = "button";
-    btn.setAttribute("aria-label", "Escolher estação do ano");
-    btn.title = "Estação do ano";
-
-    const menu = document.createElement("div");
-    menu.id = "eco-estacao-menu";
-    menu.innerHTML =
-      '<div class="eco-estacao-titulo">Estação do ano</div>' +
-      Object.entries(ECO_ESTACOES)
-        .map(
-          ([chave, d]) =>
-            `<button type="button" data-estacao="${chave}">${d.emoji} ${d.nome}</button>`,
-        )
-        .join("") +
-      '<button type="button" data-estacao="auto" class="eco-estacao-auto">🔄 Automático (data de hoje)</button>';
-
-    function atualizarBotao() {
-      const atual = ECO_ESTACOES[ecoEstacaoAtual()];
-      btn.textContent = atual.emoji;
-      menu.querySelectorAll("button[data-estacao]").forEach((b) => {
-        b.classList.toggle("ativo", b.dataset.estacao === ecoEstacaoAtual());
-      });
-    }
-
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      menu.classList.toggle("aberto");
-    });
-    document.addEventListener("click", () => menu.classList.remove("aberto"));
-    menu.addEventListener("click", (e) => e.stopPropagation());
-
-    menu.querySelectorAll("button[data-estacao]").forEach((b) => {
-      b.addEventListener("click", () => {
-        ecoDefinirEstacao(b.dataset.estacao);
-        atualizarBotao();
-        ecoRecriarFolhas();
-        menu.classList.remove("aberto");
-      });
-    });
-
-    document.body.appendChild(btn);
-    document.body.appendChild(menu);
-    atualizarBotao();
   }
 
   /* ── 2) Contadores numéricos ── */
@@ -279,7 +206,6 @@ function ecoDefinirEstacao(chave) {
   function iniciar() {
     criarFolhas();
     pausarFolhasForaDaTela();
-    ecoInjetarSeletorEstacao();
     iniciarObservadores();
 
     // Se o tema mudar (claro/escuro), reajusta a cor das folhas

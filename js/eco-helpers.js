@@ -60,6 +60,17 @@ function senhaSegura(senha) {
   return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(senha || "");
 }
 
+/* ── Senha aceita pela API: exatamente 8 letras ── */
+function senhaValidaApi(senha) {
+  return /^[A-Za-zÀ-ÿ]{8}$/.test(senha || "");
+}
+
+/* ── Telefone no formato da API: (+55)21-999999999 ── */
+function telefoneParaApi(valor) {
+  const digitos = (valor || "").replace(/\D/g, "");
+  return `(+55)${digitos.slice(0, 2)}-${digitos.slice(2)}`;
+}
+
 /* ── Login: exatamente 6 caracteres alfabéticos (item 6 do PDF) ── */
 function validarLoginField(login) {
   return /^[A-Za-zÀ-ÿ]{6}$/.test((login || "").trim());
@@ -169,75 +180,4 @@ function togglePassword(id) {
   }
   if (!input) return;
   input.type = input.type === "password" ? "text" : "password";
-}
-
-/* ══════════════════════════════════════════════════════════
-   USUÁRIOS LOCAIS (localStorage) — funciona mesmo sem o
-   back-end/banco de dados de verdade, que é responsabilidade
-   de outra parte do projeto. O cadastro, login e perfil usam
-   isso como um "banco de dados" local sempre que a API não
-   está disponível, então a pessoa consegue criar e editar o
-   perfil dela normalmente de qualquer jeito.
-══════════════════════════════════════════════════════════ */
-const CHAVE_USUARIOS_LOCAIS = "ecotech_local_users";
-
-function listarUsuariosLocais() {
-  try {
-    return JSON.parse(localStorage.getItem(CHAVE_USUARIOS_LOCAIS) || "[]");
-  } catch (_) {
-    return [];
-  }
-}
-
-function salvarListaUsuariosLocais(lista) {
-  localStorage.setItem(CHAVE_USUARIOS_LOCAIS, JSON.stringify(lista));
-}
-
-function buscarUsuarioLocalPorEmail(email) {
-  const alvo = (email || "").trim().toLowerCase();
-  return (
-    listarUsuariosLocais().find((u) => (u.email || "").toLowerCase() === alvo) ||
-    null
-  );
-}
-
-function buscarUsuarioLocalPorId(id) {
-  return listarUsuariosLocais().find((u) => String(u.id) === String(id)) || null;
-}
-
-/* Cria (ou substitui, se o e-mail já existir) um usuário local.
-   Retorna o registro salvo, já com um id local gerado. */
-function criarUsuarioLocal(dados) {
-  const lista = listarUsuariosLocais();
-  const id = "local-" + Date.now();
-  const usuario = { id, perfil: "comum", coins: 0, avatar: "", reciclado: [], ...dados };
-  lista.push(usuario);
-  salvarListaUsuariosLocais(lista);
-  return usuario;
-}
-
-/* Atualiza campos de um usuário local existente (usado pelo
-   perfil.html ao salvar edições). */
-function atualizarUsuarioLocal(id, mudancas) {
-  const lista = listarUsuariosLocais();
-  const indice = lista.findIndex((u) => String(u.id) === String(id));
-  if (indice === -1) return null;
-  lista[indice] = { ...lista[indice], ...mudancas };
-  salvarListaUsuariosLocais(lista);
-  return lista[indice];
-}
-
-/* Remove um usuário local (usado ao excluir a conta pelo perfil.html). */
-function removerUsuarioLocal(id) {
-  salvarListaUsuariosLocais(
-    listarUsuariosLocais().filter((u) => String(u.id) !== String(id)),
-  );
-}
-
-/* ── Login local: usado como último recurso em login.html
-   quando a API de pessoas não responde ou não encontra a conta. ── */
-function autenticarLocal(email, senha) {
-  const usuario = buscarUsuarioLocalPorEmail(email);
-  if (usuario && usuario.senha === senha) return usuario;
-  return null;
 }

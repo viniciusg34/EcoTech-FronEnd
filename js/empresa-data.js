@@ -3,10 +3,6 @@
 /* ══════════════════════════════
    CONFIG
 ══════════════════════════════ */
-const API_EMPRESA =
-  "https://6a386bef64a2d82692228142.mockapi.io/api/v1/empresa";
-const SESSION_KEY = "ecotech_session";
-
 /* ══════════════════════════════
    METADADOS ESTÁTICOS
 ══════════════════════════════ */
@@ -91,15 +87,7 @@ function pointMonthlyKg(coletado, id) {
 /* ══════════════════════════════
    SESSÃO
 ══════════════════════════════ */
-function getSessao() {
-  try {
-    const raw =
-      sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch (_) {
-    return null;
-  }
-}
+
 
 /* ══════════════════════════════
    INICIALIZAÇÃO PRINCIPAL
@@ -107,51 +95,52 @@ function getSessao() {
    Chamada de empresa.html via: initEmpresaDashboard()
 ══════════════════════════════ */
 async function initEmpresaDashboard() {
-  const sessao = getSessao();
+  const sessao = await protegerTela(["empresa"]);
 
-  /* ── Redireciona se não estiver logada como empresa ── */
-  if (!sessao || sessao.tipo !== "empresa") {
-    window.location.href = "login.html";
-    return;
-  }
-
-  /* ── Busca os dados da empresa logada ── */
-  let empresaData;
-  try {
-    const res = await fetch(`${API_EMPRESA}/${sessao.id}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    empresaData = await res.json();
-  } catch (err) {
-    console.error("Erro ao carregar dados da empresa:", err);
-    showToast("❌ Erro ao carregar dados da empresa.");
-    return;
+  /* ── Dados da empresa logada e seus ecopontos ──
+     A conta de teste (API fora do ar) começa com o painel zerado. */
+  let empresaData = { name: sessao.nome, colected: 0 };
+  let rawPoints = [];
+  if (!sessao.demo) {
+    const res = await api(`/empresas/${encodeURIComponent(sessao.id)}`);
+    if (!res.sucesso) {
+      tratarFalha(res);
+      return;
+    }
+    empresaData = res.dados;
+    rawPoints = (await ecoListarEcopontos(sessao.id)) || [];
   }
 
   /* ── Monta objeto `company` compatível com o HTML ── */
   const company = {
-    id: empresaData.id,
-    name: empresaData.nome,
+    id: ecoId(empresaData, "empre_id"),
+    name: empresaData.name,
     icon: "🏢",
   };
 
-  /* ── Converte array `sad` (ecopontos) → formato interno ── */
-  const rawPoints = Array.isArray(empresaData.sad) ? empresaData.sad : [];
-  const points = rawPoints.map((ep) => ({
-    ecopontoId: ep.id, // ← id real do ecoponto na API
-    code: ep.code || `ECO-${ep.id}`,
-    name: ep.nome || "Ecoponto",
-    cats: parseCats(ep.cats),
-    address: ep.address
-      ? `${ep.address}, ${ep.city || ""}`
-      : "Endereço não informado",
-    status: parseStatus(ep.status),
-    monthlyKg: pointMonthlyKg(ep.coletado, ep.id),
-    validations: Math.round(pointMonthlyKg(ep.coletado, ep.id) * 0.6),
-    lastActivity: fakeLastActivity(ep.id),
-  }));
+  /* ── Converte os ecopontos → formato interno ── */
+  const points = rawPoints.map((ep) => {
+    const id = ecoId(ep, "eco_id");
+    const kg = pointMonthlyKg(ep.collected, id);
+    return {
+      ecopontoId: id,
+      code: ep.code || `ECO-${id}`,
+      name: ep.name || "Ecoponto",
+      cats: parseCats(ep.cats),
+      address: ep.adress
+        ? `${ep.adress}, ${ep.city || ""}`
+        : "Endereço não informado",
+      status: typeof ep.status === "string" && isNaN(ep.status)
+        ? parseStatus(ep.status)
+        : ecoAtivo(Number(ep.status)) ? "ativo" : "inativo",
+      monthlyKg: kg,
+      validations: Math.round(kg * 0.6),
+      lastActivity: fakeLastActivity(id),
+    };
+  });
 
   /* ── Série mensal baseada no kgColetado total da empresa ── */
-  const monthly = buildMonthlySeries(empresaData.kgColetado);
+  const monthly = buildMonthlySeries(empresaData.colected);
 
   /* ── Renderiza o painel ── */
   renderDashboard({ company, points, monthly });

@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="css/eco-animate.css" />
     <link rel="stylesheet" href="css/eco-interacoes.css" />
     <title>Cadastro Empresarial — EcoTech</title>
-    <script src="/js/auth.js"></script>
     <script>
       (function () {
         const saved = localStorage.getItem("eco-theme");
@@ -27,7 +26,7 @@
     </script>
   </head>
   <body>
-    <a href="index.html" class="btn-back-float" aria-label="Voltar para o início">←</a>
+    <a href="login.html" class="btn-back-float" aria-label="Voltar para o login"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a>
     <button class="theme-toggle" id="theme-toggle" aria-label="Alternar tema">
       <span id="theme-icon">☀️</span>
     </button>
@@ -60,7 +59,7 @@
                 <label for="cnpj">CNPJ</label>
                 <input
                   type="text"
-                  id="cnpj"
+                  id="cnpj" name="cnpj"
                   name="cnpj"
                   placeholder="00.000.000/0000-00"
                   required
@@ -72,7 +71,7 @@
                 <label for="nome_empresa">Nome Completo da Empresa</label>
                 <input
                   type="text"
-                  id="nome_empresa"
+                  id="nome_empresa" name="name"
                   name="nome_empresa"
                   placeholder="Digite o nome completo da empresa"
                   required
@@ -80,31 +79,28 @@
                 />
               </div>
               <div class="input-group">
-                <label for="endereco">Endereço</label>
+                <label for="endereco">Endereço <span class="eco-opcional">(opcional)</span></label>
                 <input
                   type="text"
-                  id="endereco"
-                  name="endereco"
+                  id="endereco" name="adress"
                   placeholder="Rua, número, bairro, cidade, Estado, CEP"
-                  required
                   autocomplete="street-address"
                 />
               </div>
               <div class="input-group">
-                <label for="razao_social">Razão Social</label>
+                <label for="razao_social">Razão Social <span class="eco-opcional">(opcional)</span></label>
                 <input
                   type="text"
                   id="razao_social"
                   name="razao_social"
                   placeholder="Digite a razão social da empresa"
-                  required
                 />
               </div>
               <div class="input-group">
                 <label for="email">E-mail</label>
                 <input
                   type="email"
-                  id="email"
+                  id="email" name="email"
                   name="email"
                   placeholder="exemplo@empresa.com.br"
                   required
@@ -116,7 +112,7 @@
                 <div class="password-field-wrapper">
                   <input
                     type="password"
-                    id="password"
+                    id="password" name="password"
                     name="password"
                     placeholder="Crie uma senha segura"
                     required
@@ -217,7 +213,7 @@
       function showToast(msg, success = false) {
         const toast = document.getElementById("toast");
         toast.textContent = msg;
-        toast.style.background = success ? "#3d9140" : "";
+        toast.style.background = success ? "#3E5A3F" : "";
         toast.classList.add("show");
         setTimeout(() => toast.classList.remove("show"), 3500);
       }
@@ -236,9 +232,7 @@
         );
       }
 
-      /* 6. SUBMIT COM MOCKAPI */
-      const API_URL =
-        "https://6a386bef64a2d82692228142.mockapi.io/api/v1/empresa";
+      /* 6. ENVIO PARA A API */
 
       document
         .getElementById("cadastroEmpresarialForm")
@@ -260,14 +254,7 @@
           const senha = passwordInput.value;
 
           /* Validações */
-          if (
-            !cnpj ||
-            !nomeEmpresa ||
-            !endereco ||
-            !razaoSocial ||
-            !email ||
-            !senha
-          ) {
+          if (!cnpj || !nomeEmpresa || !email || !senha) {
             showToast("Preencha todos os campos.");
             return;
           }
@@ -286,63 +273,31 @@
             return;
           }
 
-          /* Verificar e-mail duplicado */
-          try {
-            const checkRes = await fetch(API_URL);
-            if (!checkRes.ok) throw new Error("Erro ao verificar e-mail.");
-            const empresas = await checkRes.json();
-            const emailJaExiste = empresas.some((emp) => emp.email === email);
-            if (emailJaExiste) {
-              showToast("Este e-mail já está cadastrado.");
-              return;
-            }
-          } catch (err) {
-            showToast("Erro de conexão ao verificar e-mail. Tente novamente.");
-            console.error(err);
+          limparErrosCampos();
+          const r = await api("/empresas", {
+            metodo: "POST",
+            corpo: {
+              name: nomeEmpresa,
+              cnpj,
+              ...(endereco ? { adress: endereco } : {}),
+              email,
+              password: senha,
+              colected: 0,
+            },
+          });
+
+          if (r.sucesso) {
+            if (typeof window.ecoConfete === "function") window.ecoConfete();
+            showToast("✅ Cadastro realizado com sucesso! Bem-vinda à EcoTech 🌿", true);
+            setTimeout(() => (window.location.href = "login.html"), 2200);
             return;
           }
-
-          /* Montar payload */
-          const payload = {
-            nome: nomeEmpresa,
-            cnpj,
-            endereco,
-            razaoSocial,
-            email,
-            senha,
-            saldoMoeda: "0.00",
-            kgColetado: "0.00",
-            Ecopontos: {},
-            sad: [],
-          };
-
-          /* POST na API */
-          try {
-            const res = await fetch(API_URL, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-
-            if (!res.ok) throw new Error(`Erro ${res.status}`);
-
-            const empresaCriada = await res.json();
-            console.log("Empresa cadastrada:", empresaCriada);
-
-            if (typeof window.ecoConfete === "function") window.ecoConfete();
-            showToast(
-              "✅ Cadastro realizado com sucesso! Bem-vinda à EcoTech 🌿",
-              true,
-            );
-            setTimeout(() => {
-              window.location.href = "login.html";
-            }, 2200);
-          } catch (err) {
-            showToast("Erro ao cadastrar empresa. Tente novamente.");
-            console.error(err);
-          }
+          if (r.status >= 500) return irParaErro(r.erro);
+          showToast(r.erro || "Erro ao cadastrar empresa. Tente novamente.");
+          if (r.campos) mostrarErrosCampos(r.campos);
         });
     </script>
+    <script src="js/api.js"></script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
   </body>
