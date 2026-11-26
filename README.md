@@ -11,6 +11,7 @@ HTML, CSS e JavaScript puro, sem build. Hospedado na Vercel. **Todos os dados v�
 | `AMBIENTES` e `ORDEM` | Onde está a API: cada ambiente tem `nome` e `BASE_URL` (**com** `/api/v1`, sem barra final). Em produção precisa ser HTTPS (a Vercel bloqueia HTTP). A API oficial (Railway) é o ambiente `servidor`, primeiro da `ORDEM`; as locais só entram se ela não responder. |
 | `MOSTRAR_STATUS` | `true` mostra o selo de conexão. |
 | `CARTO_KEY` | Chave gratuita dos tiles do mapa (https://carto.com/basemaps/apikey). Sem ela o mapa usa o OpenStreetMap e avisa no console. A chave fica visível no navegador: peça uma para o domínio da Vercel e outra para `localhost`. |
+| `AVISO_EMAIL` | Quem recebe o e-mail de aviso quando uma empresa gera um Ecoponto no painel (enviado pelo FormSubmit, sem servidor de e-mail). Na 1ª vez chega um e-mail "Activate Form" nesse endereço: clique uma vez para ativar. |
 | `GOOGLE_CLIENT_ID` | ID público do OAuth do "Entrar com Google". |
 
 ## Logins para avaliação
@@ -59,7 +60,7 @@ Projeto estático, sem comando de build, diretório raiz. Antes de publicar: o a
 ## Estrutura
 
 - `js/api.js` — cliente da API, sessão (token), autenticação, recursos e menu do header. Telas públicas (`index`, `sobre_nos`, `afilie_se`, `login`, `cadastro`, `cadastro_empresarial`, `esqueci_senha`, `error_page`) nunca mandam para o login, nem quando o token vence ou o ambiente da API muda (`PAGINAS_PUBLICAS`). `js/config.js` — endereços e chaves. Erros inesperados (403 e falha do servidor) levam a `error_page.html`; `404.html` também.
-- `js/eco-helpers.js` (máscaras e validação de formulário), `js/eco-admin.js` (atalho do master), `js/empresa-data.js` (painel da empresa), `js/eco-map-tiles.js` (mapa), `js/eco-acessibilidade.js` (barra de acessibilidade: contraste e tamanho da fonte, em todas as páginas), `js/eco-voltar.js` (seta de voltar), `js/ui-*.js`, `js/eco-animate.js`, `js/eco-interacoes.js`, `js/eco-arte-fundo.js` (interface).
+- `js/eco-helpers.js` (máscaras e validação de formulário), `js/eco-admin.js` (atalho do master), `js/empresa-data.js` (painel da empresa), `js/eco-map-tiles.js` (mapa), `js/eco-acessibilidade.js` (painel de acessibilidade que abre no botão de tema ☀️/🌙: tema/contraste e tamanho da fonte, em todas as páginas), `js/eco-voltar.js` (seta de voltar), `js/ui-*.js`, `js/eco-animate.js`, `js/eco-interacoes.js`, `js/eco-arte-fundo.js` (interface).
 - `servidor-demo/` — servidor de demonstração (API simulada + site estático) para ensaio e plano B; não é o backend do projeto.
 - `docs/` — `APRESENTACAO-LOCAL.md` (como rodar tudo local, em servidor e o plano B), `DER.md` e `der.mmd` (banco), `MODELO-LOGICO.md` e `der-logico.mmd` (modelo lógico derivado do front), `BACKEND-ajustes-vindos-do-front.md` (contrato que o front espera da API), `ADERENCIA-ENUNCIADO.md`, relatório de remoção, checklist de testes `MERGE-KAIO.md` (o que veio de cada versão no merge com a branch `kaio`) e `REVISAO-CORRECOES.md` (correções da revisão de 22/11 e o que ficou pendente). `docs/tools/gerar-der.mjs` gera `assets/modelo-bd.svg` e `.png` (imagem do DER) a partir de um `.mmd`.
 - Bibliotecas por CDN (versões fixas): Leaflet, ZXing, html5-qrcode, jsPDF 2.5.1 e jsPDF-AutoTable 3.8.2 (PDF da lista de usuários).
@@ -67,5 +68,5 @@ Projeto estático, sem comando de build, diretório raiz. Antes de publicar: o a
 ## O que fica no navegador
 
 - `ecotech_session` — token e identidade mínima (nome, e-mail, avatar, tipo, perfil). Nunca o saldo.
-- `eco-theme` (tema; o padrão é o **claro**), `eco-fonte` (tamanho da fonte da barra de acessibilidade) e `eco_notif` (preferência de notificação): só visuais. A estação das folhas sai da data do computador e não é guardada (a chave antiga `ecotech_estacao` é apagada).
+- `eco-theme` (tema; o padrão é o **claro**), `eco-fonte` (tamanho da fonte do painel de acessibilidade) e `eco_notif` (preferência de notificação): só visuais. A estação das folhas sai da data do computador e não é guardada (a chave antiga `ecotech_estacao` é apagada).
 - `sessionStorage`: desafio de 2FA em andamento, sessão do Ecoponto atual (atalho de navegação) e avisos entre telas.

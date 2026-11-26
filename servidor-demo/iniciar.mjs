@@ -39,6 +39,6 @@ if (!soFront) {
   Código de barras para o leitor do Ecoponto: 7891910000197 (Pilha AA) e outros em servidor-demo/LEIA-ME.md
 
   ⚠ Isto NÃO é o backend do projeto: é uma simulação para ensaio e plano B.
-    O site mostra o selo amarelo "Demonstração · dados simulados".
+    Abra o site com ?status=1 para ver o selo amarelo "Demonstração · dados simulados".
 `);
 }

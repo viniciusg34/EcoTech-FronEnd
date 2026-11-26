@@ -347,6 +347,55 @@ export function criarApi({ agora = () => Date.now(), senhaMaster = process.env.D
     return ok(200, { coinsAwarded: coins, balance: p.saldo, message: `Check-in feito: +${coins} coins e 0,5 kg.` });
   }));
 
+  // ── perfil da empresa (perfil_empresa.html): ver e editar os dados
+  const cnpjFmt = (c) => String(c || "").replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+  const dadosEmpresa = (emp) => ({
+    id: emp.id, tipo: "empresa", perfil: "empresa", cnpj: emp.cnpj, cnpj_formatado: cnpjFmt(emp.cnpj),
+    nome: emp.nome_empresa, nome_empresa: emp.nome_empresa, razao_social: emp.razao_social, email: emp.email,
+    endereco: emp.endereco, status: emp.status, status_rotulo: emp.status === "ativa" ? "Ativa" : "Suspensa",
+    total_ecopontos: db.ecopontos.filter((e) => e.empresaId === emp.id).length, membro_desde: "01/03/2026",
+  });
+  rota("GET", "/empresas/me", "empresa", ({ auth }) => ok(200, dadosEmpresa(db.empresas.find((x) => x.id === auth.id))));
+  rota("PUT", "/empresas/me", "empresa", ({ auth, body }) => {
+    const emp = db.empresas.find((x) => x.id === auth.id), b = body || {}, campos = {};
+    if (b.nome_empresa != null && !String(b.nome_empresa).trim()) campos.nome_empresa = ["Informe o nome da empresa."];
+    if (b.email != null && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email)) campos.email = ["E-mail inválido."];
+    if (b.endereco != null && String(b.endereco).length > 255) campos.endereco = ["Até 255 caracteres."];
+    if (Object.keys(campos).length) throw validacao(campos);
+    for (const k of ["nome_empresa", "razao_social", "email", "endereco"]) if (k in b) emp[k] = b[k] === null ? null : String(b[k]).trim();
+    return ok(200, { ...dadosEmpresa(emp), message: "Dados da empresa atualizados." });
+  });
+
+  // ── empresa cadastra um Ecoponto em seu nome (mesmas regras da API real)
+  rota("POST", "/ecopontos", "empresa", ({ auth, body }) => {
+    const b = body || {}, campos = {};
+    const add = (c, msg) => (campos[c] = [msg]);
+    const nome = String(b.nome || "").trim();
+    if (!nome || nome.length > 150) add("nome", "Informe o nome do Ecoponto (até 150 caracteres).");
+    const lat = Number(b.lat), lng = Number(b.lng);
+    if (b.lat == null || !Number.isFinite(lat) || lat < -90 || lat > 90) add("lat", "Latitude inválida.");
+    if (b.lng == null || !Number.isFinite(lng) || lng < -180 || lng > 180) add("lng", "Longitude inválida.");
+    const cats = Array.isArray(b.categorias) ? b.categorias : [];
+    if (!cats.length || cats.some((c) => !db.cat(c))) add("categorias", "Escolha ao menos um material válido.");
+    if (b.estado != null && String(b.estado).length !== 2) add("estado", "Use a sigla com 2 letras.");
+    if (Object.keys(campos).length) throw validacao(campos);
+    const maior = Math.max(0, ...db.ecopontos.map((e) => parseInt(String(e.codigo).replace(/\D/g, ""), 10) || 0));
+    const e = {
+      id: Math.max(0, ...db.ecopontos.map((x) => x.id)) + 1, empresaId: auth.id,
+      codigo: "ECO-" + String(maior + 1).padStart(2, "0"), nome,
+      descricao: b.descricao || null, endereco: b.endereco || null, cidade: b.cidade || null,
+      estado: b.estado ? String(b.estado).toUpperCase() : null, lat, lng,
+      status: ["ativo", "manutencao", "inativo"].includes(b.status) ? b.status : "ativo", categorias: [...new Set(cats)],
+    };
+    db.ecopontos.push(e);
+    return ok(201, {
+      id: e.id, codigo: e.codigo, nome: e.nome, endereco: e.endereco, cidade: e.cidade, estado: e.estado, lat: e.lat, lng: e.lng,
+      status: e.status, status_rotulo: statusRotulo[e.status],
+      categorias: e.categorias.map((c) => { const k = db.cat(c); return { chave: k.chave, rotulo: k.rotulo, cor_hex: k.cor_hex }; }),
+      message: "Ecoponto criado.",
+    });
+  });
+
   // ── fluxo do ecoponto (empresa)
   rota("GET", "/ecopontos/(\\d+)/qr", "empresa", ({ auth, m }) => ok(200, { payload: payloadQr(ecoDaEmpresa(auth, m[1])) }));
   rota("GET", "/ecopontos/(\\d+)/qr\\.svg", "empresa", ({ auth, m }) => {

@@ -4,7 +4,7 @@ Simula a API do EcoTech **no seu computador**, com dados de exemplo em memória.
 - ensaiar o site sem depender do backend, do banco ou da internet;
 - ser o **plano B** da apresentação se a conexão ou o banco falharem.
 
-> ⚠️ **Isto não é o backend do projeto.** O backend real é a API em PHP/Laravel com MySQL. Aqui tudo é simulado e some quando o programa é fechado. O site mostra um selo amarelo **"Demonstração · dados simulados"** e `[DEMO]` no título da aba enquanto estiver usando este servidor. Se for usá-lo na apresentação, diga isso à banca.
+> ⚠️ **Isto não é o backend do projeto.** O backend real é a API em PHP/Laravel com MySQL. Aqui tudo é simulado e some quando o programa é fechado. Abrindo o site com `?status=1`, aparece um selo amarelo **"Demonstração · dados simulados"** e `[DEMO]` no título da aba enquanto estiver usando este servidor (o usuário comum não vê o selo). Se for usá-lo na apresentação, diga isso à banca.
 
 ## Como usar
 Precisa do **Node.js 18 ou mais novo** (nodejs.org). Não precisa instalar nada mais (sem `npm install`).

@@ -96,7 +96,8 @@
 [data-theme="dark"] .modal-box {
   border-color: var(--sage-100);
 }
-[data-theme="dark"] .input-group input {
+[data-theme="dark"] .input-group input,
+[data-theme="dark"] .input-group textarea {
   background: var(--cream);
   color: var(--ink);
   border-color: var(--sage-100);
@@ -672,7 +673,8 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
-.input-group input {
+.input-group input,
+.input-group textarea {
   width: 100%;
   padding: 12px 14px;
   border: 1.5px solid var(--mint-border);
@@ -687,9 +689,26 @@ body {
     box-shadow 0.2s,
     background 0.3s;
 }
-.input-group input:focus {
+.input-group input:focus,
+.input-group textarea:focus {
   border-color: var(--sage-400);
   box-shadow: 0 0 0 3px rgba(140, 169, 140, 0.15);
+}
+/* Campo de texto de várias linhas (ex.: endereço): mesmo visual do
+   input, cresce sozinho com o texto (sem barra de rolagem nem alça). */
+.input-group textarea {
+  display: block;
+  min-height: 76px;
+  line-height: 1.5;
+  resize: none;
+  overflow: hidden;
+}
+.input-dica {
+  display: block;
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--sage-600);
+  opacity: 0.85;
 }
 .input-group input:disabled {
   opacity: 0.55;

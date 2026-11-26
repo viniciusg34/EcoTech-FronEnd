@@ -53,7 +53,7 @@ Conferido no código do front. Backend, responsividade em aparelhos reais e os e
 | Item | Situação | Observação |
 |---|---|---|
 | Botão para baixar a lista de usuários em PDF | ✅ | jsPDF; baixa o arquivo (todas as páginas da busca, CPF mascarado) |
-| Barra de acessibilidade com 2 mecanismos | ✅ | contraste (fundo escuro/fonte clara e o inverso) e tamanho da fonte (A−, A, A+) |
+| Barra de acessibilidade com 2 mecanismos | ✅ | no painel que abre pelo botão de tema (☀️/🌙): contraste (fundo escuro/fonte clara e o inverso) e tamanho da fonte (A−, A, A+) |
 
 Limitação da fonte: textos em `rem` escalam; os que têm tamanho fixo em `px` (cerca de um terço das declarações de CSS) não.
 

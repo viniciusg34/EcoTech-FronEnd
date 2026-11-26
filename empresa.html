@@ -16,8 +16,8 @@
     />
     <link rel="shortcut icon" href="assets/fivecom.png" type="image/x-icon" />
     <link rel="stylesheet" href="css/coleta.css" />
-    <link rel="stylesheet" href="css/empresa.css" />
-      <link rel="stylesheet" href="css/eco-arte-fundo.css?v=3" />
+    <link rel="stylesheet" href="css/empresa.css?v=2" />
+      <link rel="stylesheet" href="css/eco-arte-fundo.css?v=4" />
       <link rel="stylesheet" href="css/eco-animate.css" />
       <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
       <link rel="stylesheet" href="css/eco-skeleton.css" />
@@ -57,9 +57,10 @@
       </div>
     </header>
 
-    <main>
+    <!-- A arte do prédio fica no centro da tela, de cima a baixo, atrás de tudo -->
+    <main class="arte-pagina" data-arte-fundo="predio-verde">
       <!-- HERO -->
-      <section class="dash-hero secao-arte-fundo" data-arte-fundo="predio-verde">
+      <section class="dash-hero secao-arte-fundo">
         <div class="dash-eyebrow sk sk-curto" id="dashCompanyBadge" style="--sk-w: 12ch; --sk-raio: 99px">🏢 Empresa</div>
         <h1 id="dashCompanyName">Painel de Acompanhamento</h1>
         <p>
@@ -163,8 +164,8 @@
         <div class="section-header">
           <h2>🔲 Gerador de QR Code</h2>
           <p>
-            Gere o QR code de identificação para um Ecoponto já cadastrado em
-            nome da sua empresa
+            Gere um Ecoponto novo ou o QR code de identificação de um que já
+            está cadastrado em nome da sua empresa
           </p>
         </div>
         <div class="qr-section-grid">
@@ -185,6 +186,13 @@
             <button class="btn-primary qr-generate-btn" id="qrGenerateBtn">
               🔲 Gerar QR Code
             </button>
+
+            <div class="qr-novo">
+              <p>O Ecoponto ainda não está na lista?</p>
+              <button type="button" class="btn-secondary qr-novo-btn" id="novoEcopontoBtn">
+                ＋ Gerar Ecoponto
+              </button>
+            </div>
           </div>
 
           <div class="qr-preview-card">
@@ -326,11 +334,75 @@
 
     <div id="toast" role="status" aria-live="polite"></div>
 
+    <!-- ══ GERAR NOVO ECOPONTO (janela) ══
+         Cadastra o Ecoponto em nome da empresa (POST /ecopontos) e manda um
+         aviso por e-mail para a equipe (AVISO_EMAIL no js/config.js). -->
+    <dialog class="eco-dialog" id="novoEcopontoDialog" aria-labelledby="neTitulo" aria-describedby="neSub">
+      <form id="novoEcopontoForm" novalidate>
+        <div class="eco-dialog-topo">
+          <h3 id="neTitulo">Gerar novo Ecoponto</h3>
+          <button type="button" class="eco-dialog-fechar" id="neFechar" aria-label="Fechar" title="Fechar">✕</button>
+        </div>
+        <p class="eco-dialog-sub" id="neSub">
+          O Ecoponto é cadastrado em nome da sua empresa e a equipe EcoTech
+          recebe um aviso por e-mail.
+        </p>
+
+        <div class="ne-campo">
+          <label for="neNome">Nome do Ecoponto</label>
+          <input id="neNome" maxlength="150" placeholder="Ex.: Ecoponto Shopping Centro" autocomplete="off" required />
+        </div>
+
+        <div class="ne-linha ne-linha-cep">
+          <div class="ne-campo">
+            <label for="neCep">CEP <span class="ne-opcional">(preenche o resto)</span></label>
+            <input id="neCep" inputmode="numeric" maxlength="9" placeholder="00000-000" autocomplete="postal-code" />
+          </div>
+          <div class="ne-campo">
+            <label for="neRua">Rua e número</label>
+            <input id="neRua" maxlength="200" placeholder="Ex.: Rua das Flores, 120" autocomplete="address-line1" required />
+          </div>
+        </div>
+
+        <div class="ne-linha ne-linha-cidade">
+          <div class="ne-campo">
+            <label for="neBairro">Bairro</label>
+            <input id="neBairro" maxlength="80" autocomplete="address-level3" />
+          </div>
+          <div class="ne-campo">
+            <label for="neCidade">Cidade</label>
+            <input id="neCidade" maxlength="100" autocomplete="address-level2" required />
+          </div>
+          <div class="ne-campo">
+            <label for="neUf">UF</label>
+            <input id="neUf" maxlength="2" placeholder="RJ" autocomplete="address-level1" required />
+          </div>
+        </div>
+
+        <fieldset class="ne-campo ne-materiais-campo">
+          <legend>Materiais aceitos</legend>
+          <div class="ne-materiais" id="neMateriais" data-sk-itens="1" data-sk-altura="40px"></div>
+        </fieldset>
+
+        <p class="ne-local" id="neLocal">
+          📍 A posição no mapa sai do endereço.
+          <button type="button" class="ne-link" id="neUsarLocal">Usar a minha localização atual</button>
+        </p>
+
+        <p class="ne-erro" id="neErro" role="alert" hidden></p>
+
+        <div class="eco-dialog-acoes">
+          <button type="button" class="btn-secondary" id="neCancelar">Cancelar</button>
+          <button type="submit" class="btn-primary" id="neEnviar">Gerar Ecoponto</button>
+        </div>
+      </form>
+    </dialog>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script src="js/config.js?v=6"></script>
     <script src="js/api.js?v=8"></script>
     <script src="js/eco-skeleton.js"></script>
-    <script src="js/empresa-data.js"></script>
+    <script src="js/empresa-data.js?v=2"></script>
     <script>
       "use strict";
 
@@ -448,6 +520,26 @@
         return canvas.toDataURL("image/png");
       }
 
+      /* Botões "…" da tabela (a tabela é redesenhada quando o painel recarrega) */
+      function ligarBotoesTabela() {
+        document.querySelectorAll(".dash-table-action").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            generateQrFor(btn.dataset.code);
+            document
+              .querySelector(".qr-section-grid")
+              .scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+        });
+      }
+
+      /* Painel recarregado (Ecoponto novo): listas e botões da tabela de novo,
+         sem ligar duas vezes os outros botões da página. */
+      function atualizarListasEcopontos() {
+        ligarBotoesTabela();
+        preencherSelectLeitor();
+        preencherSelectExport();
+      }
+
       /* Chamado pelo empresa-data.js após renderizar */
       function bindQrListeners() {
         document
@@ -465,14 +557,7 @@
             generateQrFor(code);
           });
 
-        document.querySelectorAll(".dash-table-action").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            generateQrFor(btn.dataset.code);
-            document
-              .querySelector(".qr-section-grid")
-              .scrollIntoView({ behavior: "smooth", block: "start" });
-          });
-        });
+        ligarBotoesTabela();
 
         document.getElementById("qrCopyBtn").addEventListener("click", async () => {
           const campo = document.getElementById("qrCodeText");
@@ -613,8 +698,9 @@
       }
 
       /* Chamado pelo empresa-data.js após renderizar */
-      function bindExport() {
+      function preencherSelectExport() {
         const sel = document.getElementById("exportPontoSelect");
+        const atual = sel.value;
         sel.innerHTML = '<option value="">Todos os ecopontos</option>';
         (window.__empresaPoints || []).forEach((p) => {
           const opt = document.createElement("option");
@@ -623,6 +709,11 @@
           opt.textContent = `${p.code} — ${p.name}`;
           sel.appendChild(opt);
         });
+        sel.value = atual;
+      }
+
+      function bindExport() {
+        preencherSelectExport();
         document.getElementById("exportResumoBtn").addEventListener("click", exportarResumo);
         document.getElementById("exportLeiturasBtn").addEventListener("click", exportarLeituras);
       }
@@ -750,8 +841,9 @@
       }
 
       /* Chamado pelo empresa-data.js após renderizar */
-      function bindReader() {
+      function preencherSelectLeitor() {
         const sel = document.getElementById("readerPointSelect");
+        const atual = sel.value;
         sel.innerHTML = `<option value="" disabled selected>Selecione um Ecoponto</option>`;
         (window.__empresaPoints || [])
           .filter((p) => p.status === "ativo")
@@ -761,6 +853,12 @@
             opt.textContent = `${p.code} — ${p.name}`;
             sel.appendChild(opt);
           });
+        if (atual) sel.value = atual;
+      }
+
+      function bindReader() {
+        const sel = document.getElementById("readerPointSelect");
+        preencherSelectLeitor();
         sel.addEventListener("change", () => {
           readerPoint = (window.__empresaPoints || []).find((p) => String(p.id) === sel.value) || null;
           readerSessao = null;
@@ -777,20 +875,296 @@
         setInterval(pollReaderSession, 4000);
       }
 
-      function showToast(msg) {
+      let toastTimer = null;
+      function showToast(msg, duracao = 2800) {
         const t = document.getElementById("toast");
         t.textContent = msg;
         t.classList.add("show");
-        setTimeout(() => t.classList.remove("show"), 2800);
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove("show"), duracao);
       }
+
+      /* ══════════════════════════════════════════════
+         GERAR NOVO ECOPONTO
+         1) a empresa preenche nome, endereço e materiais;
+         2) o endereço vira posição no mapa (OpenStreetMap/Nominatim),
+            ou a pessoa usa a localização do aparelho;
+         3) POST /ecopontos cadastra em nome da empresa;
+         4) um e-mail de aviso vai para AVISO_EMAIL (js/config.js) pelo
+            FormSubmit;
+         5) o painel recarrega e o Ecoponto novo já fica escolhido no
+            gerador de QR.
+      ══════════════════════════════════════════════ */
+      const neDialog = document.getElementById("novoEcopontoDialog");
+      const neForm = document.getElementById("novoEcopontoForm");
+      const ne = (id) => document.getElementById(id);
+      let neCategorias = [];
+      let neLocalAparelho = null; // { lat, lng } quando a pessoa usa a localização atual
+
+      /* Materiais: carregados junto com a página (lista pública) */
+      async function carregarMateriais() {
+        const caixa = ne("neMateriais");
+        try {
+          neCategorias = await Publico.categorias();
+        } catch (_) {
+          caixa.innerHTML = '<p class="ne-local">Não foi possível carregar os materiais. Feche e abra a janela de novo.</p>';
+          return;
+        }
+        caixa.innerHTML = neCategorias
+          .map(
+            (c) => `<label class="ne-chip"><input type="checkbox" value="${esc(c.chave)}" /><span><i style="background:${esc(c.cor_hex || "#8ca98c")}"></i>${esc(c.rotulo || c.nome || c.chave)}</span></label>`,
+          )
+          .join("");
+      }
+
+      function neErro(msg, campo) {
+        const p = ne("neErro");
+        neForm.querySelectorAll("[aria-invalid]").forEach((el) => el.removeAttribute("aria-invalid"));
+        if (!msg) {
+          p.hidden = true;
+          p.textContent = "";
+          return;
+        }
+        p.textContent = msg;
+        p.hidden = false;
+        if (campo) {
+          campo.setAttribute("aria-invalid", "true");
+          campo.focus();
+        }
+      }
+
+      function abrirNovoEcoponto() {
+        neForm.reset();
+        neErro("");
+        neLocalAparelho = null;
+        ne("neLocal").firstChild.textContent = "📍 A posição no mapa sai do endereço. ";
+        if (!neCategorias.length) carregarMateriais();
+        neDialog.showModal();
+        ne("neNome").focus();
+      }
+
+      function fecharNovoEcoponto() {
+        neDialog.close();
+        ne("novoEcopontoBtn").focus();
+      }
+
+      /* CEP: máscara e preenchimento automático (GET /cep/{cep} da API) */
+      aplicarMascaraComCursor(ne("neCep"), formatarCEP);
+      ne("neCep").addEventListener("input", async (e) => {
+        if (e.target.value.replace(/\D/g, "").length !== 8) return;
+        const r = await buscarEnderecoPorCEP(e.target.value, {
+          logradouro: ne("neRua"),
+          bairro: ne("neBairro"),
+          cidade: ne("neCidade"),
+          uf: ne("neUf"),
+        });
+        if (r.ok) {
+          neErro("");
+          ne("neRua").focus(); // falta só o número
+          ne("neRua").setSelectionRange(ne("neRua").value.length, ne("neRua").value.length);
+        } else {
+          neErro(r.motivo);
+        }
+      });
+      ne("neUf").addEventListener("input", (e) => {
+        e.target.value = e.target.value.replace(/[^A-Za-zÀ-ÿ]/g, "").toUpperCase();
+      });
+
+      /* Localização do aparelho (opcional) */
+      ne("neUsarLocal").addEventListener("click", () => {
+        if (!navigator.geolocation) return neErro("Este navegador não informa a localização. Use o endereço.");
+        ne("neLocal").firstChild.textContent = "📍 Buscando a sua localização… ";
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            neLocalAparelho = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            ne("neLocal").firstChild.textContent = "📍 Posição no mapa: a sua localização atual. ";
+          },
+          () => {
+            neLocalAparelho = null;
+            ne("neLocal").firstChild.textContent = "📍 A posição no mapa sai do endereço. ";
+            neErro("Não foi possível pegar a localização. A posição vai sair do endereço.");
+          },
+          { enableHighAccuracy: true, timeout: 10000 },
+        );
+      });
+
+      /* Endereço → posição no mapa. Tenta o endereço completo e, se não
+         achar, vai aproximando (bairro, depois cidade). */
+      async function acharNoMapa(rua, bairro, cidade, uf) {
+        const tentativas = [
+          [rua, bairro, cidade, uf],
+          [rua, cidade, uf],
+          [bairro, cidade, uf],
+          [cidade, uf],
+        ]
+          .map((partes) => partes.filter(Boolean))
+          .filter((partes, i, todas) => partes.length && todas.findIndex((p) => p.join() === partes.join()) === i);
+        for (let i = 0; i < tentativas.length; i++) {
+          const q = tentativas[i].join(", ") + ", Brasil";
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), 8000);
+          try {
+            const r = await fetch(
+              "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&accept-language=pt-BR&q=" + encodeURIComponent(q),
+              { signal: ctrl.signal, headers: { Accept: "application/json" } },
+            );
+            const lista = r.ok ? await r.json() : [];
+            if (lista.length) {
+              return { lat: Number(lista[0].lat), lng: Number(lista[0].lon), aproximada: i > 1 };
+            }
+          } catch (_) {
+            /* sem rede com o mapa: tenta a próxima forma */
+          } finally {
+            clearTimeout(t);
+          }
+        }
+        return null;
+      }
+
+      /* Aviso por e-mail (FormSubmit). Devolve "ok", "ativar" ou "falhou". */
+      async function enviarAvisoEmail(eco, extras) {
+        const email = (window.ECOTECH_CONFIG || {}).AVISO_EMAIL;
+        if (!email) return "falhou";
+        const demo = Api.ambiente && Api.ambiente().modo === "demo";
+        const sessao = getSession() || {};
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 12000);
+        try {
+          const r = await fetch("https://formsubmit.co/ajax/" + email.trim(), {
+            method: "POST",
+            signal: ctrl.signal,
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({
+              _subject: `${demo ? "[Demonstração] " : ""}Novo Ecoponto gerado: ${eco.codigo} — ${eco.nome}`,
+              _template: "table",
+              _replyto: sessao.email || undefined,
+              Aviso: "Uma empresa parceira gerou um novo Ecoponto no painel da EcoTech.",
+              Empresa: extras.empresa,
+              "E-mail da empresa": sessao.email || "—",
+              Ecoponto: eco.nome,
+              "Código": eco.codigo,
+              "Endereço": [eco.endereco, eco.cidade && `${eco.cidade} - ${eco.estado || ""}`].filter(Boolean).join(", "),
+              "Materiais aceitos": extras.materiais,
+              "Ver no mapa": `https://www.openstreetmap.org/?mlat=${eco.lat}&mlon=${eco.lng}#map=18/${eco.lat}/${eco.lng}`,
+              "Gerado em": new Date().toLocaleString("pt-BR"),
+            }),
+          });
+          const d = await r.json().catch(() => ({}));
+          if (String(d.success) === "true") return "ok";
+          if (/activat/i.test(d.message || "")) return "ativar";
+          return "falhou";
+        } catch (_) {
+          return "falhou";
+        } finally {
+          clearTimeout(t);
+        }
+      }
+
+      neForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const nome = ne("neNome").value.trim();
+        const rua = ne("neRua").value.trim();
+        const bairro = ne("neBairro").value.trim();
+        const cidade = ne("neCidade").value.trim();
+        const uf = ne("neUf").value.trim().toUpperCase();
+        const marcados = [...ne("neMateriais").querySelectorAll("input:checked")].map((i) => i.value);
+
+        if (!nome) return neErro("Dê um nome ao Ecoponto.", ne("neNome"));
+        if (!rua) return neErro("Informe a rua e o número.", ne("neRua"));
+        if (!cidade) return neErro("Informe a cidade.", ne("neCidade"));
+        if (!/^[A-Z]{2}$/.test(uf)) return neErro("Informe a UF com 2 letras (ex.: RJ).", ne("neUf"));
+        if (!marcados.length) {
+          neErro("Escolha ao menos um material que o Ecoponto aceita.");
+          const primeiro = ne("neMateriais").querySelector("input");
+          if (primeiro) primeiro.focus();
+          return;
+        }
+        neErro("");
+
+        const btn = ne("neEnviar");
+        btn.disabled = true;
+        btn.textContent = "Localizando no mapa…";
+        try {
+          const local = neLocalAparelho || (await acharNoMapa(rua, bairro, cidade, uf));
+          if (!local) {
+            neErro("Não encontramos esse endereço no mapa. Confira a cidade e a UF, ou use a sua localização atual.", ne("neCidade"));
+            return;
+          }
+
+          btn.textContent = "Gerando Ecoponto…";
+          let eco;
+          try {
+            eco = await EmpresaApi.criarEcoponto({
+              nome,
+              endereco: [rua, bairro].filter(Boolean).join(", "),
+              cidade,
+              estado: uf,
+              lat: Math.round(local.lat * 1e7) / 1e7,
+              lng: Math.round(local.lng * 1e7) / 1e7,
+              categorias: marcados,
+              status: "ativo",
+            });
+          } catch (err) {
+            neErro((err && err.message) || "Não foi possível gerar o Ecoponto. Tente de novo.");
+            return;
+          }
+
+          btn.textContent = "Enviando aviso…";
+          const dash = window.__empresaDash || {};
+          const materiais = marcados
+            .map((k) => (neCategorias.find((c) => c.chave === k) || {}).rotulo || k)
+            .join(", ");
+          const aviso = await enviarAvisoEmail(eco, {
+            empresa: (dash.empresa && dash.empresa.nome) || (getSession() || {}).nome || "—",
+            materiais,
+          });
+
+          neDialog.close();
+          try {
+            await recarregarPainelEmpresa();
+          } catch (_) {
+            /* o Ecoponto já foi criado; a lista atualiza ao abrir a página de novo */
+          }
+          if (findPoint(eco.codigo)) {
+            document.getElementById("qrPointSelect").value = eco.codigo;
+            updateQrMeta();
+          }
+          const msgAviso = {
+            ok: "Aviso enviado por e-mail para a equipe.",
+            ativar: "O aviso por e-mail precisa ser ativado: confira a caixa de entrada do e-mail da equipe.",
+            falhou: "Não foi possível enviar o aviso por e-mail.",
+          }[aviso];
+          showToast(`✅ Ecoponto ${eco.codigo} gerado${local.aproximada ? " (posição aproximada no mapa)" : ""}. ${msgAviso}`, 6000);
+          document.getElementById("qrGenerateBtn").focus();
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Gerar Ecoponto";
+        }
+      });
+
+      ne("novoEcopontoBtn").addEventListener("click", abrirNovoEcoponto);
+      ne("neFechar").addEventListener("click", fecharNovoEcoponto);
+      ne("neCancelar").addEventListener("click", fecharNovoEcoponto);
+      // clicar fora da janela (no fundo escuro) fecha
+      neDialog.addEventListener("click", (e) => {
+        if (e.target !== neDialog) return;
+        const r = neDialog.getBoundingClientRect();
+        const fora = e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+        if (fora && !ne("neEnviar").disabled) fecharNovoEcoponto();
+      });
+      // Esc fecha, mas não no meio do envio
+      neDialog.addEventListener("cancel", (e) => {
+        if (ne("neEnviar").disabled) e.preventDefault();
+      });
 
       /* ── INICIALIZA ── */
       initEmpresaDashboard();
+      carregarMateriais();
     </script>
     <script src="js/eco-animate.js"></script>
     <script src="js/eco-interacoes.js"></script>
     <script src="js/eco-voltar.js?v=3"></script>
     <script src="js/eco-arte-fundo.js?v=2"></script>
-      <script src="js/eco-acessibilidade.js"></script>
+      <script src="js/eco-acessibilidade.js?v=2"></script>
   </body>
 </html>
