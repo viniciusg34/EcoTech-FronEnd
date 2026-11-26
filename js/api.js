@@ -670,12 +670,12 @@
     esqueciSenha: function (email) {
       return Api.post("/auth/esqueci-senha", { email: email }, { auth: false });
     },
-    verificarRecuperacao: function (desafioId, codigo) {
-      return Api.post(
-        "/auth/esqueci-senha/verificar",
-        { desafio_id: desafioId, codigo: codigo },
-        { auth: false },
-      );
+    /* porPergunta = true quando a API mandou a pergunta de segurança
+       (código por e-mail desligado no servidor) */
+    verificarRecuperacao: function (desafioId, valor, porPergunta) {
+      var body = { desafio_id: desafioId };
+      body[porPergunta ? "resposta" : "codigo"] = valor;
+      return Api.post("/auth/esqueci-senha/verificar", body, { auth: false });
     },
 
     /* ── Código de 6 dígitos por e-mail ──

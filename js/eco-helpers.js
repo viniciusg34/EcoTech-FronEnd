@@ -125,11 +125,25 @@ function formatarCEP(valor) {
 
 /* ── Data (dd/mm/aaaa) — usada tanto no cadastro quanto na
    pergunta de "data de nascimento" do 2FA. ── */
+/* Máscara dd/mm/aaaa.
+   Aceita quem digita sem o zero: "4/3/1995" vira "04/03/1995" (a barra
+   digitada fecha o dia/mês e completa com zero). Só números também funciona:
+   "14031995" vira "14/03/1995". */
 function formatarDataBR(valor) {
-  const d = (valor || "").replace(/[^\d]/g, "").slice(0, 8);
-  if (d.length <= 2) return d;
-  if (d.length <= 4) return d.slice(0, 2) + "/" + d.slice(2);
-  return d.slice(0, 2) + "/" + d.slice(2, 4) + "/" + d.slice(4);
+  const campos = [""]; // dia, mês, ano
+  for (const ch of String(valor || "")) {
+    const i = campos.length - 1;
+    if (/\d/.test(ch)) {
+      const max = i < 2 ? 2 : 4;
+      if (campos[i].length < max) campos[i] += ch;
+      else if (campos.length < 3) campos.push(ch);
+    } else if (campos.length < 3 && campos[i].length > 0) {
+      // separador digitado: fecha o campo atual (com zero à esquerda se tiver 1 dígito)
+      if (campos[i].length === 1) campos[i] = "0" + campos[i];
+      campos.push("");
+    }
+  }
+  return campos.join("/");
 }
 
 async function buscarEnderecoPorCEP(cepInput, campos) {

@@ -93,9 +93,9 @@
 
     <script src="./js/ui-theme.js"></script>
     <script src="./js/ui-toast.js"></script>
-    <script src="./js/eco-helpers.js"></script>
+    <script src="./js/eco-helpers.js?v=2"></script>
     <script src="./js/config.js?v=6"></script>
-    <script src="./js/api.js?v=7"></script>
+    <script src="./js/api.js?v=8"></script>
     <script>
       initTheme();
       initThemeToggle();
@@ -111,7 +111,7 @@
       /* Só máscara/teclado de digitação; a resposta é validada pela API. */
       const CONFIG_CAMPO = {
         nome_mae: { placeholder: "Nome completo", maxlength: "80", inputmode: "text", mascara: null },
-        nascimento: { placeholder: "dd/mm/aaaa", maxlength: "10", inputmode: "numeric", mascara: formatarDataBR },
+        nascimento: { placeholder: "dd/mm/aaaa", maxlength: "10", inputmode: "text", mascara: formatarDataBR },
         cep: { placeholder: "00000-000", maxlength: "9", inputmode: "numeric", mascara: formatarCEP },
       };
       const campo = CONFIG_CAMPO[Auth.tipoPergunta(pendente)] || {
@@ -132,12 +132,14 @@
         if (!campo.mascara) return;
 
         const posAntes = inputResposta.selectionStart || 0;
+        const noFim = posAntes >= inputResposta.value.length;
         const digitosAntesCursor = inputResposta.value
           .slice(0, posAntes)
           .replace(/[^\d]/g, "").length;
 
         const formatado = campo.mascara(inputResposta.value);
         inputResposta.value = formatado;
+        if (noFim) return; // digitando no final: o cursor fica no final
 
         let pos = 0;
         let vistos = 0;

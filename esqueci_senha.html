@@ -114,10 +114,10 @@
 
         <!-- ═══ ETAPA 2 — CÓDIGO DE 6 DÍGITOS NO E-MAIL ═══ -->
         <div class="painel-etapa" data-etapa="2">
-          <p class="admin-subtitle" style="margin-bottom:8px;">Se o e-mail tiver conta, enviamos um código de 6 dígitos para:</p>
+          <p class="admin-subtitle" style="margin-bottom:8px;" id="texto-etapa2">Se o e-mail tiver conta, enviamos um código de 6 dígitos para:</p>
           <div class="question-box" id="email-destino">—</div>
           <div class="field">
-            <label for="codigo-recuperacao">Código recebido</label>
+            <label for="codigo-recuperacao" id="rotulo-etapa2">Código recebido</label>
             <input
               id="codigo-recuperacao"
               type="text"
@@ -133,7 +133,7 @@
             Confirmar
           </button>
           <p class="attempts-note" id="attempts-note"></p>
-          <p class="attempts-note">
+          <p class="attempts-note" id="linha-reenviar">
             Não chegou? Veja o spam ou
             <button type="button" id="btn-reenviar" style="background:none;border:none;padding:0;font:inherit;font-weight:700;color:var(--sage-600,#3e5a3f);text-decoration:underline;cursor:pointer;">reenviar código</button>
             <span id="contagem-reenvio"></span>
@@ -174,9 +174,9 @@
 
     <script src="./js/ui-theme.js"></script>
     <script src="./js/ui-toast.js"></script>
-    <script src="./js/eco-helpers.js"></script>
+    <script src="./js/eco-helpers.js?v=2"></script>
     <script src="./js/config.js?v=6"></script>
-    <script src="./js/api.js?v=7"></script>
+    <script src="./js/api.js?v=8"></script>
     <script>
       initTheme();
       initThemeToggle();
@@ -185,6 +185,39 @@
          O código do e-mail e a senha são conferidos pela API. */
       let desafioId = null;
       let tokenReset = null;
+      let porPergunta = false; // a API mandou a pergunta de segurança em vez do código
+
+      const campoEtapa2 = document.getElementById("codigo-recuperacao");
+      const ESTILO_CODIGO = campoEtapa2.getAttribute("style");
+      function modoEtapa2(r, email) {
+        porPergunta = !!(r && r.pergunta && r.status !== "codigo_email");
+        campoEtapa2.value = "";
+        if (porPergunta) {
+          const tipo = Auth.tipoPergunta(r);
+          document.getElementById("texto-etapa2").textContent = "Responda a pergunta de segurança:";
+          document.getElementById("email-destino").textContent = r.pergunta + (tipo === "nascimento" ? " (dd/mm/aaaa)" : "");
+          document.getElementById("rotulo-etapa2").textContent = "Sua resposta";
+          document.getElementById("linha-reenviar").style.display = "none";
+          campoEtapa2.removeAttribute("style");
+          campoEtapa2.setAttribute("maxlength", tipo === "nascimento" ? "10" : tipo === "cep" ? "9" : "80");
+          campoEtapa2.setAttribute("inputmode", tipo === "cep" ? "numeric" : "text");
+          campoEtapa2.setAttribute("autocomplete", "off");
+          campoEtapa2.placeholder = tipo === "nascimento" ? "dd/mm/aaaa" : tipo === "cep" ? "00000-000" : "";
+          campoEtapa2.dataset.tipo = tipo || "";
+        } else {
+          document.getElementById("texto-etapa2").textContent = "Se o e-mail tiver conta, enviamos um código de 6 dígitos para:";
+          document.getElementById("email-destino").textContent = (r && r.email) || email;
+          document.getElementById("rotulo-etapa2").textContent = "Código recebido";
+          document.getElementById("linha-reenviar").style.display = "";
+          campoEtapa2.setAttribute("style", ESTILO_CODIGO);
+          campoEtapa2.setAttribute("maxlength", "7");
+          campoEtapa2.setAttribute("inputmode", "numeric");
+          campoEtapa2.setAttribute("autocomplete", "one-time-code");
+          campoEtapa2.placeholder = "000000";
+          campoEtapa2.dataset.tipo = "codigo";
+          iniciarContagem(r && r.reenviar_em);
+        }
+      }
 
       function irParaEtapa(numero) {
         document.querySelectorAll(".painel-etapa").forEach((painel) => {
@@ -217,10 +250,8 @@
             return;
           }
           desafioId = r.desafio_id;
-          document.getElementById("email-destino").textContent = r.email || email;
-          document.getElementById("codigo-recuperacao").value = "";
           document.getElementById("attempts-note").innerHTML = "";
-          iniciarContagem(r.reenviar_em);
+          modoEtapa2(r, email);
           irParaEtapa(2);
           document.getElementById("codigo-recuperacao").focus();
         } catch (err) {
@@ -277,23 +308,28 @@
         }
       });
 
-      // Só números no campo do código (aceita colar "123 456")
-      document.getElementById("codigo-recuperacao").addEventListener("input", (e) => {
-        e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6);
+      // Máscara do campo: só números no código; data e CEP formatados na pergunta
+      campoEtapa2.addEventListener("input", (e) => {
+        const tipo = e.target.dataset.tipo;
+        if (tipo === "codigo") e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6);
+        else if (tipo === "nascimento") e.target.value = formatarDataBR(e.target.value);
+        else if (tipo === "cep") e.target.value = formatarCEP(e.target.value);
       });
 
       /* ── Etapa 2: POST /auth/esqueci-senha/verificar → token de reset ── */
       document.getElementById("btn-confirmar-resposta").addEventListener("click", async () => {
-        const resposta = document.getElementById("codigo-recuperacao").value.replace(/\D/g, "");
-        if (resposta.length !== 6) {
-          showToast("Digite os 6 números do código.");
+        const resposta = porPergunta
+          ? campoEtapa2.value.trim()
+          : campoEtapa2.value.replace(/\D/g, "");
+        if (porPergunta ? !resposta : resposta.length !== 6) {
+          showToast(porPergunta ? "Preencha a resposta." : "Digite os 6 números do código.");
           return;
         }
 
         const btn = document.getElementById("btn-confirmar-resposta");
         btn.disabled = true;
         try {
-          const r = await Auth.verificarRecuperacao(desafioId, resposta);
+          const r = await Auth.verificarRecuperacao(desafioId, resposta, porPergunta);
           tokenReset = r && (r.token || r.token_reset);
           if (!tokenReset) throw new Error("Resposta sem token de redefinição.");
           irParaEtapa(3);
