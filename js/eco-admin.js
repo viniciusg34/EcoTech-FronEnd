@@ -28,6 +28,8 @@ function ecoAdminEstilos() {
   css.id = "eco-admin-css";
   css.textContent =
     ".eco-admin-tab{position:relative;display:inline-flex;align-items:center;}" +
+    // celular: só 🛡️ ▾ (o texto "Admin" empurrava o botão de tema para fora da tela)
+    "@media (max-width:480px){.header-actions .eco-admin-tab .eco-admin-rotulo{display:none;}}" +
     ".eco-admin-tab > button{background:none;border:0;cursor:pointer;font:inherit;font-size:0.9rem;font-weight:700;" +
     "color:var(--sage-600,#3E5A3F);display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;white-space:nowrap;}" +
     ".eco-admin-tab > button:hover,.eco-admin-tab.aberto > button{background:var(--sage-50,#EDF0E8);}" +
@@ -70,7 +72,7 @@ function injetarAbaAdmin() {
   aba.id = "eco-admin-tab";
   aba.className = "eco-admin-tab";
   aba.innerHTML =
-    '<button type="button" aria-haspopup="true" aria-expanded="false">🛡️ Admin <span aria-hidden="true">▾</span></button>' +
+    '<button type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menu do administrador">🛡️ <span class="eco-admin-rotulo">Admin</span> <span aria-hidden="true">▾</span></button>' +
     '<div class="eco-admin-menu" role="menu"><div class="eco-admin-titulo">Perfil master</div>' +
     ecoAdminLinksHtml() + "</div>";
 

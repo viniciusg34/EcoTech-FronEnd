@@ -22,7 +22,9 @@
      como "Demonstração · dados simulados".
 
    MOSTRAR_STATUS
-     true mostra o selo de conexão; false esconde.
+     false (padrão): o usuário NÃO vê selo de conexão nem nome de servidor.
+     Para a equipe conferir a conexão, abra o site com ?status=1 (vale só
+     naquela aba; ?status=0 esconde de novo). true mostra sempre.
 
    CARTO_KEY
      Chave GRATUITA dos tiles do mapa (CARTO). Desde o fim de ago/2026 a
@@ -56,7 +58,7 @@ window.ECOTECH_CONFIG = {
     servidor: { nome: "Servidor (Railway)", BASE_URL: "https://ecotech-backend-production-5d655abd.up.railway.app/api/v1" },
   },
   ORDEM: ["servidor", "porta8000", "local"],
-  MOSTRAR_STATUS: true,
+  MOSTRAR_STATUS: false,
   CARTO_KEY: "",
   AVISO_EMAIL: "viniciusgomesdecerqueira@gmail.com",
   GOOGLE_CLIENT_ID: "547710554770-v2ofvchbeskjbm9d80pq12m3jncve5v7.apps.googleusercontent.com",
