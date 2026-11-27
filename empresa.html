@@ -21,6 +21,24 @@
       <link rel="stylesheet" href="css/eco-animate.css" />
       <link rel="stylesheet" href="css/eco-interacoes.css?v=2" />
       <link rel="stylesheet" href="css/eco-skeleton.css" />
+    <style>
+      /* Leitor do Ecoponto: etapas do atendimento */
+      .leitor-passos { list-style: none; display: flex; gap: 6px; padding: 0; margin: 14px 0 10px; counter-reset: passo; }
+      .leitor-passos li { flex: 1; font-size: 0.74rem; font-weight: 700; text-align: center; padding: 8px 4px; border-radius: 10px;
+        background: var(--sage-50, #eef3ee); color: var(--ink-3, #6b7a6b); counter-increment: passo; }
+      .leitor-passos li::before { content: counter(passo) ". "; }
+      .leitor-passos li.ativo { background: var(--sage-600, #3e5a3f); color: #fff; }
+      .leitor-passos li.feito { background: var(--sage-200, #c9d6c9); color: var(--ink-2, #1f2a1f); }
+      .leitor-espera { text-align: center; margin-top: 12px; }
+      .leitor-qr { display: inline-block; background: #fff; padding: 12px; border-radius: 16px; border: 1.5px solid var(--sage-100, #dfe8df); }
+      .leitor-qr img { display: block; width: min(260px, 70vw); height: auto; }
+      .leitor-dica { font-size: 0.86rem; margin-top: 10px; line-height: 1.5; }
+      .leitor-aguardando { display: block; margin-top: 4px; color: var(--ink-3, #6b7a6b); animation: leitorPulso 1.6s ease-in-out infinite; }
+      @keyframes leitorPulso { 50% { opacity: 0.35; } }
+      @media (prefers-reduced-motion: reduce) { .leitor-aguardando { animation: none; } }
+      .leitor-total { width: 100%; margin-bottom: 10px; padding: 10px 14px; border-radius: 12px; font-weight: 800;
+        background: var(--sage-50, #eef3ee); border: 1.5px solid var(--sage-100, #dfe8df); }
+    </style>
   </head>
   <body>
     <header class="header">
@@ -273,13 +291,15 @@
         </div>
       </div>
 
-      <!-- LEITOR DO ECOPONTO -->
+      <!-- LEITOR DO ECOPONTO
+           1) escolhe o Ecoponto  2) a tela mostra o QR da placa e a pessoa lê com o celular
+           3) quando ela se conecta, libera a leitura dos produtos  4) "Encerrar atendimento" -->
       <div class="content-section">
         <div class="section-header">
           <h2>📟 Leitor do Ecoponto</h2>
           <p>
-            Leia os códigos de barras dos recicláveis entregues. As moedas vão
-            para a pessoa conectada ao Ecoponto pelo QR da placa.
+            A pessoa lê o QR Code desta tela com o celular para se conectar.
+            Depois disso o Ecoponto lê os códigos de barras e as moedas vão para ela.
           </p>
         </div>
         <div class="qr-section-grid">
@@ -290,34 +310,56 @@
               <option value="" disabled selected>Selecione um Ecoponto</option>
             </select>
 
-            <div class="qr-point-meta visible" id="readerSession">
-              Selecione um Ecoponto para ver quem está conectado.
+            <ol class="leitor-passos" id="readerPassos" aria-label="Etapas do atendimento">
+              <li data-passo="1">Escolher o Ecoponto</li>
+              <li data-passo="2">Pessoa lê o QR</li>
+              <li data-passo="3">Ler os produtos</li>
+            </ol>
+
+            <div class="qr-point-meta visible" id="readerSession" role="status" aria-live="polite">
+              Selecione um Ecoponto para começar.
             </div>
 
-            <div id="reader" style="margin-top:14px;"></div>
-            <button class="btn-secondary qr-generate-btn" id="readerCamBtn">
-              📷 Ligar câmera
-            </button>
+            <!-- ETAPA 2: QR da placa na tela, aguardando a pessoa -->
+            <div id="readerEspera" class="leitor-espera" hidden>
+              <div class="leitor-qr" id="readerQrBox" aria-label="QR Code do Ecoponto"></div>
+              <p class="leitor-dica">
+                Peça para a pessoa abrir <strong>Coleta</strong> no celular e ler este QR Code.
+                <span class="leitor-aguardando">Aguardando conexão…</span>
+              </p>
+            </div>
 
-            <label for="readerManual">Ou digite o código de barras</label>
-            <input
-              id="readerManual"
-              inputmode="numeric"
-              autocomplete="off"
-              maxlength="14"
-              placeholder="7891910000197"
-              style="width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--border,#d5e3d5);background:var(--surface,#fff);color:inherit;font:inherit;margin-bottom:10px;"
-            />
-            <button class="btn-primary qr-generate-btn" id="readerGo">
-              ✅ Registrar leitura
-            </button>
+            <!-- ETAPA 3: pessoa conectada, leitura dos produtos liberada -->
+            <div id="readerAtendimento" hidden>
+              <div id="reader" style="margin-top:14px;"></div>
+              <button class="btn-secondary qr-generate-btn" id="readerCamBtn">
+                📷 Ligar câmera
+              </button>
+
+              <label for="readerManual">Ou digite o código de barras</label>
+              <input
+                id="readerManual"
+                inputmode="numeric"
+                autocomplete="off"
+                maxlength="14"
+                placeholder="7891910000197"
+                style="width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--border,#d5e3d5);background:var(--surface,#fff);color:inherit;font:inherit;margin-bottom:10px;"
+              />
+              <button class="btn-primary qr-generate-btn" id="readerGo">
+                ✅ Registrar leitura
+              </button>
+              <button class="btn-secondary qr-generate-btn" id="readerEncerrar" style="margin-top:10px;">
+                🏁 Encerrar atendimento
+              </button>
+            </div>
           </div>
 
           <div class="qr-preview-card">
             <div class="qr-preview-empty" id="readerEmpty">
               <span class="qr-preview-emoji">📟</span>
-              As leituras aparecem aqui.
+              As leituras do atendimento aparecem aqui.
             </div>
+            <div id="readerTotal" class="leitor-total" hidden></div>
             <div id="readerList" style="width:100%;"></div>
           </div>
         </div>
@@ -399,9 +441,10 @@
     </dialog>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
-    <script src="js/eco-helpers.js?v=3"></script>
-    <script src="js/config.js?v=9"></script>
-    <script src="js/api.js?v=9"></script>
+    <script src="js/config.js?v=6"></script>
+    <script src="js/api.js?v=8"></script>
+    <!-- máscaras (CEP do "Gerar Ecoponto"): sem este arquivo a página quebrava -->
+    <script src="js/eco-helpers.js?v=2"></script>
     <script src="js/eco-skeleton.js"></script>
     <script src="js/empresa-data.js?v=2"></script>
     <script>
@@ -720,40 +763,108 @@
       }
 
       /* ── LEITOR DO ECOPONTO ──
-         O Ecoponto lê os códigos de barras e a API credita as moedas na
-         pessoa da sessão (POST /ecopontos/{id}/leituras, como empresa). */
+         Etapas: 1) escolher o Ecoponto; 2) a tela mostra o QR da placa e a
+         pessoa lê com o celular (coleta.html); 3) quando ela se conecta, a
+         leitura dos produtos é liberada (POST /ecopontos/{id}/leituras, como
+         empresa) e as moedas vão para ela; "Encerrar atendimento" fecha a
+         sessão e a tela volta para o QR, pronta para a próxima pessoa. */
       let readerPoint = null; // ecoponto selecionado
       let readerSessao = null; // { sessao_id, pessoa, expira_em } ou null
       let readerScanner = null;
       let readerRunning = false;
       let readerLastCode = "";
       let readerLastAt = 0;
-      const readerHist = []; // leituras desta tela (só enquanto aberta)
+      let readerHist = []; // leituras do atendimento atual
+      let readerCoins = 0; // moedas do atendimento atual
+      let readerQrDe = null; // id do Ecoponto cujo QR está na tela
+
+      function readerEtapa() {
+        if (!readerPoint) return 1;
+        return readerSessao ? 3 : 2;
+      }
 
       function renderReaderSession() {
+        const etapa = readerEtapa();
         const el = document.getElementById("readerSession");
-        if (!readerPoint) {
-          el.textContent = "Selecione um Ecoponto para ver quem está conectado.";
-        } else if (!readerSessao) {
-          el.innerHTML = `<strong>Aguardando</strong><br>Nenhuma pessoa conectada. Peça para ler o QR da placa.`;
+        document.querySelectorAll("#readerPassos li").forEach((li) => {
+          const n = Number(li.dataset.passo);
+          li.classList.toggle("ativo", n === etapa);
+          li.classList.toggle("feito", n < etapa);
+        });
+        document.getElementById("readerEspera").hidden = etapa !== 2;
+        document.getElementById("readerAtendimento").hidden = etapa !== 3;
+
+        if (etapa === 1) {
+          el.textContent = "Selecione um Ecoponto para começar.";
+        } else if (etapa === 2) {
+          el.innerHTML = `<strong>Aguardando a pessoa</strong><br>A leitura dos produtos é liberada quando alguém se conectar pelo QR.`;
         } else {
-          el.innerHTML = `<strong>Conectado: ${esc((readerSessao.pessoa && readerSessao.pessoa.nome) || "Pessoa")}</strong><br>As moedas das leituras vão para esta pessoa.`;
+          const nome = esc((readerSessao.pessoa && readerSessao.pessoa.nome) || "Pessoa");
+          const ate = readerSessao.expira_em
+            ? ` (até ${new Date(readerSessao.expira_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })})`
+            : "";
+          el.innerHTML = `<strong>Conectado: ${nome}</strong><br>Leia os produtos. As moedas vão para esta pessoa${ate}.`;
         }
+      }
+
+      async function mostrarQrLeitor() {
+        if (!readerPoint || readerQrDe === readerPoint.id) return;
+        const box = document.getElementById("readerQrBox");
+        box.innerHTML = `<span class="qr-preview-emoji">⏳</span>`;
+        try {
+          const svg = await EmpresaApi.qrSvg(readerPoint.id);
+          const img = new Image();
+          img.alt = `QR Code do Ecoponto ${readerPoint.code}`;
+          img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+          box.innerHTML = "";
+          box.appendChild(img);
+          readerQrDe = readerPoint.id;
+        } catch (err) {
+          box.innerHTML = `<span class="qr-preview-emoji">⚠️</span>`;
+          Api.showError(err, "❌ Não foi possível mostrar o QR do Ecoponto.");
+        }
+      }
+
+      function novoAtendimento() {
+        readerHist = [];
+        readerCoins = 0;
+        renderReaderList();
       }
 
       async function pollReaderSession() {
         if (!readerPoint || document.hidden) return;
+        const antes = readerSessao && readerSessao.sessao_id;
+        let agora = null;
         try {
-          readerSessao = await EmpresaApi.sessaoAtiva(readerPoint.id);
+          agora = await EmpresaApi.sessaoAtiva(readerPoint.id);
         } catch (err) {
-          if (err.status === 404) readerSessao = null;
-          else return; // falha momentânea: mantém o estado e tenta de novo
+          if (err.status !== 404) return; // falha momentânea: mantém o estado e tenta de novo
+        }
+        readerSessao = agora && agora.sessao_id ? agora : null;
+        const depois = readerSessao && readerSessao.sessao_id;
+
+        if (depois && depois !== antes) {
+          // alguém se conectou: libera a leitura dos produtos
+          novoAtendimento();
+          renderReaderSession();
+          showToast(`✅ ${(readerSessao.pessoa && readerSessao.pessoa.nome) || "Pessoa"} conectou. Pode ler os produtos.`);
+          ligarCameraLeitor();
+          return;
+        }
+        if (!depois && antes) {
+          // a pessoa saiu ou a sessão expirou: volta para o QR
+          await desligarCameraLeitor();
+          showToast("ℹ️ Atendimento encerrado. Aguardando a próxima pessoa.");
         }
         renderReaderSession();
+        if (!readerSessao) mostrarQrLeitor();
       }
 
       function renderReaderList() {
         document.getElementById("readerEmpty").style.display = readerHist.length ? "none" : "";
+        const total = document.getElementById("readerTotal");
+        total.hidden = !readerHist.length;
+        total.textContent = `Neste atendimento: ${readerHist.filter((h) => h.ok).length} produto(s) • +${readerCoins} coins`;
         document.getElementById("readerList").innerHTML = readerHist
           .map(
             (h) => `<div class="qr-point-meta visible" style="margin-bottom:8px;">
@@ -762,61 +873,55 @@
           .join("");
       }
 
-      async function registerReading(raw, daCamera = false) {
+      async function registerReading(raw) {
         const code = String(raw || "").trim();
         if (!readerPoint) {
           showToast("❌ Selecione o Ecoponto em operação.");
+          return;
+        }
+        if (!readerSessao) {
+          showToast("❌ Ninguém conectado. Peça para a pessoa ler o QR primeiro.");
           return;
         }
         if (!code) {
           showToast("❌ Informe o código de barras.");
           return;
         }
-        /* A câmera avisa várias vezes por segundo enquanto o produto está na
-           frente dela: o mesmo código só vale de novo depois de 10 s (antes,
-           a cada 2,5 s saía um pedido repetido e um aviso de "já foi lido"). */
         const now = Date.now();
-        if (daCamera && code === readerLastCode && now - readerLastAt < 10000) return;
+        if (code === readerLastCode && now - readerLastAt < 2500) return;
         readerLastCode = code;
         readerLastAt = now;
-
-        if (!readerSessao) await pollReaderSession();
-        if (!readerSessao) {
-          showToast("❌ Nenhuma pessoa conectada a este Ecoponto.");
-          return;
-        }
 
         let r;
         try {
           r = await EmpresaApi.registrarLeitura(readerPoint.id, readerSessao.sessao_id, code);
         } catch (err) {
-          readerHist.unshift({ titulo: code, texto: err.message || "Não foi possível registrar." });
-          readerHist.splice(20);
+          readerHist.unshift({ titulo: code, texto: err.message || "Não foi possível registrar.", ok: false });
+          readerHist.splice(30);
           renderReaderList();
           Api.showError(err, "❌ Não foi possível registrar a leitura.");
+          // a sessão pode ter acabado: confere na hora
+          if (err.status === 404 || err.status === 409 || err.status === 410) pollReaderSession();
           return;
         }
         const ganhou = Number((r && r.coinsAwarded) || 0);
+        readerCoins += ganhou;
         readerHist.unshift({
           titulo: (r && r.produto && r.produto.nome) || code,
           texto: (ganhou > 0 ? `+${ganhou} coins • ` : "") + ((r && r.message) || "Leitura registrada."),
+          ok: true,
         });
-        readerHist.splice(20);
+        readerHist.splice(30);
         renderReaderList();
         showToast(`✅ ${(r && r.message) || "Leitura registrada."}`);
         document.getElementById("readerManual").value = "";
       }
 
-      async function toggleReaderCamera() {
+      async function ligarCameraLeitor() {
+        if (readerRunning || !readerSessao) return;
         const btn = document.getElementById("readerCamBtn");
         if (!window.Html5Qrcode) {
           showToast("❌ Não foi possível carregar o leitor. Digite o código.");
-          return;
-        }
-        if (readerRunning) {
-          await readerScanner.stop().catch(() => {});
-          readerRunning = false;
-          btn.textContent = "📷 Ligar câmera";
           return;
         }
         readerScanner =
@@ -834,14 +939,48 @@
           await readerScanner.start(
             { facingMode: "environment" },
             { fps: 10, qrbox: (w, h) => ({ width: Math.floor(w * 0.8), height: Math.floor(h * 0.4) }) },
-            (texto) => registerReading(texto, true),
+            registerReading,
             () => {},
           );
           readerRunning = true;
           btn.textContent = "⏹ Desligar câmera";
         } catch (_) {
-          showToast("❌ Não foi possível abrir a câmera. Digite o código.");
+          // sem câmera ou sem permissão: o botão e o campo manual continuam
+          btn.textContent = "📷 Ligar câmera";
         }
+      }
+
+      async function desligarCameraLeitor() {
+        if (readerRunning && readerScanner) await readerScanner.stop().catch(() => {});
+        readerRunning = false;
+        document.getElementById("readerCamBtn").textContent = "📷 Ligar câmera";
+      }
+
+      async function toggleReaderCamera() {
+        if (readerRunning) await desligarCameraLeitor();
+        else await ligarCameraLeitor();
+      }
+
+      async function encerrarAtendimento() {
+        if (!readerPoint || !readerSessao) return;
+        const btn = document.getElementById("readerEncerrar");
+        btn.disabled = true;
+        try {
+          await EmpresaApi.encerrarSessao(readerPoint.id);
+        } catch (err) {
+          if (err.status !== 404) {
+            Api.showError(err, "❌ Não foi possível encerrar agora.");
+            btn.disabled = false;
+            return;
+          }
+        }
+        btn.disabled = false;
+        await desligarCameraLeitor();
+        const resumo = `🏁 Atendimento encerrado: +${readerCoins} coins para ${(readerSessao.pessoa && readerSessao.pessoa.nome) || "a pessoa"}.`;
+        readerSessao = null;
+        renderReaderSession();
+        mostrarQrLeitor();
+        showToast(resumo, 4000);
       }
 
       /* Chamado pelo empresa-data.js após renderizar */
@@ -863,10 +1002,14 @@
       function bindReader() {
         const sel = document.getElementById("readerPointSelect");
         preencherSelectLeitor();
-        sel.addEventListener("change", () => {
+        sel.addEventListener("change", async () => {
+          await desligarCameraLeitor();
           readerPoint = (window.__empresaPoints || []).find((p) => String(p.id) === sel.value) || null;
           readerSessao = null;
+          readerQrDe = null;
+          novoAtendimento();
           renderReaderSession();
+          await mostrarQrLeitor();
           pollReaderSession();
         });
         document.getElementById("readerCamBtn").addEventListener("click", toggleReaderCamera);
@@ -876,7 +1019,10 @@
         document.getElementById("readerManual").addEventListener("keydown", (e) => {
           if (e.key === "Enter") registerReading(e.target.value);
         });
-        setInterval(pollReaderSession, 4000);
+        document.getElementById("readerEncerrar").addEventListener("click", encerrarAtendimento);
+        renderReaderSession();
+        // a cada 2,5 s confere se alguém se conectou (ou saiu)
+        setInterval(pollReaderSession, 2500);
       }
 
       let toastTimer = null;

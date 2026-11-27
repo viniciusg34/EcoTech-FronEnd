@@ -565,17 +565,16 @@
 
     <div id="toast" role="status" aria-live="polite"></div>
 
-    <script src="js/config.js?v=9"></script>
-    <script src="js/api.js?v=9"></script>
+    <script src="js/config.js?v=6"></script>
+    <script src="js/api.js?v=8"></script>
     <script src="js/eco-skeleton.js"></script>
-    <script src="js/eco-admin.js?v=4"></script>
+    <script src="js/eco-admin.js?v=3"></script>
     <script>
       requireAuth();
     </script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/eco-map-tiles.js"></script>
-    <!-- versão fixa: com "@latest" uma versão nova da biblioteca podia quebrar a câmera sem ninguém mexer no site -->
-    <script src="https://unpkg.com/@zxing/library@0.21.3"></script>
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
     <script>
       "use strict";
 
@@ -765,62 +764,42 @@
       /* ══════════════════════════════════════════════════
          SCANNER
       ══════════════════════════════════════════════════ */
-      /* A biblioteca de leitura (ZXing) abre a câmera traseira, mostra no
-         <video> e avisa cada vez que enxerga um código. Uma câmera só (o
-         celular não abre a mesma câmera duas vezes) e ela é DESLIGADA assim
-         que o QR é lido ou quando a pessoa aperta "Parar". */
-      let leitorQr = null;
-      let lendoQr = false; // já achou um QR: ignora as próximas leituras
-      let ultimoErradoQr = { texto: "", em: 0 };
+      let stream = null;
 
       async function startScanner() {
-        const Z = window.ZXing;
-        if (!Z || !Z.BrowserMultiFormatReader || !navigator.mediaDevices) {
-          showToast("❌ Leitor da câmera indisponível agora. Cole o código do QR no campo abaixo.");
-          return;
-        }
-        stopScanner();
-        lendoQr = false;
-        document.getElementById("video-container").style.display = "block";
-        document.getElementById("scanner-placeholder").style.display = "none";
-        document.getElementById("btn-start").style.display = "none";
-        document.getElementById("btn-stop").style.display = "flex";
-        const hints = new Map();
-        hints.set(Z.DecodeHintType.POSSIBLE_FORMATS, [Z.BarcodeFormat.QR_CODE, Z.BarcodeFormat.EAN_13, Z.BarcodeFormat.CODE_128]);
-        leitorQr = new Z.BrowserMultiFormatReader(hints);
         try {
-          await leitorQr.decodeFromVideoDevice(undefined, "video", (result) => {
-            if (!result || lendoQr) return;
-            const texto = String(result.getText ? result.getText() : result.text || "").trim();
-            if (!pareceQrEcoponto(texto)) {
-              // código de produto na frente da câmera: avisa uma vez e continua lendo
-              const agora = Date.now();
-              if (texto !== ultimoErradoQr.texto || agora - ultimoErradoQr.em > 4000) validateCode(texto);
-              ultimoErradoQr = { texto, em: agora };
-              return;
-            }
-            lendoQr = true;
-            stopScanner(); // desliga a câmera antes de falar com o servidor
-            validateCode(texto);
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
           });
+          const video = document.getElementById("video");
+          video.srcObject = stream;
+          document.getElementById("video-container").style.display = "block";
+          document.getElementById("scanner-placeholder").style.display = "none";
+          document.getElementById("btn-start").style.display = "none";
+          document.getElementById("btn-stop").style.display = "flex";
+          if (window.ZXing) {
+            const formats = [
+              window.ZXing.BarcodeFormat.EAN_13,
+              window.ZXing.BarcodeFormat.QR_CODE,
+              window.ZXing.BarcodeFormat.CODE_128,
+            ];
+            const hints = new Map();
+            hints.set(window.ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
+            const reader = new window.ZXing.BrowserMultiFormatReader(hints);
+            reader.decodeFromVideoDevice(null, "video", function (result) {
+              if (result) {
+                validateCode(result.getText());
+                stopScanner();
+              }
+            });
+          }
         } catch (e) {
-          stopScanner();
-          showToast("❌ Não foi possível abrir a câmera. Permita o acesso à câmera ou cole o código do QR.");
+          showToast("❌ Câmera não disponível. Use o campo manual.");
         }
       }
 
       function stopScanner() {
-        if (leitorQr) {
-          try {
-            leitorQr.reset(); // desliga a câmera e para de ler
-          } catch (_) {}
-          leitorQr = null;
-        }
-        const video = document.getElementById("video");
-        if (video && video.srcObject) {
-          video.srcObject.getTracks().forEach((t) => t.stop());
-          video.srcObject = null;
-        }
+        if (stream) stream.getTracks().forEach((t) => t.stop());
         document.getElementById("video-container").style.display = "none";
         document.getElementById("scanner-placeholder").style.display = "block";
         document.getElementById("btn-start").style.display = "flex";
@@ -835,12 +814,6 @@
         document.getElementById("scan-result").classList.add("show");
       }
 
-      /* QR da placa: CÓDIGO|emp=N|ep=N|...|sig=... (o servidor confere a assinatura).
-         Não depende do código começar com "ECO-" (o admin pode usar outro código). */
-      function pareceQrEcoponto(texto) {
-        return /^[A-Za-z0-9-]{3,20}\|emp=\d+\|ep=\d+\|/.test(String(texto || "").trim());
-      }
-
       /* A pessoa só lê o QR da placa do Ecoponto (POST /ecopontos/conectar).
          Os produtos são lidos pelo próprio Ecoponto, que credita as moedas
          na conta da pessoa conectada. */
@@ -850,7 +823,7 @@
           return;
         }
         const raw = code.trim();
-        if (!pareceQrEcoponto(raw)) {
+        if (!raw.startsWith("ECO-")) {
           showToast("❌ Esse não é o QR de um Ecoponto. Os produtos são lidos pelo próprio Ecoponto.");
           return;
         }

@@ -51,11 +51,13 @@ Projeto estático, sem comando de build, diretório raiz. Antes de publicar: o a
 
 ## Fluxo do Ecoponto
 
-1. A **empresa** gera a placa em `empresa.html` (QR assinado pelo servidor).
-2. A **pessoa** lê o QR em `coleta.html` → a API cria a sessão e registra o check-in.
-3. O **Ecoponto** lê os códigos de barras na seção "Leitor do Ecoponto" de `empresa.html` → a API credita a pessoa da sessão.
-4. A empresa baixa os dados dos ecopontos em CSV (resumo e histórico de leituras, sem dado pessoal) na seção "Exportar dados" de `empresa.html`.
-5. O celular da pessoa mostra saldo e histórico em `leitor.html` ("Sessão no Ecoponto") e em `coleta.html`, atualizando a cada 5 s.
+1. A **empresa** cadastra o Ecoponto e pode imprimir a placa com o QR em `empresa.html` ("Gerador de QR Code").
+2. No **Leitor do Ecoponto** (`empresa.html`), a empresa escolhe o Ecoponto em operação e a tela mostra o QR Code dele.
+3. A **pessoa** abre `coleta.html` no celular e lê esse QR → a API cria a sessão e registra o check-in.
+4. Só então o leitor libera a leitura dos códigos de barras (câmera ou digitando) → a API credita a pessoa da sessão. A tela mostra o total do atendimento.
+5. "Encerrar atendimento" fecha a sessão e a tela volta para o QR, pronta para a próxima pessoa (a sessão também expira sozinha).
+6. A empresa baixa os dados dos ecopontos em CSV na seção "Exportar dados" de `empresa.html`.
+7. O celular da pessoa mostra saldo e histórico em `leitor.html` e em `coleta.html`, atualizando a cada 5 s.
 
 ## Estrutura
 

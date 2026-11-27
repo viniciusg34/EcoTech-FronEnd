@@ -12,7 +12,7 @@ Conferido no código do front. Backend, responsividade em aparelhos reais e os e
 | Cadastro de usuário | ⚠️ 🔒 | só comum se cadastra; ver "Cadastro" abaixo |
 | Login | ⚠️ 🔒 | campo "E-mail" (aceita e-mail ou login) e sem botão Limpar |
 | Erro | ✅ | `error_page.html` real + `404.html`; aberta em acesso negado (403) e falha do servidor (5xx) |
-| 2FA | ✅ | pessoa: pergunta + código de 6 dígitos no e-mail (`codigo.html`); empresa: código no e-mail |
+| 2FA | ⚠️ 🔒 | pessoa comum: pergunta + código de 6 dígitos no e-mail (`codigo.html`); empresa: código no e-mail; **master entra sem 2FA** (decisão do grupo) |
 | Consulta de usuário (busca por parte do nome, exclusão com confirmação) | ✅ | busca no servidor; só master |
 | Alteração de senha (só comum, a própria) | ✅ | master vê aviso; a API deve responder 403 |
 | Modelo do BD (imagem) | ✅ | `assets/modelo-bd.svg` e `.png`, para master e comum |

@@ -335,7 +335,7 @@ export function criarApi({ agora = () => Date.now(), senhaMaster = process.env.D
   });
   rota("POST", "/checkins", "pessoa", ({ req, auth, body }) => idempotente(req, auth, "POST /checkins", () => {
     const s = db.sessoes.get(Number((body || {}).sessao_id));
-    if (!s || s.pessoaId !== auth.id || s.status !== "ativa" || s.expira <= agora()) throw new Erro(410, "sessao_expirada", "Sessão do Ecoponto inválida ou expirada. Leia o QR da placa de novo.");
+    if (!s || s.pessoaId !== auth.id || s.status !== "ativa" || s.expira <= agora()) throw new Erro(403, "sessao_invalida", "Sessão do Ecoponto inválida ou expirada. Leia o QR da placa de novo.");
     const e = ecoPorId(s.ecopontoId), p = soPessoa(auth);
     const ultimo = db.coletas.filter((c) => c.tipo === "checkin" && c.pessoaId === p.id && c.ecopontoId === e.id).sort((a, b) => b.em - a.em)[0];
     const espera = ultimo ? ultimo.em + db.config.checkin_cooldown_min * MIN - agora() : 0;
@@ -414,7 +414,7 @@ export function criarApi({ agora = () => Date.now(), senhaMaster = process.env.D
   rota("POST", "/ecopontos/(\\d+)/leituras", "empresa", ({ req, auth, m, body }) => idempotente(req, auth, `POST /ecopontos/${m[1]}/leituras`, () => {
     const e = ecoDaEmpresa(auth, m[1]), b = body || {};
     const s = db.sessoes.get(Number(b.sessao_id));
-    if (!s || s.ecopontoId !== e.id || s.status !== "ativa" || s.expira <= agora()) throw new Erro(410, "sessao_expirada", "Sessão inválida ou expirada. Peça para a pessoa ler o QR da placa de novo.");
+    if (!s || s.ecopontoId !== e.id || s.status !== "ativa" || s.expira <= agora()) throw new Erro(403, "sessao_invalida", "Sessão inválida ou expirada. Peça para a pessoa ler o QR da placa de novo.");
     const p = pessoaPorId(s.pessoaId);
     const code = String(b.code || "").replace(/\D/g, "");
     const registrar = (resultado, extra = {}) => db.leituras.push({ id: db.prox("leitura"), ecopontoId: e.id, pessoaId: p.id, codigo: code, produto: "", categoria: "", kg: 0, coins: 0, resultado, em: agora(), coletaId: null, ...extra });
@@ -496,103 +496,6 @@ export function criarApi({ agora = () => Date.now(), senhaMaster = process.env.D
     anonimizar(p);
     return ok(204, null);
   });
-  // ── admin: Ecopontos de todas as empresas (admin_ecopontos.html)
-  const STATUS_COR = { ativo: "#2e7d32", manutencao: "#f9a825", inativo: "#9e9e9e" };
-  const ecoAdmin = (e) => {
-    const emp = db.empresas.find((x) => x.id === e.empresaId);
-    return {
-      id: e.id, codigo: e.codigo, nome: e.nome, descricao: e.descricao || null, endereco: e.endereco, cidade: e.cidade, estado: e.estado,
-      lat: e.lat, lng: e.lng, status: e.status, status_rotulo: statusRotulo[e.status], status_cor: STATUS_COR[e.status] || "#9e9e9e",
-      categorias: e.categorias.map((c) => { const k = db.cat(c); return { chave: k.chave, rotulo: k.rotulo, cor_hex: k.cor_hex }; }),
-      kg_coletado_formatado: fmtKg(Math.round(kgDoPonto(e.id) * 10) / 10),
-      empresa: emp ? { id: emp.id, nome: emp.nome_empresa } : null,
-    };
-  };
-  const ecoPorIdAdmin = (id) => {
-    const e = ecoPorId(id);
-    if (!e) throw new Erro(404, "nao_encontrado", "Ecoponto não encontrado.");
-    return e;
-  };
-  const semAcento = (t) => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-  rota("GET", "/admin/ecopontos", "master", ({ qs }) => {
-    let l = [...db.ecopontos];
-    if (qs.busca) { const t = semAcento(qs.busca); l = l.filter((e) => [e.nome, e.codigo, e.endereco, e.cidade].some((v) => semAcento(v).includes(t))); }
-    if (qs.empresa_id) l = l.filter((e) => String(e.empresaId) === String(qs.empresa_id));
-    if (["ativo", "manutencao", "inativo"].includes(qs.status)) l = l.filter((e) => e.status === qs.status);
-    return ok(200, paginar(l.sort((a, b) => a.codigo.localeCompare(b.codigo, "pt-BR", { numeric: true })).map(ecoAdmin), qs, 100));
-  });
-  const editarAdmin_ecopontos = ({ m, body }) => {
-    const e = ecoPorIdAdmin(m[1]), b = body || {}, campos = {};
-    if ("nome" in b && (!String(b.nome || "").trim() || String(b.nome).length > 150)) campos.nome = ["Informe o nome (até 150 caracteres)."];
-    if ("codigo" in b && b.codigo != null && (!/^[A-Z0-9-]{3,20}$/.test(b.codigo) || db.ecopontos.some((x) => x.id !== e.id && x.codigo === b.codigo))) campos.codigo = ["Código inválido ou já usado."];
-    if ("status" in b && !["ativo", "manutencao", "inativo"].includes(b.status)) campos.status = ["Status inválido."];
-    if ("estado" in b && b.estado != null && String(b.estado).length !== 2) campos.estado = ["Use a sigla com 2 letras."];
-    for (const k of ["lat", "lng"]) if (k in b && !Number.isFinite(Number(b[k]))) campos[k] = ["Coordenada inválida."];
-    if ("categorias" in b && (!Array.isArray(b.categorias) || !b.categorias.length || b.categorias.some((c) => !db.cat(c)))) campos.categorias = ["Escolha ao menos um material válido."];
-    if (Object.keys(campos).length) throw validacao(campos);
-    for (const k of ["nome", "descricao", "endereco", "cidade", "codigo", "status"]) if (k in b && b[k] !== undefined) e[k] = b[k] === null ? null : String(b[k]).trim();
-    if ("estado" in b) e.estado = b.estado ? String(b.estado).toUpperCase() : null;
-    for (const k of ["lat", "lng"]) if (k in b) e[k] = Number(b[k]);
-    if ("categorias" in b) e.categorias = [...new Set(b.categorias)];
-    if (e.status !== "ativo") for (const s of db.sessoes.values()) if (s.ecopontoId === e.id && s.status === "ativa") s.status = "encerrada";
-    return ok(200, { ...ecoAdmin(e), message: "Ecoponto atualizado." });
-  };
-  rota("PATCH", "/admin/ecopontos/(\\d+)", "master", editarAdmin_ecopontos);
-  rota("PUT", "/admin/ecopontos/(\\d+)", "master", editarAdmin_ecopontos);
-  rota("DELETE", "/admin/ecopontos/(\\d+)", "master", ({ m }) => {
-    const e = ecoPorIdAdmin(m[1]);
-    for (const s of db.sessoes.values()) if (s.ecopontoId === e.id && s.status === "ativa") s.status = "encerrada";
-    if (db.coletas.some((c) => c.ecopontoId === e.id)) {
-      e.status = "inativo";
-      return ok(200, { acao: "desativado", message: `${e.codigo} tem histórico de coletas: foi desativado (saiu do mapa) em vez de apagado.` });
-    }
-    db.ecopontos.splice(db.ecopontos.indexOf(e), 1);
-    return ok(200, { acao: "excluido", message: `${e.codigo} excluído.` });
-  });
-
-  // ── admin: empresas parceiras (admin_empresas.html)
-  const empPorIdAdmin = (id) => {
-    const emp = db.empresas.find((x) => x.id === Number(id));
-    if (!emp) throw new Erro(404, "nao_encontrado", "Empresa não encontrada.");
-    return emp;
-  };
-  const sairEmpresa = (emp) => { for (const [t, v] of db.tokens) if (v.tipo === "empresa" && v.id === emp.id) db.tokens.delete(t); };
-  rota("GET", "/admin/empresas", "master", ({ qs }) => {
-    let l = [...db.empresas];
-    if (qs.busca) { const t = semAcento(qs.busca); l = l.filter((e) => semAcento(e.nome_empresa).includes(t) || semAcento(e.email).includes(t) || String(e.cnpj).includes(String(qs.busca).replace(/\D/g, "") || "#")); }
-    if (["ativa", "suspensa"].includes(qs.status)) l = l.filter((e) => e.status === qs.status);
-    return ok(200, paginar(l.sort((a, b) => a.nome_empresa.localeCompare(b.nome_empresa, "pt-BR")).map(dadosEmpresa), qs, 100));
-  });
-  const editarAdmin_empresas = ({ m, body }) => {
-    const emp = empPorIdAdmin(m[1]), b = body || {}, campos = {};
-    if ("nome_empresa" in b && !String(b.nome_empresa || "").trim()) campos.nome_empresa = ["Informe o nome da empresa."];
-    if ("email" in b && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email || "") || db.empresas.some((x) => x.id !== emp.id && x.email === String(b.email).toLowerCase()))) campos.email = ["E-mail inválido ou já usado."];
-    if ("status" in b && !["ativa", "suspensa"].includes(b.status)) campos.status = ["Status inválido."];
-    if (Object.keys(campos).length) throw validacao(campos);
-    const antes = emp.status;
-    for (const k of ["nome_empresa", "razao_social", "endereco"]) if (k in b) emp[k] = b[k] === null ? null : String(b[k]).trim();
-    if ("email" in b) emp.email = String(b.email).trim().toLowerCase();
-    if ("status" in b) emp.status = b.status;
-    if (emp.status === "suspensa") sairEmpresa(emp); // sai na hora
-    const message = antes !== emp.status ? (emp.status === "suspensa" ? "Empresa suspensa." : "Empresa reativada.") : "Dados da empresa atualizados.";
-    return ok(200, { ...dadosEmpresa(emp), message });
-  };
-  rota("PATCH", "/admin/empresas/(\\d+)", "master", editarAdmin_empresas);
-  rota("PUT", "/admin/empresas/(\\d+)", "master", editarAdmin_empresas);
-  rota("DELETE", "/admin/empresas/(\\d+)", "master", ({ m }) => {
-    const emp = empPorIdAdmin(m[1]);
-    const pontos = db.ecopontos.filter((e) => e.empresaId === emp.id);
-    sairEmpresa(emp);
-    if (pontos.some((e) => db.coletas.some((c) => c.ecopontoId === e.id))) {
-      emp.status = "suspensa";
-      pontos.forEach((e) => (e.status = "inativo"));
-      return ok(200, { acao: "desativada", message: `${emp.nome_empresa} tem histórico de coletas: foi suspensa e os Ecopontos desativados, em vez de apagados.` });
-    }
-    pontos.forEach((e) => db.ecopontos.splice(db.ecopontos.indexOf(e), 1));
-    db.empresas.splice(db.empresas.indexOf(emp), 1);
-    return ok(200, { acao: "excluida", message: `${emp.nome_empresa} excluída.` });
-  });
-
   rota("GET", "/admin/logs-autenticacao", "master", ({ qs }) => {
     const t = qs.termo ? normalizar(qs.termo) : "";
     const l = db.logs.filter((x) => x.pessoaId && pessoaPorId(x.pessoaId)?.perfil === "comum").sort((a, b) => b.em - a.em).filter((x) => {

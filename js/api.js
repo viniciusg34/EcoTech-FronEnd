@@ -177,19 +177,20 @@
       var antigo = ambiente.nome;
       var tinhaSessao = !!readRaw();
       definir(achou.chave, achou.info);
-      // Para a equipe (console); o usuário não vê nome de servidor
-      if (global.console) console.info("[api] " + antigo + " fora do ar. Usando " + ambiente.nome + ".");
-      if (!tinhaSessao) return true; // troca em silêncio: a página segue normal
+      if (!tinhaSessao) {
+        toast(antigo + " indisponível. Conectado a " + ambiente.nome + ".");
+        return true;
+      }
       clearSession();
       if (paginaPublica()) {
-        // tela aberta a todos: recarrega para o header mostrar "Entrar"
-        toast("Sua sessão foi encerrada. Entre novamente quando quiser.");
+        // tela aberta a todos: só atualiza o header (sem conta) recarregando
+        toast(antigo + " indisponível. Usando " + ambiente.nome + ". Entre novamente quando quiser.");
         trocandoDePagina = true;
         setTimeout(function () {
           location.reload();
         }, 1800);
       } else {
-        toast("Sua sessão foi encerrada. Entre novamente para continuar.");
+        toast(antigo + " indisponível. Usando " + ambiente.nome + ". Entre novamente.");
         trocandoDePagina = true;
         setTimeout(goToLogin, 1800);
       }
@@ -1050,6 +1051,10 @@
     qrPayload: function (ecopontoId) {
       return Api.get("/ecopontos/" + ecopontoId + "/qr", null, { silent: true }).then(unwrap);
     },
+    /* DELETE /ecopontos/{id}/sessao-ativa — a empresa encerra o atendimento */
+    encerrarSessao: function (ecopontoId) {
+      return Api.del("/ecopontos/" + ecopontoId + "/sessao-ativa", { silent: true });
+    },
     /* 404 = ninguém conectado (não é erro para a tela) */
     sessaoAtiva: function (ecopontoId) {
       return Api.get("/ecopontos/" + ecopontoId + "/sessao-ativa", null, { silent: true }).then(unwrap);
@@ -1148,29 +1153,8 @@
      simulados); vermelho = sem conexão. Com mais de um ambiente, clicar
      abre a troca manual. Desligue com MOSTRAR_STATUS: false no config.
   ════════════════════════════════════════════════════════ */
-  /* O selo é para a equipe, não para o usuário: só aparece com
-     MOSTRAR_STATUS: true no config ou abrindo o site com ?status=1
-     (vale para a aba; ?status=0 esconde). Escondido, o ambiente em uso
-     vai para o console do navegador (F12). */
-  var STATUS_KEY = "ecotech_mostrar_status";
-  function seloLigado() {
-    try {
-      var q = new URLSearchParams(location.search).get("status");
-      if (q === "1") sessionStorage.setItem(STATUS_KEY, "1");
-      else if (q === "0") sessionStorage.removeItem(STATUS_KEY);
-      if (sessionStorage.getItem(STATUS_KEY) === "1") return true;
-    } catch (_) {}
-    return CFG.MOSTRAR_STATUS === true;
-  }
-  var ultimoLog = "";
   function atualizarSelo() {
-    if (!ambiente.chave) return;
-    if (!seloLigado()) {
-      var log = ambiente.nome + (ambiente.ok === false ? " (sem conexão)" : ambiente.modo === "demo" ? " (demonstração)" : "");
-      if (log !== ultimoLog && global.console) console.info("[api] Conectado a: " + log);
-      ultimoLog = log;
-      return;
-    }
+    if (CFG.MOSTRAR_STATUS === false || !ambiente.chave) return;
     if (!document.body) {
       document.addEventListener("DOMContentLoaded", atualizarSelo);
       return;
@@ -1183,7 +1167,7 @@
     if (!b) {
       var st = document.createElement("style");
       st.textContent =
-        "#eco-ambiente{position:fixed;left:12px;bottom:12px;z-index:10002;display:flex;align-items:center;gap:7px;width:auto;max-width:calc(100vw - 24px);height:auto;margin:0;" +
+        "#eco-ambiente{position:fixed;left:12px;bottom:12px;z-index:10002;display:flex;align-items:center;gap:7px;" +
         "background:rgba(26,46,27,.94);color:#fff;border:0;border-radius:99px;padding:6px 12px;cursor:pointer;" +
         "font:600 12px/1.2 'Plus Jakarta Sans','Poppins',system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}" +
         "#eco-ambiente.fixo{cursor:default}" +
